@@ -4,9 +4,13 @@
     <title>Getting Started with Django and Vite</title>
     {% vite_hmr_client %}
     {% vite_react_refresh %}
+    {% vite_asset 'assets/style.css' %}
   </head>
   <body>
     <div id="root"></div>
     {% vite_asset 'assets/hello.jsx' %}
+<button class="px-4 py-2 rounded-lg font-semibold text-white bg-blue-600 hover:bg-blue-700 cursor-pointer">
+  Click me
+</button>
   </body>
 </html>

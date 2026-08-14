@@ -22,11 +22,13 @@
   },
   "homepage": "https://github.com/Uszczi/sturdy-potato#readme",
   "devDependencies": {
+    "@tailwindcss/vite": "^4.3.3",
     "@vitejs/plugin-react": "^6.0.5",
     "vite": "^8.2.1"
   },
   "dependencies": {
     "react": "^19.2.8",
-    "react-dom": "^19.2.8"
+    "react-dom": "^19.2.8",
+    "tailwindcss": "^4.3.3"
   }
 }

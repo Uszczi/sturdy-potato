@@ -7,7 +7,7 @@ from django.views import generic
 from .models import Choice, Question
 
 
-class IndexView(generic.ListView):
+class IndexView(generic.ListView):  # type: ignore[type-arg]
     template_name = "polls/index.html"
     context_object_name = "latest_question_list"
 
@@ -15,12 +15,12 @@ class IndexView(generic.ListView):
         return Question.objects.order_by("-pub_date")[:5]
 
 
-class DetailView(generic.DetailView):
+class DetailView(generic.DetailView):  # type: ignore[type-arg]
     model = Question
     template_name = "polls/detail.html"
 
 
-class ResultsView(generic.DetailView):
+class ResultsView(generic.DetailView):  # type: ignore[type-arg]
     model = Question
     template_name = "polls/results.html"
 
