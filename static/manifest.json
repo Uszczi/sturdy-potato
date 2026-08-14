@@ -1,8 +1,24 @@
 {
+  "_rolldown-runtime-D9-fqq9M.js": {
+    "file": "assets/rolldown-runtime-D9-fqq9M.js",
+    "name": "rolldown-runtime"
+  },
+  "assets/hello.jsx": {
+    "file": "js/hello-bundle.js",
+    "name": "hello",
+    "src": "assets/hello.jsx",
+    "isEntry": true,
+    "imports": [
+      "_rolldown-runtime-D9-fqq9M.js"
+    ]
+  },
   "assets/index.js": {
     "file": "js/index-bundle.js",
     "name": "index",
     "src": "assets/index.js",
-    "isEntry": true
+    "isEntry": true,
+    "imports": [
+      "_rolldown-runtime-D9-fqq9M.js"
+    ]
   }
 }

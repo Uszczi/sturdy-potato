@@ -1,1 +1,1 @@
-var e=((e,t)=>()=>(t||(e((t={exports:{}}).exports,t),e=null),t.exports))((()=>{function e(){let e=document.createElement(`div`);return e.innerHTML=`Hello Vite`,e}document.body.appendChild(e())}));export default e();
+import{t as e}from"../assets/rolldown-runtime-D9-fqq9M.js";var t=e((()=>{function e(){let e=document.createElement(`div`);return e.innerHTML=`Hello Vite`,e}document.body.appendChild(e())}));export default t();

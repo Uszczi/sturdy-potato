@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django_vite",
     "potato.apps.PotatoConfig",
     # world
     "django.contrib.gis",
@@ -126,6 +127,14 @@ STATIC_URL = "/static/"
 STATICFILES_DIRS = [
     BASE_DIR.parent / "static",
 ]
+STATIC_ROOT = BASE_DIR.parent / "staticfiles"
+
+DJANGO_VITE = {
+    "default": {
+        "dev_mode": DEBUG,
+        "manifest_path": BASE_DIR.parent / "static" / "manifest.json",
+    }
+}
 
 # Email
 # https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration

@@ -1,9 +1,12 @@
-{% load static %}
+{% load django_vite %}
 <html>
   <head>
     <title>Getting Started with Django and Vite</title>
+    {% vite_hmr_client %}
+    {% vite_react_refresh %}
   </head>
   <body>
-    <script type="module" src="{% static 'js/index-bundle.js' %}"></script>
+    <div id="root"></div>
+    {% vite_asset 'assets/hello.jsx' %}
   </body>
 </html>

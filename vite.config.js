@@ -1,8 +1,10 @@
 import { defineConfig } from "vite";
 import path from "path";
+import react from "@vitejs/plugin-react";
 
 export default defineConfig({
   base: "/static/", // This should match Django's settings.STATIC_URL
+  plugins: [react()],
   build: {
     // Where Vite will save its output files.
     // This should be something in your settings.STATICFILES_DIRS
@@ -12,6 +14,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         index: path.resolve(__dirname, "./assets/index.js"),
+        hello: path.resolve(__dirname, "./assets/hello.jsx"),
       },
       output: {
         // Output JS bundles to js/ directory with -bundle suffix
