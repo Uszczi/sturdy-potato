@@ -20,6 +20,6 @@ world_mapping = {
 world_shp = Path(__file__).resolve().parent / "data" / "TM_WORLD_BORDERS-0.3.shp"
 
 
-def run(verbose=True):
+def run(verbose: bool = True) -> None:
     lm = LayerMapping(WorldBorder, world_shp, world_mapping, transform=False)
     lm.save(strict=True, verbose=verbose)

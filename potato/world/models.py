@@ -16,5 +16,5 @@ class WorldBorder(models.Model):
 
     mpoly = models.MultiPolygonField()
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.name
