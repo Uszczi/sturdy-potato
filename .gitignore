@@ -10,3 +10,5 @@ wheels/
 .venv
 
 potato/db.sqlite3
+
+node_modules/

@@ -1,0 +1,27 @@
+{
+  "name": "sturdy-potato",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "vite build",
+    "dev": "vite"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Uszczi/sturdy-potato.git"
+  },
+  "keywords": [],
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Uszczi/sturdy-potato/issues"
+  },
+  "homepage": "https://github.com/Uszczi/sturdy-potato#readme",
+  "devDependencies": {
+    "vite": "^8.2.1"
+  }
+}
