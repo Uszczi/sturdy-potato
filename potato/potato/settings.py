@@ -38,8 +38,10 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django_vite",
+    "rest_framework",
     "drf_spectacular",
     "potato.apps.PotatoConfig",
+    "infrastructure.apps.InfrastructureConfig",
     # world
     "django.contrib.gis",
     "world",
