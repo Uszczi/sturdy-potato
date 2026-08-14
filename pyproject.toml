@@ -18,11 +18,13 @@ dev = [
     "django-stubs[compatible-mypy]>=6.1.0",
     "djangorestframework-stubs>=3.18.0",
     "djlint>=1.44.2",
+    "factory-boy>=3.3.3",
     "mypy>=2.3.0",
     "pytest>=9.1.1",
     "pytest-django>=4.11.1",
     "pytest-xdist>=3.8.0",
     "ruff>=0.16.3",
+    "types-factory-boy>=0.4.1",
 ]
 
 [tool.pytest.ini_options]

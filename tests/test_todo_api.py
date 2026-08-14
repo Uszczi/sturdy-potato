@@ -1,7 +1,8 @@
 import pytest
-from infrastructure.models import Todo
 from potato.models import User
 from rest_framework.test import APIClient
+
+from .factories import TodoFactory, UserFactory
 
 
 @pytest.fixture
@@ -12,8 +13,8 @@ def api_client() -> APIClient:
 @pytest.fixture
 def users() -> tuple[User, User]:
     return (
-        User.objects.create_user(username="owner", password="password"),
-        User.objects.create_user(username="other", password="password"),
+        UserFactory.create(),
+        UserFactory.create(),
     )
 
 
@@ -30,9 +31,9 @@ def test_task_list_returns_only_the_authenticated_users_tasks(
     users: tuple[User, User],
 ) -> None:
     user, other_user = users
-    first_task = Todo.objects.create(user=user, title="First task")
-    second_task = Todo.objects.create(user=user, title="Second task")
-    Todo.objects.create(user=other_user, title="Private task")
+    first_task = TodoFactory.create(user=user, title="First task")
+    second_task = TodoFactory.create(user=user, title="Second task")
+    TodoFactory.create(user=other_user, title="Private task")
     api_client.force_authenticate(user=user)
 
     response = api_client.get("/api/tasks/")
