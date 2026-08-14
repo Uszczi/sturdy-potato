@@ -37,11 +37,15 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "potato.apps.PotatoConfig",
     # world
     "django.contrib.gis",
     "world",
     "polls",
+    "todo",
 ]
+
+AUTH_USER_MODEL = "potato.User"
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
