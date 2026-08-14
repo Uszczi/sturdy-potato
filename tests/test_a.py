@@ -1,6 +1,6 @@
-def test_a():
+def test_a() -> None:
     assert True
 
 
-def test_b():
+def test_b() -> None:
     assert True

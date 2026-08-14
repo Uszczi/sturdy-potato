@@ -40,7 +40,6 @@ INSTALLED_APPS = [
     # world
     "django.contrib.gis",
     "world",
-    #
     "polls",
 ]
 

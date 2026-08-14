@@ -1,6 +1,7 @@
 lint:
-	uv run black potato/
-	uv run mypy potato/
+	uv run black .
+	uv run mypy .
+	uv run ruff check . --fix
 
 test:
 	uv run pytest tests/

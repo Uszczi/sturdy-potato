@@ -1,5 +1,7 @@
 from pathlib import Path
+
 from django.contrib.gis.utils import LayerMapping
+
 from .models import WorldBorder
 
 world_mapping = {
