@@ -12,6 +12,7 @@ dependencies = [
 dev = [
     "black>=26.5.1",
     "django-stubs[compatible-mypy]>=6.1.0",
+    "djlint>=1.44.2",
     "mypy>=2.3.0",
     "pytest>=9.1.1",
     "pytest-xdist>=3.8.0",
