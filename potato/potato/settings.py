@@ -47,7 +47,7 @@ INSTALLED_APPS = [
     "todo",
 ]
 
-AUTH_USER_MODEL = "potato.User"
+AUTH_USER_MODEL = "infrastructure.User"
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",

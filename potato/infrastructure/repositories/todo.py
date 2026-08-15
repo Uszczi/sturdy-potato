@@ -3,8 +3,7 @@ from typing import Any
 
 from django.db.models import QuerySet
 
-from infrastructure.models import Todo
-from potato.models import User
+from infrastructure.models import Todo, User
 
 
 class TodoRepository:

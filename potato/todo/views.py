@@ -16,11 +16,10 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from infrastructure.models import Todo
+from infrastructure.models import Todo, User
 from infrastructure.repositories import TodoRepository
 from potato.auth import get_authenticated_user
 from potato.containers import Container
-from potato.models import User
 
 from .serializers import TodoCreateInput, TodoSchema, TodoUpdateInput
 

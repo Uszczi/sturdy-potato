@@ -2,8 +2,7 @@ from typing import Any
 
 import factory
 
-from infrastructure.models import Todo
-from potato.models import User
+from infrastructure.models import Todo, User
 
 
 class UserFactory(factory.django.DjangoModelFactory[User]):

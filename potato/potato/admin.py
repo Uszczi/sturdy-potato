@@ -1,7 +1,6 @@
-from potato.models import User
 from django.contrib import admin
 
-from infrastructure.models import Todo
+from infrastructure.models import Todo, User
 
 admin.site.register(Todo, admin.ModelAdmin)
 

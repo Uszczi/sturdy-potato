@@ -1,8 +1,7 @@
 import pytest
 from rest_framework.test import APIClient
 
-from infrastructure.models import Todo
-from potato.models import User
+from infrastructure.models import Todo, User
 from tests.factories import TodoFactory, UserFactory
 
 
