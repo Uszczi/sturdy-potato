@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Your tasks</title>
+    </head>
+    <body>
+        <main>
+            <h1>Your tasks</h1>
+            {% if tasks %}
+                <ul>
+                    {% for task in tasks %}
+                        <li>
+                            <h2>{{ task.title }}</h2>
+                            {% if task.description %}<p>{{ task.description }}</p>{% endif %}
+                            <p>{% if task.completed %}Completed{% else %}Open{% endif %}</p>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>No tasks yet.</p>
+            {% endif %}
+        </main>
+    </body>
+</html>

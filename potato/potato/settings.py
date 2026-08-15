@@ -42,10 +42,8 @@ INSTALLED_APPS = [
     "drf_spectacular",
     "potato.apps.PotatoConfig",
     "infrastructure.apps.InfrastructureConfig",
-    # world
+    # TODO remove gis
     "django.contrib.gis",
-    "world",
-    "polls",
     "todo",
 ]
 

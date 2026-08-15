@@ -1,8 +1,11 @@
 from collections.abc import Callable
 from functools import wraps
-from typing import Annotated, Any
+from typing import Annotated, Any, cast
 
 from dependency_injector.wiring import Provide, inject
+from django.contrib.auth.decorators import login_required
+from django.http import HttpRequest, HttpResponse
+from django.shortcuts import render
 from pydantic import BaseModel
 from pydantic import ValidationError as PydanticValidationError
 from rest_framework import status
@@ -45,6 +48,17 @@ def _get_task_or_404(
     if task is None:
         raise NotFound("Not found.")
     return task
+
+
+@login_required
+@inject
+def task_list_page(
+    request: HttpRequest,
+    repository: Annotated[TodoRepository, Provide[Container.todo_repository]],
+) -> HttpResponse:
+    user = cast(User, request.user)
+    tasks = repository.list_for_user(user)
+    return render(request, "todo/task_list.html", {"tasks": tasks})
 
 
 def validate_body(
