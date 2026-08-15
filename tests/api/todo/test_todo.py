@@ -146,6 +146,24 @@ def test_task_creation_uses_defaults_and_validates_title(
 
 
 @pytest.mark.django_db
+def test_task_creation_requires_a_json_object(
+    api_client: APIClient,
+    users: tuple[User, User],
+) -> None:
+    user, _ = users
+    api_client.force_authenticate(user=user)
+
+    response = api_client.post(
+        "/api/tasks/create/",
+        [],
+        format="json",
+    )
+
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Expected a JSON object."
+
+
+@pytest.mark.django_db
 def test_task_can_be_updated(
     api_client: APIClient,
     users: tuple[User, User],

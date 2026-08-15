@@ -34,6 +34,9 @@ dev = [
 DJANGO_SETTINGS_MODULE = "potato.settings"
 pythonpath = ["potato"]
 
+[tool.coverage.run]
+omit = ["potato/world/*"]
+
 [tool.ruff]
 exclude = ["**/migrations/**"]
 
