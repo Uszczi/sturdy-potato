@@ -3,7 +3,7 @@ from infrastructure.models import Todo
 from potato.models import User
 from rest_framework.test import APIClient
 
-from .factories import TodoFactory, UserFactory
+from tests.factories import TodoFactory, UserFactory
 
 
 @pytest.fixture
@@ -44,6 +44,45 @@ def test_task_list_returns_only_the_authenticated_users_tasks(
         second_task.id,
         first_task.id,
     ]
+
+
+@pytest.mark.django_db
+def test_task_detail_requires_authentication(
+    api_client: APIClient,
+    users: tuple[User, User],
+) -> None:
+    task = TodoFactory.create(user=users[0])
+
+    response = api_client.get(f"/api/tasks/{task.id}/")
+
+    assert response.status_code == 403
+
+
+@pytest.mark.django_db
+def test_task_detail_returns_the_same_task_shape_as_the_list(
+    api_client: APIClient,
+    users: tuple[User, User],
+) -> None:
+    user, other_user = users
+    task = TodoFactory.create(
+        user=user,
+        title="Task details",
+        description="Details",
+        completed=True,
+    )
+    other_task = TodoFactory.create(user=other_user, title="Private task")
+    api_client.force_authenticate(user=user)
+
+    detail_response = api_client.get(f"/api/tasks/{task.id}/")
+    list_response = api_client.get("/api/tasks/")
+    other_response = api_client.get(f"/api/tasks/{other_task.id}/")
+
+    assert detail_response.status_code == 200
+    assert isinstance(detail_response.json(), dict)
+    assert detail_response.json() in list_response.json()
+    assert detail_response.json()["description"] == "Details"
+    assert detail_response.json()["completed"] is True
+    assert other_response.status_code == 404
 
 
 @pytest.mark.django_db

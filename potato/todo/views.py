@@ -46,6 +46,22 @@ def task_list(
     return Response(TodoSchema(many=True).dump(tasks))
 
 
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+@inject
+def task_detail(
+    request: Request,
+    task_id: int,
+    repository: Annotated[TodoRepository, Provide[Container.todo_repository]],
+) -> Response:
+    user = get_authenticated_user(request)
+    task = repository.get_for_user(user, task_id)
+    if task is None:
+        raise NotFound("Not found.")
+
+    return Response(TodoSchema().dump(task))
+
+
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 @inject
