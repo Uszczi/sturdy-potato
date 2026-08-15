@@ -2,9 +2,9 @@ from collections.abc import Mapping
 from typing import Any
 
 from django.db.models import QuerySet
-from potato.models import User
 
 from infrastructure.models import Todo
+from potato.models import User
 
 
 class TodoRepository:

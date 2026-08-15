@@ -1,13 +1,13 @@
 from collections.abc import Callable
-from datetime import UTC, datetime
 
 import pytest
-from infrastructure.models import Todo
+from freezegun import freeze_time
 from rest_framework.test import APIClient
 
 from tests.factories import TodoFactory, UserFactory
 
 
+@freeze_time("2024-01-02T12:00:00Z")
 @pytest.mark.django_db
 def test_task_detail_matches_snapshot(
     load_snapshot: Callable[[str], object],
@@ -19,10 +19,6 @@ def test_task_detail_matches_snapshot(
         title="Task details",
         description="Details for this task",
         completed=True,
-    )
-    Todo.objects.filter(id=task.id).update(
-        created_at=datetime(2024, 1, 2, 12, 0, tzinfo=UTC),
-        updated_at=datetime(2024, 1, 3, 12, 0, tzinfo=UTC),
     )
     api_client = APIClient()
     api_client.force_authenticate(user=user)

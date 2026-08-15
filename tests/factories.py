@@ -1,6 +1,7 @@
 from typing import Any
 
 import factory
+
 from infrastructure.models import Todo
 from potato.models import User
 
