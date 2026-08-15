@@ -4,8 +4,9 @@ from typing import Annotated, Any, cast
 
 from dependency_injector.wiring import Provide, inject
 from django.contrib.auth.decorators import login_required
-from django.http import HttpRequest, HttpResponse
+from django.http import Http404, HttpRequest, HttpResponse
 from django.shortcuts import render
+from django.views.decorators.http import require_POST
 from pydantic import BaseModel
 from pydantic import ValidationError as PydanticValidationError
 from rest_framework import status
@@ -58,6 +59,23 @@ def task_list_page(
     user = cast(User, request.user)
     tasks = repository.list_for_user(user)
     return render(request, "todo/task_list.html", {"tasks": tasks})
+
+
+@login_required
+@require_POST
+@inject
+def task_toggle_page(
+    request: HttpRequest,
+    task_id: int,
+    repository: Annotated[TodoRepository, Provide[Container.todo_repository]],
+) -> HttpResponse:
+    user = cast(User, request.user)
+    task = repository.get_for_user(user, task_id)
+    if task is None:
+        raise Http404
+
+    task = repository.update(task, {"completed": not task.completed})
+    return render(request, "todo/_task.html", {"task": task})
 
 
 def validate_body(

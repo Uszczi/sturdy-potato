@@ -1,0 +1,13 @@
+<li id="task-{{ task.id }}">
+    <h2>{{ task.title }}</h2>
+    {% if task.description %}<p>{{ task.description }}</p>{% endif %}
+    <p>{% if task.completed %}Completed{% else %}Open{% endif %}</p>
+    <form hx-post="{% url 'task-toggle' task.id %}"
+          hx-target="closest li"
+          hx-swap="outerHTML">
+        {% csrf_token %}
+        <button type="submit">
+            {% if task.completed %}Mark as open{% else %}Mark as complete{% endif %}
+        </button>
+    </form>
+</li>
