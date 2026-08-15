@@ -11,4 +11,4 @@ lint-check:
 	uv run djlint . --check
 
 test:
-	uv run pytest tests/
+	uv run pytest --cov=potato --cov-report=term:skip-covered tests/
