@@ -1,0 +1,13 @@
+{% if tasks %}
+    <ul id="task-list" class="divide-y divide-base-300 border-y border-base-300" aria-label="Task list">
+        {% include "todo/_task_list.html" %}
+    </ul>
+{% else %}
+    <div class="border-y border-base-300 px-6 py-12 text-center sm:py-16">
+        <span class="badge badge-outline">All clear</span>
+        <h2 class="mt-2 text-2xl font-bold">No tasks yet.</h2>
+        <p class="mx-auto max-w-sm text-sm leading-6 text-base-content/65">
+            Your inbox is quiet. New tasks will appear here when you add them.
+        </p>
+    </div>
+{% endif %}

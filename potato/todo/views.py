@@ -1,18 +1,15 @@
-from collections.abc import Callable
-from functools import wraps
-from typing import Annotated, Any, cast
+from collections.abc import Mapping
+from typing import Annotated, Any
 
 from dependency_injector.wiring import Provide, inject
 from django.contrib.auth.decorators import login_required
-from django.http import Http404, HttpRequest, HttpResponse
+from django.http import Http404, HttpRequest, HttpResponse, HttpResponseBadRequest
 from django.shortcuts import render
-from django.views.decorators.http import require_POST
 from pydantic import BaseModel
 from pydantic import ValidationError as PydanticValidationError
-from rest_framework import status
+from rest_framework import status, viewsets
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.exceptions import NotFound
-from rest_framework.exceptions import ValidationError as DRFValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -56,123 +53,128 @@ def task_list_page(
     request: HttpRequest,
     repository: Annotated[TodoRepository, Provide[Container.todo_repository]],
 ) -> HttpResponse:
-    user = cast(User, request.user)
-    tasks = repository.list_for_user(user)
+    user = get_authenticated_user(request)
+    tasks = repository.list_for_user(user).order_by("completed", "-created_at")
     return render(request, "todo/task_list.html", {"tasks": tasks})
-
-
-@login_required
-@require_POST
-@inject
-def task_toggle_page(
-    request: HttpRequest,
-    task_id: int,
-    repository: Annotated[TodoRepository, Provide[Container.todo_repository]],
-) -> HttpResponse:
-    user = cast(User, request.user)
-    task = repository.get_for_user(user, task_id)
-    if task is None:
-        raise Http404
-
-    task = repository.update(task, {"completed": not task.completed})
-    return render(request, "todo/_task.html", {"task": task})
-
-
-def validate_body(
-    model: type[BaseModel],
-) -> Callable[[Callable[..., Response]], Callable[..., Response]]:
-    def decorator(view: Callable[..., Response]) -> Callable[..., Response]:
-        @wraps(view)
-        def wrapped(request: Request, *args: Any, **kwargs: Any) -> Response:
-            if not isinstance(request.data, dict):
-                raise DRFValidationError(
-                    {"detail": "Expected a JSON object."},
-                )
-
-            try:
-                body = model.model_validate(request.data)
-            except PydanticValidationError as error:
-                raise DRFValidationError(
-                    {"errors": _format_validation_errors(error)},
-                ) from error
-            return view(request, *args, body=body, **kwargs)
-
-        return wrapped
-
-    return decorator
-
-
-@api_view(["GET"])
-@permission_classes([IsAuthenticated])
-@inject
-def task_list(
-    request: Request,
-    repository: Annotated[TodoRepository, Provide[Container.todo_repository]],
-) -> Response:
-    user = get_authenticated_user(request)
-    tasks = repository.list_for_user(user)
-    return Response([_dump_task(task) for task in tasks])
-
-
-@api_view(["GET"])
-@permission_classes([IsAuthenticated])
-@inject
-def task_detail(
-    request: Request,
-    task_id: int,
-    repository: Annotated[TodoRepository, Provide[Container.todo_repository]],
-) -> Response:
-    user = get_authenticated_user(request)
-    task = _get_task_or_404(repository, user, task_id)
-
-    return Response(_dump_task(task))
 
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
-@validate_body(TodoCreateInput)
 @inject
-def task_create(
+def task_create_page(
     request: Request,
-    body: TodoCreateInput,
     repository: Annotated[TodoRepository, Provide[Container.todo_repository]],
-) -> Response:
+) -> HttpResponse:
+    if not isinstance(request.data, Mapping):
+        return HttpResponseBadRequest("Invalid task title.")
+
+    try:
+        body = TodoCreateInput.model_validate({"title": request.data.get("title", "")})
+    except PydanticValidationError:
+        return HttpResponseBadRequest("Invalid task title.")
+
     user = get_authenticated_user(request)
-
-    task = repository.create_for_user(user, body.model_dump())
-    return Response(
-        _dump_task(task),
-        status=status.HTTP_201_CREATED,
-    )
+    repository.create_for_user(user, body.model_dump())
+    tasks = repository.list_for_user(user).order_by("completed", "-created_at")
+    return render(request, "todo/_task_section.html", {"tasks": tasks})
 
 
-@api_view(["PATCH"])
-@permission_classes([IsAuthenticated])
-@validate_body(TodoUpdateInput)
-@inject
-def task_update(
-    request: Request,
-    task_id: int,
-    body: TodoUpdateInput,
-    repository: Annotated[TodoRepository, Provide[Container.todo_repository]],
-) -> Response:
-    user = get_authenticated_user(request)
-    task = _get_task_or_404(repository, user, task_id)
-
-    task = repository.update(task, body.model_dump(exclude_unset=True))
-    return Response(_dump_task(task))
-
-
-@api_view(["DELETE"])
+@api_view(["POST"])
 @permission_classes([IsAuthenticated])
 @inject
-def task_delete(
+def task_toggle_page(
     request: Request,
     task_id: int,
     repository: Annotated[TodoRepository, Provide[Container.todo_repository]],
-) -> Response:
+) -> HttpResponse:
     user = get_authenticated_user(request)
-    task = _get_task_or_404(repository, user, task_id)
+    task = repository.get_for_user(user, task_id)
+    if task is None:
+        raise Http404
 
-    repository.delete(task)
-    return Response(status=status.HTTP_204_NO_CONTENT)
+    repository.update(task, {"completed": not task.completed})
+    tasks = repository.list_for_user(user).order_by("completed", "-created_at")
+    return render(request, "todo/_task_list.html", {"tasks": tasks})
+
+
+def _parse_body(model: type[BaseModel], request: Request) -> BaseModel | Response:
+    if not isinstance(request.data, dict):
+        return Response(
+            {"detail": "Expected a JSON object."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    try:
+        return model.model_validate(request.data)
+    except PydanticValidationError as error:
+        return Response(
+            {"errors": _format_validation_errors(error)},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+
+class TodoViewSet(viewsets.ViewSet):
+    permission_classes = [IsAuthenticated]  # noqa: RUF012
+
+    @inject
+    def list(
+        self,
+        request: Request,
+        repository: Annotated[TodoRepository, Provide[Container.todo_repository]],
+    ) -> Response:
+        user = get_authenticated_user(request)
+        tasks = repository.list_for_user(user)
+        return Response([_dump_task(task) for task in tasks])
+
+    @inject
+    def retrieve(
+        self,
+        request: Request,
+        pk: int,
+        repository: Annotated[TodoRepository, Provide[Container.todo_repository]],
+    ) -> Response:
+        user = get_authenticated_user(request)
+        task = _get_task_or_404(repository, user, pk)
+        return Response(_dump_task(task))
+
+    @inject
+    def create(
+        self,
+        request: Request,
+        repository: Annotated[TodoRepository, Provide[Container.todo_repository]],
+    ) -> Response:
+        body = _parse_body(TodoCreateInput, request)
+        if isinstance(body, Response):
+            return body
+
+        user = get_authenticated_user(request)
+        task = repository.create_for_user(user, body.model_dump())
+        return Response(_dump_task(task), status=status.HTTP_201_CREATED)
+
+    @inject
+    def partial_update(
+        self,
+        request: Request,
+        pk: int,
+        repository: Annotated[TodoRepository, Provide[Container.todo_repository]],
+    ) -> Response:
+        body = _parse_body(TodoUpdateInput, request)
+        if isinstance(body, Response):
+            return body
+
+        user = get_authenticated_user(request)
+        task = _get_task_or_404(repository, user, pk)
+        task = repository.update(task, body.model_dump(exclude_unset=True))
+        return Response(_dump_task(task))
+
+    @inject
+    def destroy(
+        self,
+        request: Request,
+        pk: int,
+        repository: Annotated[TodoRepository, Provide[Container.todo_repository]],
+    ) -> Response:
+        user = get_authenticated_user(request)
+        task = _get_task_or_404(repository, user, pk)
+        repository.delete(task)
+        return Response(status=status.HTTP_204_NO_CONTENT)

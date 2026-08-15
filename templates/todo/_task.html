@@ -1,13 +1,54 @@
-<li id="task-{{ task.id }}">
-    <h2>{{ task.title }}</h2>
-    {% if task.description %}<p>{{ task.description }}</p>{% endif %}
-    <p>{% if task.completed %}Completed{% else %}Open{% endif %}</p>
-    <form hx-post="{% url 'task-toggle' task.id %}"
-          hx-target="closest li"
-          hx-swap="outerHTML">
-        {% csrf_token %}
-        <button type="submit">
-            {% if task.completed %}Mark as open{% else %}Mark as complete{% endif %}
-        </button>
-    </form>
+<li
+    id="task-{{ task.id }}"
+    class="cursor-pointer transition-colors duration-200 hover:bg-base-100/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+    x-data="{
+        task: {
+            title: $el.dataset.title,
+            description: $el.dataset.description,
+            completed: $el.dataset.completed === 'true',
+            createdAt: $el.dataset.createdAt,
+            updatedAt: $el.dataset.updatedAt
+        }
+    }"
+    data-title="{{ task.title }}"
+    data-description="{{ task.description }}"
+    data-completed="{{ task.completed|yesno:'true,false' }}"
+    data-created-at="{{ task.created_at|date:'M j, Y g:i A' }}"
+    data-updated-at="{{ task.updated_at|date:'M j, Y g:i A' }}"
+    role="button"
+    tabindex="0"
+    @click="$dispatch('task-opened', task)"
+    @keydown.enter.prevent="$dispatch('task-opened', task)"
+    @keydown.space.prevent="$dispatch('task-opened', task)"
+>
+    <div class="flex items-center gap-4 py-4">
+            <form hx-post="{% url 'task-toggle' task.id %}"
+              hx-trigger="submit"
+              hx-target="#task-list"
+              hx-swap="innerHTML"
+              class="shrink-0"
+              @click.stop
+              @keydown.stop>
+            {% csrf_token %}
+            <button
+                type="submit"
+                class="btn btn-circle btn-sm {% if task.completed %}btn-success{% else %}btn-outline hover:btn-primary{% endif %}"
+                aria-pressed="{{ task.completed|yesno:'true,false' }}"
+                aria-label="{% if task.completed %}Mark {{ task.title }} as open{% else %}Mark {{ task.title }} as complete{% endif %}"
+            >
+                <svg
+                    aria-hidden="true"
+                    class="size-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    stroke-width="2.5"
+                >
+                    <path stroke-linecap="round" stroke-linejoin="round" d="m5 12 4 4L19 6" />
+                </svg>
+            </button>
+        </form>
+        <h2 class="min-w-0 flex-1 break-words text-base font-semibold sm:text-lg">{{ task.title }}</h2>
+        <span class="sr-only">Click the task title for details</span>
+    </div>
 </li>

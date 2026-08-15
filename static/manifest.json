@@ -20,5 +20,14 @@
     "imports": [
       "_rolldown-runtime-D9-fqq9M.js"
     ]
+  },
+  "assets/style.css": {
+    "file": "css/style.css",
+    "name": "style",
+    "names": [
+      "style.css"
+    ],
+    "src": "assets/style.css",
+    "isEntry": true
   }
 }

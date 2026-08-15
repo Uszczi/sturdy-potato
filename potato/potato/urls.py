@@ -9,7 +9,8 @@ from drf_spectacular.views import (
 
 urlpatterns = [
     path("accounts/", include("django.contrib.auth.urls")),
-    path("api/tasks/", include("todo.urls")),
+    path("api/", include("todo.urls")),
+    path("api-auth/", include("rest_framework.urls")),
     path("tasks/", include("todo.web_urls")),
     path("admin/", admin.site.urls),
     path("hello-vite/", TemplateView.as_view(template_name="hello_vite.html")),

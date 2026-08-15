@@ -19,6 +19,14 @@ def users() -> tuple[User, User]:
 
 
 @pytest.mark.django_db
+def test_api_root_lists_the_task_resource(api_client: APIClient) -> None:
+    response = api_client.get("/api/")
+
+    assert response.status_code == 200
+    assert response.json()["tasks"].endswith("/api/tasks/")
+
+
+@pytest.mark.django_db
 def test_task_list_requires_authentication(api_client: APIClient) -> None:
     response = api_client.get("/api/tasks/")
 
@@ -93,7 +101,7 @@ def test_task_can_be_created(
     api_client.force_authenticate(user=user)
 
     response = api_client.post(
-        "/api/tasks/create/",
+        "/api/tasks/",
         {
             "title": "New task",
             "description": "Task details",
@@ -116,7 +124,7 @@ def test_task_creation_uses_defaults_and_validates_title(
     api_client.force_authenticate(user=user)
 
     response = api_client.post(
-        "/api/tasks/create/",
+        "/api/tasks/",
         {},
         format="json",
     )
@@ -125,7 +133,7 @@ def test_task_creation_uses_defaults_and_validates_title(
     assert "title" in response.json()["errors"]
 
     response = api_client.post(
-        "/api/tasks/create/",
+        "/api/tasks/",
         {"title": "x" * 201},
         format="json",
     )
@@ -134,7 +142,7 @@ def test_task_creation_uses_defaults_and_validates_title(
     assert "title" in response.json()["errors"]
 
     response = api_client.post(
-        "/api/tasks/create/",
+        "/api/tasks/",
         {"title": "Task with defaults"},
         format="json",
     )
@@ -153,7 +161,7 @@ def test_task_creation_requires_a_json_object(
     api_client.force_authenticate(user=user)
 
     response = api_client.post(
-        "/api/tasks/create/",
+        "/api/tasks/",
         [],
         format="json",
     )
@@ -173,12 +181,12 @@ def test_task_can_be_updated(
     api_client.force_authenticate(user=user)
 
     response = api_client.patch(
-        f"/api/tasks/{task.id}/update/",
+        f"/api/tasks/{task.id}/",
         {"title": "Updated task", "completed": True},
         format="json",
     )
     other_response = api_client.patch(
-        f"/api/tasks/{other_task.id}/update/",
+        f"/api/tasks/{other_task.id}/",
         {"title": "Should remain private"},
         format="json",
     )
@@ -204,7 +212,7 @@ def test_task_can_be_partially_updated(
     api_client.force_authenticate(user=user)
 
     response = api_client.patch(
-        f"/api/tasks/{task.id}/update/",
+        f"/api/tasks/{task.id}/",
         {"title": "Updated task"},
         format="json",
     )
@@ -216,6 +224,24 @@ def test_task_can_be_partially_updated(
 
 
 @pytest.mark.django_db
+def test_task_update_requires_a_json_object(
+    api_client: APIClient,
+    users: tuple[User, User],
+) -> None:
+    task = TodoFactory.create(user=users[0])
+    api_client.force_authenticate(user=users[0])
+
+    response = api_client.patch(
+        f"/api/tasks/{task.id}/",
+        [],
+        format="json",
+    )
+
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Expected a JSON object."
+
+
+@pytest.mark.django_db
 def test_task_can_be_deleted(
     api_client: APIClient,
     users: tuple[User, User],
@@ -224,7 +250,7 @@ def test_task_can_be_deleted(
     task = TodoFactory.create(user=user)
     api_client.force_authenticate(user=user)
 
-    response = api_client.delete(f"/api/tasks/{task.id}/delete/")
+    response = api_client.delete(f"/api/tasks/{task.id}/")
 
     assert response.status_code == 204
     assert not Todo.objects.filter(id=task.id).exists()
