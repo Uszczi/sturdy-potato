@@ -87,6 +87,8 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = "potato.urls"
 
+LOGIN_REDIRECT_URL = "home-page"
+
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
