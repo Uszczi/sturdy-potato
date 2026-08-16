@@ -1,0 +1,20 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command:
+      - sh
+      - -c
+      - python manage.py migrate && exec python manage.py runserver --insecure 0.0.0.0:8000
+    environment:
+      DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1
+      DJANGO_DEBUG: "0"
+      DJANGO_DB_PATH: /app/data/db.sqlite3
+    ports:
+      - "${PORT:-8000}:8000"
+    volumes:
+      - sqlite_data:/app/data
+
+volumes:
+  sqlite_data:

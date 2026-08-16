@@ -39,3 +39,24 @@ Run the Django project through Aspire:
 ```bash
 npm run aspire:start
 ```
+
+Run the application with Docker Compose:
+
+```bash
+docker compose up --build
+```
+
+The application is available at `http://localhost:8000`. SQLite data is stored in
+the `sqlite_data` Compose volume.
+
+Run the production Compose deployment with `DJANGO_DEBUG=false` and
+`DJANGO_ENV=prod`. It serves the Django ASGI application with Uvicorn for
+async and WebSocket support:
+
+```bash
+DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1 \
+DJANGO_SECRET_KEY=replace-with-a-long-random-value \
+docker compose -f deployment/prod/docker-compose.yml up --build
+```
+
+The production site is available at `http://localhost:8000`.
