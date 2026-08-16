@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     "infrastructure.apps.InfrastructureConfig",
     "api.apps.ApiConfig",
     "web.apps.WebConfig",
+    "serializers.apps.SerializersConfig",
     # TODO remove gis
     "django.contrib.gis",
 ]

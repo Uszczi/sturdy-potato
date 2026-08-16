@@ -13,7 +13,7 @@ from infrastructure.models import Todo, User
 from infrastructure.repositories import TodoRepository
 from potato.auth import get_authenticated_user
 from potato.containers import Container
-from todo.serializers import TodoCreateInput, TodoSchema, TodoUpdateInput
+from serializers.todo.task import TodoCreateInput, TodoSchema, TodoUpdateInput
 
 
 def _format_validation_errors(

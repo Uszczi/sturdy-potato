@@ -47,9 +47,9 @@ def test_task_page_lists_only_the_authenticated_users_tasks() -> None:
     assert "Add task" in response.content.decode()
     assert 'data-title="Visible task"' in response.content.decode()
     assert 'data-description="Task details"' in response.content.decode()
-    assert response.content.decode().index("Open task") < response.content.decode().index(
-        "Visible task"
-    )
+    assert response.content.decode().index(
+        "Open task"
+    ) < response.content.decode().index("Visible task")
     assert "Private task" not in response.content.decode()
 
 
@@ -144,9 +144,9 @@ def test_task_toggle_updates_completion_and_returns_the_task_partial() -> None:
     assert response.templates[0].name == "todo/_task_list.html"
     assert 'aria-pressed="true"' in response.content.decode()
     assert f'aria-label="Mark {task.title} as open"' in response.content.decode()
-    assert response.content.decode().index(open_task.title) < response.content.decode().index(
-        task.title
-    )
+    assert response.content.decode().index(
+        open_task.title
+    ) < response.content.decode().index(task.title)
 
     response = client.post(f"/tasks/{task.id}/toggle/", HTTP_HX_REQUEST="true")
 

@@ -1,7 +1,7 @@
 import pytest
 from pydantic import ValidationError
 
-from todo.serializers import TodoCreateInput, TodoUpdateInput
+from serializers.todo.task import TodoCreateInput, TodoUpdateInput
 
 
 def test_todo_create_strips_title_whitespace() -> None:

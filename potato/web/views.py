@@ -13,7 +13,7 @@ from rest_framework.request import Request
 from infrastructure.repositories import TodoRepository
 from potato.auth import get_authenticated_user
 from potato.containers import Container
-from todo.serializers import TodoCreateInput
+from serializers.todo.task import TodoCreateInput
 
 
 @login_required
