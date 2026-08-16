@@ -40,6 +40,18 @@ ALLOWED_HOSTS = [
     if host.strip()
 ]
 
+# Origins (scheme + host) allowed to send unsafe requests (e.g. admin POSTs).
+# Required for CSRF checks when served over HTTPS behind a reverse proxy.
+CSRF_TRUSTED_ORIGINS = [
+    origin.strip()
+    for origin in os.environ.get("DJANGO_CSRF_TRUSTED_ORIGINS", "").split(",")
+    if origin.strip()
+]
+
+# Trust the X-Forwarded-Proto header set by nginx so Django knows the original
+# request was HTTPS. Without this, CSRF/redirect logic treats requests as http.
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
 
 # Application definition
 
