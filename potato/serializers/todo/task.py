@@ -9,6 +9,7 @@ class TodoCreateInput(BaseModel):
     title: str = Field(min_length=1, max_length=200)
     description: str = ""
     completed: bool = False
+    project_id: int | None = None
 
     @field_validator("title", mode="before")
     @classmethod
@@ -17,6 +18,11 @@ class TodoCreateInput(BaseModel):
             return value.strip()
         return value
 
+    @field_validator("project_id", mode="before")
+    @classmethod
+    def empty_project_is_unassigned(cls, value: object) -> object:
+        return None if value == "" else value
+
 
 class TodoUpdateInput(BaseModel):
     model_config = ConfigDict(extra="forbid")
@@ -24,6 +30,7 @@ class TodoUpdateInput(BaseModel):
     title: str | None = Field(default=None, max_length=200)
     description: str | None = None
     completed: bool | None = None
+    project_id: int | None = None
 
     @field_validator("title", "description", "completed", mode="before")
     @classmethod
@@ -31,6 +38,22 @@ class TodoUpdateInput(BaseModel):
         if value is None:
             raise ValueError("Input should not be null")
         return value
+
+    @field_validator("project_id", mode="before")
+    @classmethod
+    def empty_project_is_unassigned(cls, value: object) -> object:
+        return None if value == "" else value
+
+
+class TodoProjectInput(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    project_id: int | None = None
+
+    @field_validator("project_id", mode="before")
+    @classmethod
+    def empty_project_is_unassigned(cls, value: object) -> object:
+        return None if value == "" else value
 
 
 class TodoSchema(BaseModel):
@@ -40,6 +63,7 @@ class TodoSchema(BaseModel):
     title: str
     description: str
     completed: bool
+    project_id: int | None
     created_at: datetime
     updated_at: datetime
 

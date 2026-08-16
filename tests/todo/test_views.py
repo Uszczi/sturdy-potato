@@ -1,8 +1,8 @@
 import pytest
 from django.test import Client
 
-from infrastructure.models import Todo
-from tests.factories import TodoFactory, UserFactory
+from infrastructure.models import Project, Todo
+from tests.factories import ProjectFactory, TodoFactory, UserFactory
 
 
 @pytest.mark.django_db
@@ -65,6 +65,42 @@ def test_task_page_shows_an_empty_state() -> None:
 
 
 @pytest.mark.django_db
+def test_projects_page_lists_only_the_authenticated_users_projects() -> None:
+    user = UserFactory.create()
+    project = ProjectFactory.create(user=user, name="Visible project")
+    ProjectFactory.create(name="Private project")
+    client = Client()
+    client.force_login(user)
+
+    response = client.get("/projects/")
+
+    assert response.status_code == 200
+    assert "Projects" in response.content.decode()
+    assert project.name in response.content.decode()
+    assert "Private project" not in response.content.decode()
+    assert "0 tasks" in response.content.decode()
+
+
+@pytest.mark.django_db
+def test_projects_page_can_add_a_project() -> None:
+    user = UserFactory.create()
+    client = Client()
+    client.force_login(user)
+
+    response = client.post(
+        "/projects/create/",
+        {"name": "New project"},
+        HTTP_HX_REQUEST="true",
+    )
+
+    assert response.status_code == 200
+    assert response.templates[0].name == "projects/_project_section.html"
+    project = Project.objects.get(user=user, name="New project")
+    assert project.user_id == user.id
+    assert "New project" in response.content.decode()
+
+
+@pytest.mark.django_db
 def test_task_page_can_add_a_task_and_replace_the_empty_state() -> None:
     user = UserFactory.create()
     client = Client()
@@ -82,6 +118,54 @@ def test_task_page_can_add_a_task_and_replace_the_empty_state() -> None:
     assert '<ul id="task-list"' in response.content.decode()
     assert "New task" in response.content.decode()
     assert "No tasks yet." not in response.content.decode()
+
+
+@pytest.mark.django_db
+def test_task_creation_can_assign_a_project() -> None:
+    user = UserFactory.create()
+    project = ProjectFactory.create(user=user, name="Launch")
+    client = Client()
+    client.force_login(user)
+
+    response = client.post(
+        "/tasks/create/",
+        {"title": "Prepare launch", "project_id": str(project.id)},
+        HTTP_HX_REQUEST="true",
+    )
+
+    task = Todo.objects.get(user=user, title="Prepare launch")
+    assert response.status_code == 200
+    assert task.project_id == project.id
+    assert project.name in response.content.decode()
+
+
+@pytest.mark.django_db
+def test_task_can_be_assigned_to_and_cleared_from_a_project() -> None:
+    user = UserFactory.create()
+    project = ProjectFactory.create(user=user, name="Launch")
+    task = TodoFactory.create(user=user)
+    client = Client()
+    client.force_login(user)
+
+    response = client.post(
+        f"/tasks/{task.id}/project/",
+        {"project_id": str(project.id)},
+        HTTP_HX_REQUEST="true",
+    )
+
+    task.refresh_from_db()
+    assert response.status_code == 200
+    assert task.project_id == project.id
+    assert response.templates[0].name == "todo/_task_section.html"
+
+    client.post(
+        f"/tasks/{task.id}/project/",
+        {"project_id": ""},
+        HTTP_HX_REQUEST="true",
+    )
+
+    task.refresh_from_db()
+    assert task.project_id is None
 
 
 @pytest.mark.django_db

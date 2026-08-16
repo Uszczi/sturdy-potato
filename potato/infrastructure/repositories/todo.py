@@ -3,12 +3,19 @@ from typing import Any
 
 from django.db.models import QuerySet
 
-from infrastructure.models import Todo, User
+from infrastructure.models import Project, Todo, User
 
 
 class TodoRepository:
     def list_for_user(self, user: User) -> QuerySet[Todo]:
-        return Todo.objects.filter(user=user).order_by("-created_at")
+        return (
+            Todo.objects.filter(user=user)
+            .select_related("project")
+            .order_by("-created_at")
+        )
+
+    def get_project_for_user(self, user: User, project_id: int) -> Project | None:
+        return Project.objects.filter(user=user, id=project_id).first()
 
     def get_for_user(self, user: User, task_id: int) -> Todo | None:
         return Todo.objects.filter(user=user, id=task_id).first()

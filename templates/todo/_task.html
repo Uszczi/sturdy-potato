@@ -3,15 +3,17 @@
     x-data="{
         task: {
             title: $el.dataset.title,
-            description: $el.dataset.description,
-            completed: $el.dataset.completed === 'true',
-            createdAt: $el.dataset.createdAt,
+             description: $el.dataset.description,
+             completed: $el.dataset.completed === 'true',
+             projectName: $el.dataset.projectName,
+             createdAt: $el.dataset.createdAt,
             updatedAt: $el.dataset.updatedAt
         }
     }"
     data-title="{{ task.title }}"
     data-description="{{ task.description }}"
     data-completed="{{ task.completed|yesno:'true,false' }}"
+    data-project-name="{% if task.project %}{{ task.project.name }}{% endif %}"
     data-created-at="{{ task.created_at|date:'M j, Y g:i A' }}"
     data-updated-at="{{ task.updated_at|date:'M j, Y g:i A' }}"
     role="button"
@@ -43,6 +45,26 @@
             </button>
         </form>
         <h2 class="min-w-0 flex-1 break-words text-base font-semibold sm:text-lg">{{ task.title }}</h2>
+        <form hx-post="{% url 'task-assign-project' task.id %}"
+              hx-trigger="change"
+              hx-target="#task-section"
+              hx-swap="innerHTML"
+              class="shrink-0"
+              @click.stop
+              @keydown.stop>
+            {% csrf_token %}
+            <label class="sr-only" for="task-project-{{ task.id }}">Project for {{ task.title }}</label>
+            <select id="task-project-{{ task.id }}"
+                    name="project_id"
+                    class="select select-bordered select-sm max-w-32"
+                    aria-label="Project for {{ task.title }}">
+                <option value="">No project</option>
+                {% for project in projects %}
+                    <option value="{{ project.id }}"
+                            {% if task.project_id == project.id %}selected{% endif %}>{{ project.name }}</option>
+                {% endfor %}
+            </select>
+        </form>
         <span class="sr-only">Click the task title for details</span>
     </div>
 </li>

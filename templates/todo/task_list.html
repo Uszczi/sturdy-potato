@@ -18,6 +18,7 @@
                     title: '',
                     description: '',
                     completed: false,
+                    projectName: '',
                     createdAt: '',
                     updatedAt: ''
                 }
@@ -25,7 +26,11 @@
               @task-opened.window="selectedTask = $event.detail; modalOpen = true"
               @keydown.escape.window="modalOpen = false">
             <header class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-                <h1 class="mt-2 text-4xl font-black tracking-tight sm:text-5xl">Inbox</h1>
+                <div>
+                    <p class="text-xs font-bold uppercase tracking-[0.2em] text-primary">Workspace</p>
+                    <h1 class="mt-2 text-4xl font-black tracking-tight sm:text-5xl">Inbox</h1>
+                </div>
+                <a href="{% url 'project-list-page' %}" class="btn btn-outline">Projects</a>
             </header>
             <form class="mb-8 flex flex-col gap-2 sm:flex-row"
                   hx-post="{% url 'task-create-page' %}"
@@ -42,6 +47,15 @@
                        maxlength="200"
                        autocomplete="off"
                        required>
+                <label class="sr-only" for="task-project">Project</label>
+                <select id="task-project"
+                        name="project_id"
+                        class="select select-bordered w-full sm:max-w-xs">
+                    <option value="">No project</option>
+                    {% for project in projects %}
+                        <option value="{{ project.id }}">{{ project.name }}</option>
+                    {% endfor %}
+                </select>
                 <button type="submit" class="btn btn-primary">Add task</button>
             </form>
             <section aria-labelledby="task-list-heading">
@@ -79,6 +93,12 @@
                             <dd class="mt-2">
                                 <span class="badge badge-outline"
                                       x-text="selectedTask.completed ? 'Completed' : 'Open'"></span>
+                            </dd>
+                        </div>
+                        <div>
+                            <dt class="text-xs font-bold uppercase tracking-wider text-base-content/50">Project</dt>
+                            <dd class="mt-2 text-base-content/75"
+                                x-text="selectedTask.projectName || 'No project'">
                             </dd>
                         </div>
                         <div>

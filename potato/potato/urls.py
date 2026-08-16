@@ -12,6 +12,7 @@ urlpatterns = [
     path("api/", include("api.urls")),
     path("api-auth/", include("rest_framework.urls")),
     path("tasks/", include("web.urls")),
+    path("projects/", include("web.project_urls")),
     path("admin/", admin.site.urls),
     path("hello-vite/", TemplateView.as_view(template_name="hello_vite.html")),
     path(
