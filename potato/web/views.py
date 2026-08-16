@@ -3,18 +3,18 @@ from typing import Annotated
 from dependency_injector.wiring import Provide, inject
 from django.http import HttpResponse
 from django.shortcuts import render
+from drf_spectacular.utils import extend_schema
 from rest_framework.decorators import api_view, permission_classes
+from rest_framework.exceptions import NotFound
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 
-from api.decorators import pydantic_body
+from api.decorators import html_response, pydantic_body
+from infrastructure.models import Todo, User
 from infrastructure.repositories import TodoRepository
 from potato.auth import get_authenticated_user
 from potato.containers import Container
 from serializers.todo.task import TodoCreateInput
-
-from rest_framework.exceptions import NotFound
-from infrastructure.models import Todo, User
 
 
 def _get_task_or_404(
@@ -30,6 +30,7 @@ def _get_task_or_404(
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
+@html_response
 @inject
 def task_list_page(
     request: Request,
@@ -42,6 +43,7 @@ def task_list_page(
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
+@html_response
 @pydantic_body
 @inject
 def task_create_page(
@@ -57,6 +59,8 @@ def task_create_page(
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
+@html_response
+@extend_schema(request=None)
 @inject
 def task_toggle_page(
     request: Request,

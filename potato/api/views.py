@@ -1,6 +1,7 @@
 from typing import Annotated, Any
 
 from dependency_injector.wiring import Provide, inject
+from drf_spectacular.utils import extend_schema
 from rest_framework import status, viewsets
 from rest_framework.exceptions import NotFound
 from rest_framework.permissions import IsAuthenticated
@@ -13,7 +14,7 @@ from potato.auth import get_authenticated_user
 from potato.containers import Container
 from serializers.todo.task import TodoCreateInput, TodoSchema, TodoUpdateInput
 
-from .decorators import pydantic_body
+from .decorators import pydantic_body, pydantic_response
 
 
 def _dump_task(task: Todo) -> dict[str, Any]:
@@ -34,6 +35,7 @@ def _get_task_or_404(
 class TodoViewSet(viewsets.ViewSet):
     permission_classes = [IsAuthenticated]  # noqa: RUF012
 
+    @pydantic_response(TodoSchema)
     @inject
     def list(
         self,
@@ -44,6 +46,7 @@ class TodoViewSet(viewsets.ViewSet):
         tasks = repository.list_for_user(user)
         return Response([_dump_task(task) for task in tasks])
 
+    @pydantic_response(TodoSchema)
     @inject
     def retrieve(
         self,
@@ -55,6 +58,7 @@ class TodoViewSet(viewsets.ViewSet):
         task = _get_task_or_404(repository, user, pk)
         return Response(_dump_task(task))
 
+    @pydantic_response(TodoSchema, status_code=status.HTTP_201_CREATED)
     @pydantic_body
     @inject
     def create(
@@ -67,6 +71,7 @@ class TodoViewSet(viewsets.ViewSet):
         task = repository.create_for_user(user, body.model_dump())
         return Response(_dump_task(task), status=status.HTTP_201_CREATED)
 
+    @pydantic_response(TodoSchema)
     @pydantic_body
     @inject
     def partial_update(
@@ -81,6 +86,7 @@ class TodoViewSet(viewsets.ViewSet):
         task = repository.update(task, body.model_dump(exclude_unset=True))
         return Response(_dump_task(task))
 
+    @extend_schema(responses={status.HTTP_204_NO_CONTENT: None})
     @inject
     def destroy(
         self,

@@ -50,6 +50,22 @@ def test_task_create_schema_describes_the_pydantic_request_model(
     ]["application/json"]["schema"]
     assert web_schema["title"] == "TodoCreateInput"
 
+    web_response_schema = response.json()["paths"]["/tasks/create/"]["post"]["responses"][
+        "200"
+    ]["content"]["text/html"]["schema"]
+    assert web_response_schema["type"] == "string"
+
+    list_response_schema = response.json()["paths"]["/api/tasks/"]["get"]["responses"][
+        "200"
+    ]["content"]["application/json"]["schema"]
+    assert list_response_schema["type"] == "array"
+    assert list_response_schema["items"]["title"] == "TodoSchema"
+
+    create_response_schema = response.json()["paths"]["/api/tasks/"]["post"][
+        "responses"
+    ]["201"]["content"]["application/json"]["schema"]
+    assert create_response_schema["title"] == "TodoSchema"
+
 
 @pytest.mark.django_db
 def test_task_list_requires_authentication(api_client: APIClient) -> None:
