@@ -1,6 +1,6 @@
 {
-  "_rolldown-runtime-D9-fqq9M.js": {
-    "file": "assets/rolldown-runtime-D9-fqq9M.js",
+  "_rolldown-runtime-Czjbc987.js": {
+    "file": "assets/rolldown-runtime-Czjbc987.js",
     "name": "rolldown-runtime"
   },
   "assets/hello.jsx": {
@@ -9,7 +9,7 @@
     "src": "assets/hello.jsx",
     "isEntry": true,
     "imports": [
-      "_rolldown-runtime-D9-fqq9M.js"
+      "_rolldown-runtime-Czjbc987.js"
     ]
   },
   "assets/index.js": {
@@ -18,7 +18,7 @@
     "src": "assets/index.js",
     "isEntry": true,
     "imports": [
-      "_rolldown-runtime-D9-fqq9M.js"
+      "_rolldown-runtime-Czjbc987.js"
     ]
   },
   "assets/style.css": {

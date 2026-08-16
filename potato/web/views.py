@@ -94,7 +94,9 @@ def _task_context(
             else f"?view={view}" if view != "inbox" else ""
         ),
         "task_view": view,
-        "tasks": tasks.order_by("completed", "due_date", "-created_at"),
+        "tasks": tasks.order_by(
+            "position", "completed", "due_date", "-created_at", "-id"
+        ),
         "projects": project_repository.list_for_user(user),
     }
 

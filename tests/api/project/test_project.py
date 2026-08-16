@@ -87,6 +87,48 @@ def test_project_can_be_created_and_duplicate_names_are_rejected(
 
 
 @pytest.mark.django_db
+def test_project_order_can_be_reordered_for_the_authenticated_user(
+    api_client: APIClient,
+) -> None:
+    user = UserFactory.create()
+    first_project = ProjectFactory.create(user=user, name="First")
+    second_project = ProjectFactory.create(user=user, name="Second")
+    private_project = ProjectFactory.create(name="Private")
+    api_client.force_authenticate(user=user)
+
+    response = api_client.post(
+        "/api/projects/reorder/",
+        {"order": [second_project.id, first_project.id]},
+        format="json",
+    )
+
+    assert response.status_code == 204
+    assert [project["id"] for project in api_client.get("/api/projects/").json()] == [
+        second_project.id,
+        first_project.id,
+    ]
+    assert private_project.position == 0
+
+
+@pytest.mark.django_db
+def test_project_reorder_rejects_another_users_project(
+    api_client: APIClient,
+) -> None:
+    user = UserFactory.create()
+    project = ProjectFactory.create(user=user)
+    private_project = ProjectFactory.create()
+    api_client.force_authenticate(user=user)
+
+    response = api_client.post(
+        "/api/projects/reorder/",
+        {"order": [project.id, private_project.id]},
+        format="json",
+    )
+
+    assert response.status_code == 400
+
+
+@pytest.mark.django_db
 def test_task_can_be_assigned_to_and_cleared_from_a_project(
     api_client: APIClient,
 ) -> None:

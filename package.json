@@ -33,6 +33,7 @@
   "dependencies": {
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
+    "sortablejs": "^1.15.7",
     "tailwindcss": "^4.3.3"
   }
 }

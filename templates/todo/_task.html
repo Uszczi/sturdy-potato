@@ -1,5 +1,10 @@
 <li id="task-{{ task.id }}"
     class="group cursor-pointer transition-colors duration-200 hover:bg-base-200/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+    data-drag-item
+    data-drag-kind="task"
+    data-drag-id="{{ task.id }}"
+    data-drag-label="{{ task.title }}"
+    aria-grabbed="false"
     x-data="{
         task: {
             title: $el.dataset.title,
@@ -24,6 +29,22 @@
     @keydown.enter.prevent="$dispatch('task-opened', task)"
     @keydown.space.prevent="$dispatch('task-opened', task)">
     <div class="flex items-start gap-3 px-3 py-3 sm:px-4">
+        <button type="button"
+                class="drag-handle mt-0.5 grid size-5 shrink-0 place-items-center rounded text-base-content/25 transition hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                draggable="true"
+                data-drag-handle
+                aria-label="Drag {{ task.title }} to reorder"
+                @click.stop>
+            <svg aria-hidden="true"
+                 class="size-3.5"
+                 fill="none"
+                 viewBox="0 0 24 24"
+                 stroke="currentColor"
+                 stroke-width="2.5"
+                 stroke-linecap="round">
+                <path d="M9 6h.01M15 6h.01M9 12h.01M15 12h.01M9 18h.01M15 18h.01" />
+            </svg>
+        </button>
         <form hx-post="{% url 'task-toggle' task.id %}{{ task_query }}"
               hx-trigger="submit"
               hx-target="#task-list"

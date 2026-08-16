@@ -3,6 +3,7 @@ from typing import Annotated, Any
 from dependency_injector.wiring import Provide, inject
 from drf_spectacular.utils import extend_schema
 from rest_framework import status, viewsets
+from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
@@ -12,6 +13,7 @@ from infrastructure.models import Project, Todo, User
 from infrastructure.repositories import ProjectRepository, TodoRepository
 from potato.auth import get_authenticated_user
 from potato.containers import Container
+from serializers.order import ReorderInput
 from serializers.project.project import (
     ProjectCreateInput,
     ProjectSchema,
@@ -86,6 +88,24 @@ class TodoViewSet(viewsets.ViewSet):
         user = get_authenticated_user(request)
         tasks = repository.list_for_user(user)
         return Response([_dump_task(task) for task in tasks])
+
+    @action(detail=False, methods=["post"], url_path="reorder")
+    @extend_schema(responses={status.HTTP_204_NO_CONTENT: None})
+    @pydantic_body
+    @inject
+    def reorder(
+        self,
+        request: Request,
+        body: ReorderInput,
+        repository: Annotated[TodoRepository, Provide[Container.todo_repository]],
+    ) -> Response:
+        user = get_authenticated_user(request)
+        if not repository.reorder_for_user(user, body.order):
+            return Response(
+                {"detail": "Order contains tasks outside this user."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @pydantic_response(TodoSchema)
     @inject
@@ -166,6 +186,24 @@ class ProjectViewSet(viewsets.ViewSet):
         user = get_authenticated_user(request)
         projects = repository.list_for_user(user)
         return Response([_dump_project(project) for project in projects])
+
+    @action(detail=False, methods=["post"], url_path="reorder")
+    @extend_schema(responses={status.HTTP_204_NO_CONTENT: None})
+    @pydantic_body
+    @inject
+    def reorder(
+        self,
+        request: Request,
+        body: ReorderInput,
+        repository: Annotated[ProjectRepository, Provide[Container.project_repository]],
+    ) -> Response:
+        user = get_authenticated_user(request)
+        if not repository.reorder_for_user(user, body.order):
+            return Response(
+                {"detail": "Order contains projects outside this user."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @pydantic_response(ProjectSchema)
     @inject

@@ -6,34 +6,94 @@ from typing import Any
 from django.core.management.base import BaseCommand, CommandError, CommandParser
 from django.db import transaction
 
-from infrastructure.models import Todo, User
+from infrastructure.models import Project, Todo, User
 
 DEFAULT_SUPERUSER_USERNAME = "admin"
 DEFAULT_SUPERUSER_EMAIL = "admin@example.com"
 DEFAULT_DEMO_USERNAME = "demo"
 DEFAULT_DEMO_EMAIL = "demo@example.com"
 
-SEEDED_TODOS = (
+SEEDED_PROJECTS = (
     (
-        "Explore the todo list",
-        "Review the seeded tasks and mark one complete.",
-        False,
+        "Getting started",
+        (
+            (
+                "Explore the todo list",
+                "Review the seeded tasks and mark one complete.",
+                False,
+            ),
+            (
+                "Create your first task",
+                "Use the API or web interface to add a task.",
+                False,
+            ),
+            (
+                "Ship the next feature",
+                "Turn the next idea into a small, working improvement.",
+                True,
+            ),
+        ),
     ),
     (
-        "Create your first task",
-        "Use the API or web interface to add a task.",
-        False,
+        "Weekly planning",
+        (
+            (
+                "Review weekly priorities",
+                "Choose the work that deserves attention this week.",
+                False,
+            ),
+            (
+                "Block focus time",
+                "Protect a quiet block for the most important task.",
+                False,
+            ),
+            (
+                "Tidy the inbox",
+                "Give every loose task a useful next step.",
+                False,
+            ),
+            (
+                "Plan Friday wrap-up",
+                "Leave a short note about what should happen next.",
+                False,
+            ),
+        ),
     ),
     (
-        "Ship the next feature",
-        "Turn the next idea into a small, working improvement.",
-        True,
+        "Product launch",
+        (
+            (
+                "Confirm launch scope",
+                "Make the smallest useful launch plan explicit.",
+                False,
+            ),
+            (
+                "Draft release notes",
+                "Capture the changes people need to know about.",
+                False,
+            ),
+            (
+                "Prepare demo environment",
+                "Make the happy path easy to show and verify.",
+                False,
+            ),
+            (
+                "Invite early testers",
+                "Ask a small group for focused feedback.",
+                False,
+            ),
+            (
+                "Schedule launch review",
+                "Set aside time to review the final readiness checklist.",
+                False,
+            ),
+        ),
     ),
 )
 
 
 class Command(BaseCommand):
-    help = "Seed the database with a superuser and demo todo data."
+    help = "Seed the database with a superuser and demo project data."
 
     def add_arguments(self, parser: CommandParser) -> None:
         parser.add_argument(
@@ -80,6 +140,7 @@ class Command(BaseCommand):
 
             demo_user = None
             demo_user_created = False
+            project_count = 0
             todo_count = 0
             if not options["skip_demo_data"]:
                 if options["superuser_username"] == options["demo_username"]:
@@ -92,7 +153,7 @@ class Command(BaseCommand):
                     email=options["demo_email"],
                     password=options["demo_password"],
                 )
-                todo_count = self._seed_todos(demo_user)
+                project_count, todo_count = self._seed_projects_and_todos(demo_user)
 
         superuser_status = "Created" if superuser_created else "Found"
         self.stdout.write(f"{superuser_status} superuser '{superuser.username}'.")
@@ -100,6 +161,7 @@ class Command(BaseCommand):
         if demo_user is not None:
             demo_status = "Created" if demo_user_created else "Found"
             self.stdout.write(f"{demo_status} demo user '{demo_user.username}'.")
+            self.stdout.write(f"Created {project_count} new demo project(s).")
             self.stdout.write(f"Created {todo_count} new demo todo(s).")
 
     def _get_or_create_superuser(
@@ -169,19 +231,29 @@ class Command(BaseCommand):
             user.save(update_fields=["password"])
         return user, created
 
-    def _seed_todos(self, user: User) -> int:
-        created_count = 0
-        for title, description, completed in SEEDED_TODOS:
-            _, created = Todo.objects.get_or_create(
+    def _seed_projects_and_todos(self, user: User) -> tuple[int, int]:
+        project_count = 0
+        todo_count = 0
+        for project_position, (project_name, todos) in enumerate(SEEDED_PROJECTS):
+            project, project_created = Project.objects.get_or_create(
                 user=user,
-                title=title,
-                defaults={
-                    "description": description,
-                    "completed": completed,
-                },
+                name=project_name,
+                defaults={"position": project_position},
             )
-            created_count += int(created)
-        return created_count
+            project_count += int(project_created)
+            for task_position, (title, description, completed) in enumerate(todos):
+                _, todo_created = Todo.objects.get_or_create(
+                    user=user,
+                    project=project,
+                    title=title,
+                    defaults={
+                        "description": description,
+                        "completed": completed,
+                        "position": task_position,
+                    },
+                )
+                todo_count += int(todo_created)
+        return project_count, todo_count
 
     def _resolve_password(
         self,

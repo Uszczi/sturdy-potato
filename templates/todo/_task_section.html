@@ -1,6 +1,11 @@
 {% if tasks %}
+    <p id="task-list-help" class="mb-3 text-xs text-base-content/50">Drag the grip to reorder tasks.</p>
     <ul id="task-list"
         class="divide-y divide-base-300 border-y border-base-300"
+        data-drag-list
+        data-drag-kind="task"
+        data-drag-reorder-url="{% url 'task-reorder' %}"
+        aria-describedby="task-list-help"
         aria-label="Task list">
         {% include "todo/_task_list.html" %}
     </ul>

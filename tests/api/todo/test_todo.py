@@ -96,6 +96,48 @@ def test_task_list_returns_only_the_authenticated_users_tasks(
 
 
 @pytest.mark.django_db
+def test_task_order_can_be_reordered_for_the_authenticated_user(
+    api_client: APIClient,
+) -> None:
+    user = UserFactory.create()
+    first_task = TodoFactory.create(user=user, title="First task")
+    second_task = TodoFactory.create(user=user, title="Second task")
+    private_task = TodoFactory.create(title="Private task")
+    api_client.force_authenticate(user=user)
+
+    response = api_client.post(
+        "/api/tasks/reorder/",
+        {"order": [first_task.id, second_task.id]},
+        format="json",
+    )
+
+    assert response.status_code == 204
+    assert [task["id"] for task in api_client.get("/api/tasks/").json()] == [
+        first_task.id,
+        second_task.id,
+    ]
+    assert private_task.position == 0
+
+
+@pytest.mark.django_db
+def test_task_reorder_rejects_another_users_task(
+    api_client: APIClient,
+) -> None:
+    user = UserFactory.create()
+    task = TodoFactory.create(user=user)
+    private_task = TodoFactory.create()
+    api_client.force_authenticate(user=user)
+
+    response = api_client.post(
+        "/api/tasks/reorder/",
+        {"order": [task.id, private_task.id]},
+        format="json",
+    )
+
+    assert response.status_code == 400
+
+
+@pytest.mark.django_db
 def test_task_detail_requires_authentication(
     api_client: APIClient,
     users: tuple[User, User],

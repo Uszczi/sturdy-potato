@@ -6,7 +6,7 @@ from unittest.mock import Mock
 import pytest
 from django.core.management import CommandError, call_command
 
-from infrastructure.models import Todo, User
+from infrastructure.models import Project, Todo, User
 
 
 @pytest.mark.django_db
@@ -30,16 +30,21 @@ def test_seeddb_creates_superuser_demo_user_and_todos() -> None:
     assert superuser.check_password("admin-password")
     assert demo_user.email == "demo@example.com"
     assert demo_user.check_password("demo-password")
-    assert list(
-        Todo.objects.filter(user=demo_user).values_list("title", flat=True)
-    ) == [
-        "Explore the todo list",
-        "Create your first task",
-        "Ship the next feature",
-    ]
+    projects = list(
+        Project.objects.filter(user=demo_user)
+        .order_by("position")
+        .values_list("name", flat=True)
+    )
+    assert projects == ["Getting started", "Weekly planning", "Product launch"]
+    assert [
+        Todo.objects.filter(user=demo_user, project__name=name).count()
+        for name in projects
+    ] == [3, 4, 5]
+    assert Todo.objects.filter(user=demo_user).count() == 12
     assert "Created superuser 'admin'." in output.getvalue()
     assert "Created demo user 'demo'." in output.getvalue()
-    assert "Created 3 new demo todo(s)." in output.getvalue()
+    assert "Created 3 new demo project(s)." in output.getvalue()
+    assert "Created 12 new demo todo(s)." in output.getvalue()
 
 
 @pytest.mark.django_db
@@ -64,7 +69,8 @@ def test_seeddb_is_idempotent_and_does_not_reset_existing_passwords() -> None:
 
     assert User.objects.filter(username="admin").count() == 1
     assert User.objects.filter(username="demo").count() == 1
-    assert Todo.objects.filter(user=demo_user).count() == 3
+    assert Project.objects.filter(user=demo_user).count() == 3
+    assert Todo.objects.filter(user=demo_user).count() == 12
     assert User.objects.get(username="admin").check_password("original-admin-password")
     assert User.objects.get(username="demo").check_password("original-demo-password")
     assert (
@@ -73,6 +79,7 @@ def test_seeddb_is_idempotent_and_does_not_reset_existing_passwords() -> None:
     )
     assert "Found superuser 'admin'." in output.getvalue()
     assert "Found demo user 'demo'." in output.getvalue()
+    assert "Created 0 new demo project(s)." in output.getvalue()
     assert "Created 0 new demo todo(s)." in output.getvalue()
 
 
@@ -86,6 +93,7 @@ def test_seeddb_can_skip_demo_data() -> None:
 
     assert User.objects.filter(username="admin").exists()
     assert not User.objects.filter(username="demo").exists()
+    assert not Project.objects.exists()
     assert not Todo.objects.exists()
 
 
