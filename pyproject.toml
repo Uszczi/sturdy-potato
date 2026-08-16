@@ -41,7 +41,7 @@ omit = ["potato/world/*"]
 exclude = ["**/migrations/**"]
 
 [tool.ruff.lint.isort]
-known-first-party = ["infrastructure", "potato"]
+known-first-party = ["api", "infrastructure", "potato", "todo", "web"]
 
 [tool.mypy]
 mypy_path = ["potato"]

@@ -1,8 +1,3 @@
-from rest_framework.routers import DefaultRouter
+from api.urls import urlpatterns
 
-from .views import TodoViewSet
-
-router = DefaultRouter()
-router.register("tasks", TodoViewSet, basename="task")
-
-urlpatterns = router.urls
+__all__ = ["urlpatterns"]

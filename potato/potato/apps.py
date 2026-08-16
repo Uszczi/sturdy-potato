@@ -7,4 +7,4 @@ class PotatoConfig(AppConfig):
     def ready(self) -> None:
         from .containers import container
 
-        container.wire(modules=["todo.views"])
+        container.wire(modules=["api.views", "web.views"])

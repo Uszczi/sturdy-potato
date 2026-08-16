@@ -42,9 +42,10 @@ INSTALLED_APPS = [
     "drf_spectacular",
     "potato.apps.PotatoConfig",
     "infrastructure.apps.InfrastructureConfig",
+    "api.apps.ApiConfig",
+    "web.apps.WebConfig",
     # TODO remove gis
     "django.contrib.gis",
-    "todo",
 ]
 
 AUTH_USER_MODEL = "infrastructure.User"
