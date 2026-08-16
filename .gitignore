@@ -10,7 +10,15 @@ wheels/
 .venv
 
 potato/db.sqlite3
+potato/e2e-db.sqlite3
 
 node_modules/
 
 .coverage
+
+# Playwright e2e artifacts
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/

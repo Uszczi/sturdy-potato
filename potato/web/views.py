@@ -17,30 +17,12 @@ from infrastructure.models import Project, Todo, User
 from infrastructure.repositories import ProjectRepository, TodoRepository
 from potato.auth import get_authenticated_user
 from potato.containers import Container
+from potato.repository_helpers import (
+    get_task_or_404,
+    get_project_or_404,
+)
 from serializers.project.project import ProjectCreateInput
 from serializers.todo.task import TodoCreateInput, TodoProjectInput
-
-
-def _get_task_or_404(
-    repository: TodoRepository,
-    user: User,
-    task_id: int,
-) -> Todo:
-    task = repository.get_for_user(user, task_id)
-    if task is None:
-        raise NotFound("Not found.")
-    return task
-
-
-def _get_project_or_404(
-    repository: ProjectRepository,
-    user: User,
-    project_id: int,
-) -> Project:
-    project = repository.get_for_user(user, project_id)
-    if project is None:
-        raise NotFound("Project not found.")
-    return project
 
 
 def _resolve_task_project(
@@ -119,7 +101,7 @@ def _task_scope(
         project_pk = int(project_id)
     except ValueError as error:
         raise NotFound("Project not found.") from error
-    return "project", _get_project_or_404(project_repository, user, project_pk)
+    return "project", get_project_or_404(project_repository, user, project_pk)
 
 
 @api_view(["GET"])
@@ -209,7 +191,7 @@ def task_toggle_page(
 ) -> HttpResponse:
     user = get_authenticated_user(request)
     view, project = _task_scope(request, project_repository, user)
-    task = _get_task_or_404(repository, user, pk)
+    task = get_task_or_404(repository, user, pk)
 
     repository.update(task, {"completed": not task.completed})
     return render(
@@ -235,7 +217,7 @@ def task_assign_project_page(
 ) -> HttpResponse:
     user = get_authenticated_user(request)
     view, project = _task_scope(request, project_repository, user)
-    task = _get_task_or_404(repository, user, pk)
+    task = get_task_or_404(repository, user, pk)
     data = _resolve_task_project(repository, user, body.model_dump())
     repository.update(task, data)
     return render(
@@ -275,7 +257,7 @@ def project_detail_page(
     todo_repository: Annotated[TodoRepository, Provide[Container.todo_repository]],
 ) -> HttpResponse:
     user = get_authenticated_user(request)
-    project = _get_project_or_404(repository, user, pk)
+    project = get_project_or_404(repository, user, pk)
     return render(
         request,
         "todo/task_list.html",

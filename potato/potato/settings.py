@@ -58,8 +58,6 @@ INSTALLED_APPS = [
     "api.apps.ApiConfig",
     "web.apps.WebConfig",
     "serializers.apps.SerializersConfig",
-    # TODO remove gis
-    "django.contrib.gis",
 ]
 
 AUTH_USER_MODEL = "infrastructure.User"
@@ -100,7 +98,7 @@ WSGI_APPLICATION = "potato.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.contrib.gis.db.backends.spatialite",
+        "ENGINE": "django.db.backends.sqlite3",
         "NAME": Path(os.environ.get("DJANGO_DB_PATH", str(BASE_DIR / "db.sqlite3"))),
     }
 }
@@ -152,9 +150,17 @@ STORAGES = {
     },
 }
 
+# Vite dev mode follows DEBUG, but can be forced off (e.g. for e2e tests) so
+# templates use the built assets from manifest.json instead of the Vite dev
+# server. Set DJANGO_VITE_DEV_MODE=false after running `npm run build`.
+_vite_dev_mode = os.environ.get("DJANGO_VITE_DEV_MODE")
 DJANGO_VITE = {
     "default": {
-        "dev_mode": DEBUG,
+        "dev_mode": (
+            DEBUG
+            if _vite_dev_mode is None
+            else _vite_dev_mode.lower() in {"1", "true", "yes", "on"}
+        ),
         "manifest_path": BASE_DIR.parent / "static" / "manifest.json",
     }
 }

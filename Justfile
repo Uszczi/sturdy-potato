@@ -25,6 +25,32 @@ lint-check:
 test:
 	uv run pytest --cov=potato --cov-report=html:skip-covered tests/
 
+# Install the browsers Playwright needs to run the e2e suite.
+e2e-install:
+	npx playwright install chromium
+
+# Run the Playwright e2e suite headless (boots its own seeded Django server).
+e2e *args:
+	npx playwright test {{args}}
+
+# Run the Playwright e2e suite in a visible browser window.
+# Add `-- --slowmo 500` to slow the actions down enough to watch.
+e2e-headed *args:
+	npx playwright test --headed {{args}}
+
+# Interactive UI mode: pick tests, watch them run, and time-travel through
+# each step. The window stays open until you close it. Best for debugging.
+e2e-ui *args:
+	npx playwright test --ui {{args}}
+
+# Step through a test with the Playwright Inspector (pauses on each action).
+e2e-debug *args:
+	npx playwright test --debug {{args}}
+
+# Open the last Playwright HTML report.
+e2e-report:
+	npx playwright show-report
+
 prod-up:
 	docker compose -f deployment/prod/docker-compose.yml up --build
 

@@ -25,6 +25,7 @@
   },
   "homepage": "https://github.com/Uszczi/sturdy-potato#readme",
   "devDependencies": {
+    "@playwright/test": "^1.62.1",
     "@tailwindcss/vite": "^4.3.3",
     "@vitejs/plugin-react": "^6.0.5",
     "daisyui": "^5.7.17",
