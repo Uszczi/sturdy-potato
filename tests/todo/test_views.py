@@ -1,6 +1,7 @@
 from datetime import timedelta
 
 import pytest
+from asgiref.sync import async_to_sync
 from django.test import Client
 from django.utils import timezone
 from rest_framework.exceptions import NotFound
@@ -485,7 +486,9 @@ def test_projects_page_rejects_a_duplicate_project_name() -> None:
 def test_resolve_task_project_returns_data_without_a_project_id() -> None:
     user = UserFactory.create()
 
-    data = _resolve_task_project(TodoRepository(), user, {"title": "Keep me"})
+    data = async_to_sync(_resolve_task_project)(
+        TodoRepository(), user, {"title": "Keep me"}
+    )
 
     assert data == {"title": "Keep me"}
 
@@ -495,4 +498,6 @@ def test_resolve_task_project_rejects_a_non_integer_project_id() -> None:
     user = UserFactory.create()
 
     with pytest.raises(NotFound):
-        _resolve_task_project(TodoRepository(), user, {"project_id": "not-a-number"})
+        async_to_sync(_resolve_task_project)(
+            TodoRepository(), user, {"project_id": "not-a-number"}
+        )

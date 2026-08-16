@@ -44,8 +44,10 @@ def pydantic_body[**P, R](view: Callable[P, R]) -> Callable[P, R]:
             "pydantic_body requires a body argument annotated with a Pydantic model"
         )
 
-    @wraps(view)
-    def wrapped(*args: P.args, **kwargs: P.kwargs) -> R:
+    def _resolve_body(
+        args: tuple[object, ...],
+        kwargs: dict[str, object],
+    ) -> tuple[BaseModel | None, Response | None]:
         request = kwargs.get("request")
         if request is None:
             request = args[1] if len(args) > 1 else args[0]
@@ -54,26 +56,26 @@ def pydantic_body[**P, R](view: Callable[P, R]) -> Callable[P, R]:
 
         data = _get_request_data(request)
         if data is None:
-            return cast(
-                R,
-                Response(
-                    {"detail": "Expected a JSON object."},
-                    status=status.HTTP_400_BAD_REQUEST,
-                ),
+            return None, Response(
+                {"detail": "Expected a JSON object."},
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         try:
-            body = body_model.model_validate(data)
+            return body_model.model_validate(data), None
         except PydanticValidationError as error:
-            return cast(
-                R,
-                Response(
-                    {"errors": _format_validation_errors(error)},
-                    status=status.HTTP_400_BAD_REQUEST,
-                ),
+            return None, Response(
+                {"errors": _format_validation_errors(error)},
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
-        return cast(Callable[..., R], view)(*args, body=body, **kwargs)
+    @wraps(view)
+    async def wrapped(*args: P.args, **kwargs: P.kwargs) -> R:
+        body, error_response = _resolve_body(args, kwargs)
+        if error_response is not None:
+            return cast(R, error_response)
+        result = await cast(Callable[..., Any], view)(*args, body=body, **kwargs)
+        return cast(R, result)
 
     annotated_view = cast(
         Any,

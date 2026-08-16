@@ -1,46 +1,52 @@
 from collections.abc import Mapping
 from typing import Any
 
-from django.db import transaction
-from django.db.models import Count, Max, QuerySet
+from django.db.models import Count, Max
 
 from infrastructure.models import Project, User
 
 
 class ProjectRepository:
-    def list_for_user(self, user: User) -> QuerySet[Project]:
-        return (
+    async def list_for_user(self, user: User) -> list[Project]:
+        queryset = (
             Project.objects.filter(user=user)
             .annotate(task_count=Count("tasks"))
             .order_by("position", "name", "id")
         )
+        return [project async for project in queryset]
 
-    def get_for_user(self, user: User, project_id: int) -> Project | None:
-        return (
+    async def get_for_user(self, user: User, project_id: int) -> Project | None:
+        return await (
             Project.objects.filter(user=user, id=project_id)
             .annotate(task_count=Count("tasks"))
-            .first()
+            .afirst()
         )
 
-    def create_for_user(self, user: User, data: Mapping[str, Any]) -> Project:
+    async def name_exists(
+        self,
+        user: User,
+        name: str,
+        *,
+        exclude_id: int | None = None,
+    ) -> bool:
+        queryset = Project.objects.filter(user=user, name=name)
+        if exclude_id is not None:
+            queryset = queryset.exclude(id=exclude_id)
+        return await queryset.aexists()
+
+    async def create_for_user(self, user: User, data: Mapping[str, Any]) -> Project:
         project_data = dict(data)
-        project_data.setdefault(
-            "position",
-            (
-                Project.objects.filter(user=user).aggregate(
-                    max_position=Max("position")
-                )["max_position"]
-                or -1
+        if "position" not in project_data:
+            aggregate = await Project.objects.filter(user=user).aaggregate(
+                max_position=Max("position")
             )
-            + 1,
-        )
-        project = Project.objects.create(user=user, **project_data)
-        return self.get_for_user(user, project.id) or project
+            project_data["position"] = (aggregate["max_position"] or -1) + 1
+        project = await Project.objects.acreate(user=user, **project_data)
+        return await self.get_for_user(user, project.id) or project
 
-    def reorder_for_user(self, user: User, ordered_ids: list[int]) -> bool:
-        projects = list(
-            Project.objects.filter(user=user).order_by("position", "name", "id")
-        )
+    async def reorder_for_user(self, user: User, ordered_ids: list[int]) -> bool:
+        queryset = Project.objects.filter(user=user).order_by("position", "name", "id")
+        projects = [project async for project in queryset]
         projects_by_id = {project.id: project for project in projects}
         if len(set(ordered_ids)) != len(ordered_ids) or not set(ordered_ids) <= set(
             projects_by_id
@@ -50,21 +56,25 @@ class ProjectRepository:
         slots = [
             index for index, project in enumerate(projects) if project.id in ordered_ids
         ]
-        with transaction.atomic():
-            updates = []
-            for position, project_id in zip(slots, ordered_ids, strict=True):
-                project = projects_by_id[project_id]
-                project.position = position
-                updates.append(project)
-            if updates:
-                Project.objects.bulk_update(updates, ["position"])
+        updates = []
+        for position, project_id in zip(slots, ordered_ids, strict=True):
+            project = projects_by_id[project_id]
+            project.position = position
+            updates.append(project)
+        if updates:
+            await Project.objects.abulk_update(updates, ["position"])
         return True
 
-    def update(self, project: Project, data: Mapping[str, Any]) -> Project:
+    async def update(self, project: Project, data: Mapping[str, Any]) -> Project:
         for field, value in data.items():
             setattr(project, field, value)
-        project.save()
-        return self.get_for_user(project.user, project.id) or project
+        await project.asave()
+        refreshed = await (
+            Project.objects.filter(id=project.id)
+            .annotate(task_count=Count("tasks"))
+            .afirst()
+        )
+        return refreshed or project
 
-    def delete(self, project: Project) -> None:
-        project.delete()
+    async def delete(self, project: Project) -> None:
+        await project.adelete()

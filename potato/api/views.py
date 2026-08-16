@@ -1,14 +1,14 @@
 from typing import Annotated
 
+from adrf import viewsets
 from dependency_injector.wiring import Provide, inject
 from drf_spectacular.utils import extend_schema
-from rest_framework import status, viewsets
+from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from infrastructure.models import Project, User
 from infrastructure.repositories import ProjectRepository, TodoRepository
 from potato.auth import get_authenticated_user
 from potato.containers import Container
@@ -16,8 +16,8 @@ from potato.repository_helpers import (
     dump_project,
     dump_task,
     get_project_or_404,
-    resolve_project,
     get_task_or_404,
+    resolve_project,
 )
 from serializers.order import ReorderInput
 from serializers.project.project import (
@@ -39,27 +39,27 @@ class TodoViewSet(viewsets.ViewSet):
 
     @pydantic_response(TodoSchema)
     @inject
-    def list(
+    async def list(
         self,
         request: Request,
         repository: Annotated[TodoRepository, Provide[Container.todo_repository]],
     ) -> Response:
         user = get_authenticated_user(request)
-        tasks = repository.list_for_user(user)
+        tasks = await repository.list_for_user(user)
         return Response([dump_task(task) for task in tasks])
 
     @action(detail=False, methods=["post"], url_path="reorder")
     @extend_schema(responses={status.HTTP_204_NO_CONTENT: None})
     @pydantic_body
     @inject
-    def reorder(
+    async def reorder(
         self,
         request: Request,
         body: ReorderInput,
         repository: Annotated[TodoRepository, Provide[Container.todo_repository]],
     ) -> Response:
         user = get_authenticated_user(request)
-        if not repository.reorder_for_user(user, body.order):
+        if not await repository.reorder_for_user(user, body.order):
             return Response(
                 {"detail": "Order contains tasks outside this user."},
                 status=status.HTTP_400_BAD_REQUEST,
@@ -68,20 +68,20 @@ class TodoViewSet(viewsets.ViewSet):
 
     @pydantic_response(TodoSchema)
     @inject
-    def retrieve(
+    async def retrieve(
         self,
         request: Request,
         pk: int,
         repository: Annotated[TodoRepository, Provide[Container.todo_repository]],
     ) -> Response:
         user = get_authenticated_user(request)
-        task = get_task_or_404(repository, user, pk)
+        task = await get_task_or_404(repository, user, pk)
         return Response(dump_task(task))
 
     @pydantic_response(TodoSchema, status_code=status.HTTP_201_CREATED)
     @pydantic_body
     @inject
-    def create(
+    async def create(
         self,
         request: Request,
         body: TodoCreateInput,
@@ -91,14 +91,14 @@ class TodoViewSet(viewsets.ViewSet):
         ],
     ) -> Response:
         user = get_authenticated_user(request)
-        data = resolve_project(project_repository, user, body.model_dump())
-        task = repository.create_for_user(user, data)
+        data = await resolve_project(project_repository, user, body.model_dump())
+        task = await repository.create_for_user(user, data)
         return Response(dump_task(task), status=status.HTTP_201_CREATED)
 
     @pydantic_response(TodoSchema)
     @pydantic_body
     @inject
-    def partial_update(
+    async def partial_update(
         self,
         request: Request,
         pk: int,
@@ -109,26 +109,26 @@ class TodoViewSet(viewsets.ViewSet):
         ],
     ) -> Response:
         user = get_authenticated_user(request)
-        task = get_task_or_404(repository, user, pk)
-        data = resolve_project(
+        task = await get_task_or_404(repository, user, pk)
+        data = await resolve_project(
             project_repository,
             user,
             body.model_dump(exclude_unset=True),
         )
-        task = repository.update(task, data)
+        task = await repository.update(task, data)
         return Response(dump_task(task))
 
     @extend_schema(responses={status.HTTP_204_NO_CONTENT: None})
     @inject
-    def destroy(
+    async def destroy(
         self,
         request: Request,
         pk: int,
         repository: Annotated[TodoRepository, Provide[Container.todo_repository]],
     ) -> Response:
         user = get_authenticated_user(request)
-        task = get_task_or_404(repository, user, pk)
-        repository.delete(task)
+        task = await get_task_or_404(repository, user, pk)
+        await repository.delete(task)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
@@ -137,27 +137,27 @@ class ProjectViewSet(viewsets.ViewSet):
 
     @pydantic_response(ProjectSchema)
     @inject
-    def list(
+    async def list(
         self,
         request: Request,
         repository: Annotated[ProjectRepository, Provide[Container.project_repository]],
     ) -> Response:
         user = get_authenticated_user(request)
-        projects = repository.list_for_user(user)
+        projects = await repository.list_for_user(user)
         return Response([dump_project(project) for project in projects])
 
     @action(detail=False, methods=["post"], url_path="reorder")
     @extend_schema(responses={status.HTTP_204_NO_CONTENT: None})
     @pydantic_body
     @inject
-    def reorder(
+    async def reorder(
         self,
         request: Request,
         body: ReorderInput,
         repository: Annotated[ProjectRepository, Provide[Container.project_repository]],
     ) -> Response:
         user = get_authenticated_user(request)
-        if not repository.reorder_for_user(user, body.order):
+        if not await repository.reorder_for_user(user, body.order):
             return Response(
                 {"detail": "Order contains projects outside this user."},
                 status=status.HTTP_400_BAD_REQUEST,
@@ -166,37 +166,38 @@ class ProjectViewSet(viewsets.ViewSet):
 
     @pydantic_response(ProjectSchema)
     @inject
-    def retrieve(
+    async def retrieve(
         self,
         request: Request,
         pk: int,
         repository: Annotated[ProjectRepository, Provide[Container.project_repository]],
     ) -> Response:
         user = get_authenticated_user(request)
-        return Response(dump_project(get_project_or_404(repository, user, pk)))
+        project = await get_project_or_404(repository, user, pk)
+        return Response(dump_project(project))
 
     @pydantic_response(ProjectSchema, status_code=status.HTTP_201_CREATED)
     @pydantic_body
     @inject
-    def create(
+    async def create(
         self,
         request: Request,
         body: ProjectCreateInput,
         repository: Annotated[ProjectRepository, Provide[Container.project_repository]],
     ) -> Response:
         user = get_authenticated_user(request)
-        if repository.list_for_user(user).filter(name=body.name).exists():
+        if await repository.name_exists(user, body.name):
             return Response(
                 {"errors": {"name": ["A project with this name already exists."]}},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        project = repository.create_for_user(user, body.model_dump())
+        project = await repository.create_for_user(user, body.model_dump())
         return Response(dump_project(project), status=status.HTTP_201_CREATED)
 
     @pydantic_response(ProjectSchema)
     @pydantic_body
     @inject
-    def partial_update(
+    async def partial_update(
         self,
         request: Request,
         pk: int,
@@ -204,31 +205,27 @@ class ProjectViewSet(viewsets.ViewSet):
         repository: Annotated[ProjectRepository, Provide[Container.project_repository]],
     ) -> Response:
         user = get_authenticated_user(request)
-        project = get_project_or_404(repository, user, pk)
+        project = await get_project_or_404(repository, user, pk)
         data = body.model_dump(exclude_unset=True)
-        if (
-            "name" in data
-            and repository.list_for_user(user)
-            .exclude(id=project.id)
-            .filter(name=data["name"])
-            .exists()
+        if "name" in data and await repository.name_exists(
+            user, data["name"], exclude_id=project.id
         ):
             return Response(
                 {"errors": {"name": ["A project with this name already exists."]}},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        project = repository.update(project, data)
+        project = await repository.update(project, data)
         return Response(dump_project(project))
 
     @extend_schema(responses={status.HTTP_204_NO_CONTENT: None})
     @inject
-    def destroy(
+    async def destroy(
         self,
         request: Request,
         pk: int,
         repository: Annotated[ProjectRepository, Provide[Container.project_repository]],
     ) -> Response:
         user = get_authenticated_user(request)
-        project = get_project_or_404(repository, user, pk)
-        repository.delete(project)
+        project = await get_project_or_404(repository, user, pk)
+        await repository.delete(project)
         return Response(status=status.HTTP_204_NO_CONTENT)
