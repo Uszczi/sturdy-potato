@@ -27,6 +27,31 @@ def test_api_root_lists_the_task_resource(api_client: APIClient) -> None:
 
 
 @pytest.mark.django_db
+def test_task_create_schema_describes_the_pydantic_request_model(
+    api_client: APIClient,
+) -> None:
+    response = api_client.get("/api/schema/", HTTP_ACCEPT="application/json")
+
+    assert response.status_code == 200
+    request_schema = response.json()["paths"]["/api/tasks/"]["post"]["requestBody"][
+        "content"
+    ]["application/json"]["schema"]
+    assert request_schema["title"] == "TodoCreateInput"
+    assert request_schema["properties"]["title"]["maxLength"] == 200
+    assert request_schema["properties"]["title"]["minLength"] == 1
+
+    update_schema = response.json()["paths"]["/api/tasks/{id}/"]["patch"]["requestBody"][
+        "content"
+    ]["application/json"]["schema"]
+    assert update_schema["title"] == "TodoUpdateInput"
+
+    web_schema = response.json()["paths"]["/tasks/create/"]["post"]["requestBody"][
+        "content"
+    ]["application/json"]["schema"]
+    assert web_schema["title"] == "TodoCreateInput"
+
+
+@pytest.mark.django_db
 def test_task_list_requires_authentication(api_client: APIClient) -> None:
     response = api_client.get("/api/tasks/")
 

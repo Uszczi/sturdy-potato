@@ -9,8 +9,7 @@ from tests.factories import TodoFactory, UserFactory
 def test_task_page_requires_authentication() -> None:
     response = Client().get("/tasks/")
 
-    assert response.status_code == 302
-    assert response["Location"] == "/accounts/login/?next=/tasks/"
+    assert response.status_code == 403
 
 
 @pytest.mark.django_db
@@ -87,13 +86,13 @@ def test_task_page_can_add_a_task_and_replace_the_empty_state() -> None:
 
 @pytest.mark.django_db
 @pytest.mark.parametrize(
-    ("title", "error"),
+    "title",
     (
-        ("", "Invalid task title."),
-        ("x" * 201, "Invalid task title."),
+        "",
+        "x" * 201,
     ),
 )
-def test_task_create_validates_the_title(title: str, error: str) -> None:
+def test_task_create_validates_the_title(title: str) -> None:
     user = UserFactory.create()
     client = Client()
     client.force_login(user)
@@ -101,7 +100,7 @@ def test_task_create_validates_the_title(title: str, error: str) -> None:
     response = client.post("/tasks/create/", {"title": title})
 
     assert response.status_code == 400
-    assert response.content.decode() == error
+    assert "title" in response.json()["errors"]
     assert not Todo.objects.filter(user=user).exists()
 
 
@@ -118,7 +117,7 @@ def test_task_create_rejects_non_mapping_input() -> None:
     )
 
     assert response.status_code == 400
-    assert response.content.decode() == "Invalid task title."
+    assert response.json()["detail"] == "Expected a JSON object."
 
 
 @pytest.mark.django_db
