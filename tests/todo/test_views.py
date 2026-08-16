@@ -1,5 +1,8 @@
+from datetime import timedelta
+
 import pytest
 from django.test import Client
+from django.utils import timezone
 
 from infrastructure.models import Project, Todo
 from tests.factories import ProjectFactory, TodoFactory, UserFactory
@@ -10,6 +13,29 @@ def test_task_page_requires_authentication() -> None:
     response = Client().get("/tasks/")
 
     assert response.status_code == 403
+
+
+@pytest.mark.django_db
+def test_home_page_shows_the_workspace_overview_and_responsive_navigation() -> None:
+    user = UserFactory.create(username="planner")
+    project = ProjectFactory.create(user=user, name="Launch")
+    TodoFactory.create(user=user, project=project, title="Prepare launch")
+    TodoFactory.create(user=user, completed=True, title="Finished task")
+    client = Client()
+    client.force_login(user)
+
+    response = client.get("/")
+
+    content = response.content.decode()
+    assert response.status_code == 200
+    assert "Make room for the work that matters." in content
+    assert "Prepare launch" in content
+    assert "Launch" in content
+    assert "Today" in content
+    assert "Upcoming" in content
+    assert "lg:translate-x-0" in content
+    assert "Open navigation" in content
+    assert "planner" in content
 
 
 @pytest.mark.django_db
@@ -34,6 +60,7 @@ def test_task_page_lists_only_the_authenticated_users_tasks() -> None:
     assert open_task.title in response.content.decode()
     assert "Task details" in response.content.decode()
     assert "alpinejs@3.x.x" in response.content.decode()
+    assert "Open navigation" in response.content.decode()
     assert "modal-open" in response.content.decode()
     assert "container mx-auto" in response.content.decode()
     assert "divide-y divide-base-300" in response.content.decode()
@@ -53,6 +80,23 @@ def test_task_page_lists_only_the_authenticated_users_tasks() -> None:
 
 
 @pytest.mark.django_db
+def test_inbox_page_only_lists_tasks_without_a_project() -> None:
+    user = UserFactory.create()
+    project = ProjectFactory.create(user=user, name="Launch")
+    inbox_task = TodoFactory.create(user=user, title="Unassigned task")
+    TodoFactory.create(user=user, project=project, title="Project task")
+    client = Client()
+    client.force_login(user)
+
+    response = client.get("/tasks/")
+
+    content = response.content.decode()
+    assert response.status_code == 200
+    assert inbox_task.title in content
+    assert "Project task" not in content
+
+
+@pytest.mark.django_db
 def test_task_page_shows_an_empty_state() -> None:
     user = UserFactory.create()
     client = Client()
@@ -62,6 +106,52 @@ def test_task_page_shows_an_empty_state() -> None:
 
     assert response.status_code == 200
     assert "No tasks yet." in response.content.decode()
+
+
+@pytest.mark.django_db
+def test_task_page_can_open_the_quick_add_composer() -> None:
+    user = UserFactory.create()
+    client = Client()
+    client.force_login(user)
+
+    response = client.get("/tasks/?compose=1")
+
+    content = response.content.decode()
+    assert response.status_code == 200
+    assert "composerOpen: true" in content
+    assert "What needs to be done?" in content
+
+
+@pytest.mark.django_db
+def test_task_page_filters_today_and_upcoming_views_by_due_date() -> None:
+    user = UserFactory.create()
+    today = timezone.localdate()
+    TodoFactory.create(user=user, title="Due today", due_date=today)
+    TodoFactory.create(
+        user=user,
+        title="Due tomorrow",
+        due_date=today + timedelta(days=1),
+    )
+    TodoFactory.create(
+        user=user,
+        title="Completed later",
+        due_date=today + timedelta(days=2),
+        completed=True,
+    )
+    client = Client()
+    client.force_login(user)
+
+    today_response = client.get("/tasks/?view=today")
+    upcoming_response = client.get("/tasks/?view=upcoming")
+
+    today_content = today_response.content.decode()
+    upcoming_content = upcoming_response.content.decode()
+    assert "Today" in today_content
+    assert "Due today" in today_content
+    assert "Due tomorrow" not in today_content
+    assert "Upcoming" in upcoming_content
+    assert "Due tomorrow" in upcoming_content
+    assert "Completed later" not in upcoming_content
 
 
 @pytest.mark.django_db
@@ -79,6 +169,49 @@ def test_projects_page_lists_only_the_authenticated_users_projects() -> None:
     assert project.name in response.content.decode()
     assert "Private project" not in response.content.decode()
     assert "0 tasks" in response.content.decode()
+    assert "Open navigation" in response.content.decode()
+
+
+@pytest.mark.django_db
+def test_project_page_lists_only_the_authenticated_users_tasks_for_that_project() -> (
+    None
+):
+    user = UserFactory.create()
+    project = ProjectFactory.create(user=user, name="Launch")
+    other_project = ProjectFactory.create(user=user, name="Maintenance")
+    TodoFactory.create(user=user, project=project, title="Prepare launch")
+    TodoFactory.create(user=user, project=other_project, title="Update dependencies")
+    private_project = ProjectFactory.create(name="Private project")
+    TodoFactory.create(
+        user=private_project.user,
+        project=private_project,
+        title="Private task",
+    )
+    client = Client()
+    client.force_login(user)
+
+    response = client.get(f"/projects/{project.id}/")
+
+    content = response.content.decode()
+    assert response.status_code == 200
+    assert "Launch" in content
+    assert "Prepare launch" in content
+    assert "Update dependencies" not in content
+    assert "Private task" not in content
+    assert f'hx-post="/tasks/create/?project={project.id}"' in content
+    assert 'aria-label="Mark Prepare launch as complete"' in content
+
+
+@pytest.mark.django_db
+def test_project_page_requires_an_owned_project() -> None:
+    user = UserFactory.create()
+    project = ProjectFactory.create()
+    client = Client()
+    client.force_login(user)
+
+    response = client.get(f"/projects/{project.id}/")
+
+    assert response.status_code == 404
 
 
 @pytest.mark.django_db
@@ -121,14 +254,14 @@ def test_task_page_can_add_a_task_and_replace_the_empty_state() -> None:
 
 
 @pytest.mark.django_db
-def test_task_creation_can_assign_a_project() -> None:
+def test_project_page_task_creation_keeps_the_new_task_in_that_project() -> None:
     user = UserFactory.create()
     project = ProjectFactory.create(user=user, name="Launch")
     client = Client()
     client.force_login(user)
 
     response = client.post(
-        "/tasks/create/",
+        f"/tasks/create/?project={project.id}",
         {"title": "Prepare launch", "project_id": str(project.id)},
         HTTP_HX_REQUEST="true",
     )
@@ -136,7 +269,32 @@ def test_task_creation_can_assign_a_project() -> None:
     task = Todo.objects.get(user=user, title="Prepare launch")
     assert response.status_code == 200
     assert task.project_id == project.id
-    assert project.name in response.content.decode()
+    assert "Prepare launch" in response.content.decode()
+
+
+@pytest.mark.django_db
+def test_task_creation_can_assign_a_project() -> None:
+    user = UserFactory.create()
+    project = ProjectFactory.create(user=user, name="Launch")
+    due_date = timezone.localdate() + timedelta(days=1)
+    client = Client()
+    client.force_login(user)
+
+    response = client.post(
+        "/tasks/create/",
+        {
+            "title": "Prepare launch",
+            "project_id": str(project.id),
+            "due_date": due_date.isoformat(),
+        },
+        HTTP_HX_REQUEST="true",
+    )
+
+    task = Todo.objects.get(user=user, title="Prepare launch")
+    assert response.status_code == 200
+    assert task.project_id == project.id
+    assert task.due_date == due_date
+    assert "Prepare launch" not in response.content.decode()
 
 
 @pytest.mark.django_db

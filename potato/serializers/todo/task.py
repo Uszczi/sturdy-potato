@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 
 from pydantic import BaseModel, ConfigDict, Field, field_serializer, field_validator
 
@@ -10,6 +10,7 @@ class TodoCreateInput(BaseModel):
     description: str = ""
     completed: bool = False
     project_id: int | None = None
+    due_date: date | None = None
 
     @field_validator("title", mode="before")
     @classmethod
@@ -23,6 +24,11 @@ class TodoCreateInput(BaseModel):
     def empty_project_is_unassigned(cls, value: object) -> object:
         return None if value == "" else value
 
+    @field_validator("due_date", mode="before")
+    @classmethod
+    def empty_due_date_is_unset(cls, value: object) -> object:
+        return None if value == "" else value
+
 
 class TodoUpdateInput(BaseModel):
     model_config = ConfigDict(extra="forbid")
@@ -31,6 +37,7 @@ class TodoUpdateInput(BaseModel):
     description: str | None = None
     completed: bool | None = None
     project_id: int | None = None
+    due_date: date | None = None
 
     @field_validator("title", "description", "completed", mode="before")
     @classmethod
@@ -42,6 +49,11 @@ class TodoUpdateInput(BaseModel):
     @field_validator("project_id", mode="before")
     @classmethod
     def empty_project_is_unassigned(cls, value: object) -> object:
+        return None if value == "" else value
+
+    @field_validator("due_date", mode="before")
+    @classmethod
+    def empty_due_date_is_unset(cls, value: object) -> object:
         return None if value == "" else value
 
 
@@ -64,6 +76,7 @@ class TodoSchema(BaseModel):
     description: str
     completed: bool
     project_id: int | None
+    due_date: date | None
     created_at: datetime
     updated_at: datetime
 

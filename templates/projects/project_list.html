@@ -1,24 +1,50 @@
-{% load django_vite %}
-<!DOCTYPE html>
-<html lang="en" data-theme="lofi">
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>Projects</title>
-        {% vite_asset 'assets/style.css' %}
-        <script src="https://unpkg.com/htmx.org@2.0.4" defer></script>
-    </head>
-    <body class="min-h-screen bg-base-200 text-base-content">
-        <main class="container mx-auto min-h-screen px-4 py-6 sm:px-6 sm:py-10 lg:px-8">
-            <header class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-                <div>
-                    <p class="text-xs font-bold uppercase tracking-[0.2em] text-primary">Workspace</p>
-                    <h1 class="mt-2 text-4xl font-black tracking-tight sm:text-5xl">Projects</h1>
-                    <p class="mt-3 max-w-xl text-base-content/65">Keep related tasks together and give your inbox a little shape.</p>
-                </div>
-                <a href="{% url 'task-list-page' %}" class="btn btn-outline">Inbox</a>
-            </header>
-            <form class="mb-8 flex flex-col gap-2 sm:flex-row"
+{% extends "base.html" %}
+{% block title %}Projects · Sturdy Potato{% endblock %}
+{% block content %}
+    <div class="container mx-auto min-h-screen max-w-5xl px-4 py-6 sm:px-6 sm:py-10 lg:px-8"
+         x-data="{ composerOpen: {% if request.GET.compose %}true{% else %}false{% endif %} }">
+        <header class="mb-7 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+                <p class="text-xs font-bold uppercase tracking-[0.18em] text-base-content/45">Workspace</p>
+                <h1 class="mt-1 text-3xl font-bold tracking-tight sm:text-4xl">Projects</h1>
+            </div>
+            <a href="{% url 'task-list-page' %}"
+               class="btn btn-ghost btn-sm gap-2 self-start text-base-content/60 hover:bg-base-200 hover:text-base-content">
+                Inbox
+                <svg aria-hidden="true"
+                     class="size-4"
+                     fill="none"
+                     viewBox="0 0 24 24"
+                     stroke="currentColor"
+                     stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="m15 19-7-7 7-7" />
+                </svg>
+            </a>
+        </header>
+        <section class="mb-6" aria-label="Add a project">
+            <button type="button"
+                    x-show="!composerOpen"
+                    :aria-expanded="composerOpen"
+                    aria-controls="project-composer"
+                    @click="composerOpen = true; $nextTick(() => $refs.projectName.focus())"
+                    class="group flex w-full items-center gap-3 rounded-lg px-2 py-2 text-left text-sm text-base-content/55 transition hover:bg-base-200 hover:text-primary">
+                <span class="grid size-6 place-items-center rounded-full text-primary transition group-hover:bg-primary group-hover:text-primary-content">
+                    <svg aria-hidden="true"
+                         class="size-4"
+                         fill="none"
+                         viewBox="0 0 24 24"
+                         stroke="currentColor"
+                         stroke-width="2.5">
+                        <path stroke-linecap="round" d="M12 5v14m-7-7h14" />
+                    </svg>
+                </span>
+                <span class="font-semibold">Add project</span>
+            </button>
+            <form id="project-composer"
+                  x-ref="projectComposer"
+                  x-cloak
+                  x-show="composerOpen"
+                  class="overflow-hidden rounded-lg border border-base-300 bg-base-100 shadow-sm"
                   hx-post="{% url 'project-create-page' %}"
                   hx-target="#project-section"
                   hx-swap="outerHTML"
@@ -26,16 +52,22 @@
                 {% csrf_token %}
                 <label class="sr-only" for="project-name">New project name</label>
                 <input id="project-name"
+                       x-ref="projectName"
                        name="name"
                        type="text"
-                       class="input input-bordered w-full sm:max-w-md"
-                       placeholder="Add a project..."
+                       class="input input-ghost w-full px-4 py-3 text-base font-medium focus:outline-none"
+                       placeholder="What is this project about?"
                        maxlength="100"
                        autocomplete="off"
                        required>
-                <button type="submit" class="btn btn-primary">Add project</button>
+                <div class="flex items-center justify-end gap-2 border-t border-base-300 px-3 py-2">
+                    <button type="button"
+                            class="btn btn-ghost btn-sm"
+                            @click="$refs.projectComposer.reset(); composerOpen = false">Cancel</button>
+                    <button type="submit" class="btn btn-primary btn-sm">Add project</button>
+                </div>
             </form>
-            {% include "projects/_project_section.html" %}
-        </main>
-    </body>
-</html>
+        </section>
+        {% include "projects/_project_section.html" %}
+    </div>
+{% endblock %}

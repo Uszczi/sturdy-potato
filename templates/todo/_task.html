@@ -1,12 +1,13 @@
 <li id="task-{{ task.id }}"
-    class="cursor-pointer transition-colors duration-200 hover:bg-base-100/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+    class="group cursor-pointer transition-colors duration-200 hover:bg-base-200/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
     x-data="{
         task: {
             title: $el.dataset.title,
-             description: $el.dataset.description,
-             completed: $el.dataset.completed === 'true',
-             projectName: $el.dataset.projectName,
-             createdAt: $el.dataset.createdAt,
+            description: $el.dataset.description,
+            completed: $el.dataset.completed === 'true',
+            projectName: $el.dataset.projectName,
+            dueDate: $el.dataset.dueDate,
+            createdAt: $el.dataset.createdAt,
             updatedAt: $el.dataset.updatedAt
         }
     }"
@@ -14,6 +15,7 @@
     data-description="{{ task.description }}"
     data-completed="{{ task.completed|yesno:'true,false' }}"
     data-project-name="{% if task.project %}{{ task.project.name }}{% endif %}"
+    data-due-date="{% if task.due_date %}{{ task.due_date|date:'M j, Y' }}{% endif %}"
     data-created-at="{{ task.created_at|date:'M j, Y g:i A' }}"
     data-updated-at="{{ task.updated_at|date:'M j, Y g:i A' }}"
     role="button"
@@ -21,21 +23,21 @@
     @click="$dispatch('task-opened', task)"
     @keydown.enter.prevent="$dispatch('task-opened', task)"
     @keydown.space.prevent="$dispatch('task-opened', task)">
-    <div class="flex items-center gap-4 py-4">
-        <form hx-post="{% url 'task-toggle' task.id %}"
+    <div class="flex items-start gap-3 px-3 py-3 sm:px-4">
+        <form hx-post="{% url 'task-toggle' task.id %}{{ task_query }}"
               hx-trigger="submit"
               hx-target="#task-list"
               hx-swap="innerHTML"
-              class="shrink-0"
+              class="mt-0.5 shrink-0"
               @click.stop
               @keydown.stop>
             {% csrf_token %}
             <button type="submit"
-                    class="btn btn-circle btn-sm {% if task.completed %}btn-success{% else %}btn-outline hover:btn-primary{% endif %}"
+                    class="grid size-5 place-items-center rounded-full border-2 transition-colors {% if task.completed %}border-success bg-success text-success-content{% else %}border-base-content/30 text-transparent hover:border-primary hover:text-primary{% endif %}"
                     aria-pressed="{{ task.completed|yesno:'true,false' }}"
                     aria-label="{% if task.completed %}Mark {{ task.title }} as open{% else %}Mark {{ task.title }} as complete{% endif %}">
                 <svg aria-hidden="true"
-                     class="size-4"
+                     class="size-3"
                      fill="none"
                      viewBox="0 0 24 24"
                      stroke="currentColor"
@@ -44,8 +46,24 @@
                 </svg>
             </button>
         </form>
-        <h2 class="min-w-0 flex-1 break-words text-base font-semibold sm:text-lg">{{ task.title }}</h2>
-        <form hx-post="{% url 'task-assign-project' task.id %}"
+        <div class="min-w-0 flex-1">
+            <h2 class="break-words text-sm font-medium {% if task.completed %}text-base-content/45 line-through{% endif %}">{{ task.title }}</h2>
+            {% if task.due_date %}
+                <div class="mt-1 flex items-center gap-2 text-xs text-base-content/50">
+                    <svg aria-hidden="true"
+                         class="size-3.5"
+                         fill="none"
+                         viewBox="0 0 24 24"
+                         stroke="currentColor"
+                         stroke-width="1.8">
+                        <rect width="16" height="16" x="4" y="5" rx="2" />
+                        <path stroke-linecap="round" d="M8 3v4m8-4v4M4 10h16" />
+                    </svg>
+                    <span>{{ task.due_date|date:"M j" }}</span>
+                </div>
+            {% endif %}
+        </div>
+        <form hx-post="{% url 'task-assign-project' task.id %}{{ task_query }}"
               hx-trigger="change"
               hx-target="#task-section"
               hx-swap="innerHTML"
@@ -56,7 +74,7 @@
             <label class="sr-only" for="task-project-{{ task.id }}">Project for {{ task.title }}</label>
             <select id="task-project-{{ task.id }}"
                     name="project_id"
-                    class="select select-bordered select-sm max-w-32"
+                    class="select select-ghost select-xs max-w-32 text-xs font-medium text-base-content/50 opacity-70 transition group-hover:opacity-100 focus:opacity-100"
                     aria-label="Project for {{ task.title }}">
                 <option value="">No project</option>
                 {% for project in projects %}

@@ -2,6 +2,14 @@ run:
 	cd potato && \
 	uv run python manage.py runserver
 
+makemigrations:
+	cd potato && \
+	uv run python manage.py makemigrations
+
+migrate:
+	cd potato && \
+	uv run python manage.py migrate
+
 lint:
 	uv run black .
 	uv run mypy .
