@@ -87,6 +87,60 @@ def test_project_can_be_created_and_duplicate_names_are_rejected(
 
 
 @pytest.mark.django_db
+def test_project_can_be_retrieved_by_the_authenticated_user(
+    api_client: APIClient,
+) -> None:
+    user = UserFactory.create()
+    project = ProjectFactory.create(user=user, name="Roadmap")
+    TodoFactory.create(user=user, project=project)
+    api_client.force_authenticate(user=user)
+
+    response = api_client.get(f"/api/projects/{project.id}/")
+
+    assert response.status_code == 200
+    assert response.json()["id"] == project.id
+    assert response.json()["name"] == "Roadmap"
+    assert response.json()["task_count"] == 1
+
+
+@pytest.mark.django_db
+def test_project_can_be_renamed(api_client: APIClient) -> None:
+    user = UserFactory.create()
+    project = ProjectFactory.create(user=user, name="Old name")
+    api_client.force_authenticate(user=user)
+
+    response = api_client.patch(
+        f"/api/projects/{project.id}/",
+        {"name": "New name"},
+        format="json",
+    )
+
+    project.refresh_from_db()
+    assert response.status_code == 200
+    assert response.json()["name"] == "New name"
+    assert project.name == "New name"
+
+
+@pytest.mark.django_db
+def test_project_rename_rejects_a_duplicate_name(api_client: APIClient) -> None:
+    user = UserFactory.create()
+    ProjectFactory.create(user=user, name="Taken")
+    project = ProjectFactory.create(user=user, name="Free")
+    api_client.force_authenticate(user=user)
+
+    response = api_client.patch(
+        f"/api/projects/{project.id}/",
+        {"name": "Taken"},
+        format="json",
+    )
+
+    project.refresh_from_db()
+    assert response.status_code == 400
+    assert "name" in response.json()["errors"]
+    assert project.name == "Free"
+
+
+@pytest.mark.django_db
 def test_project_order_can_be_reordered_for_the_authenticated_user(
     api_client: APIClient,
 ) -> None:

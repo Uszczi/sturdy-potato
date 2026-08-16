@@ -3,9 +3,20 @@ from datetime import timedelta
 import pytest
 from django.test import Client
 from django.utils import timezone
+from rest_framework.exceptions import NotFound
 
 from infrastructure.models import Project, Todo
+from infrastructure.repositories import TodoRepository
 from tests.factories import ProjectFactory, TodoFactory, UserFactory
+from web.views import _resolve_task_project
+
+
+@pytest.mark.django_db
+def test_home_page_redirects_anonymous_users_to_the_login_page() -> None:
+    response = Client().get("/")
+
+    assert response.status_code == 302
+    assert response.headers["Location"] == "/accounts/login/?next=/"
 
 
 @pytest.mark.django_db
@@ -420,3 +431,68 @@ def test_task_toggle_requires_authentication() -> None:
     response = Client().post(f"/tasks/{task.id}/toggle/", HTTP_HX_REQUEST="true")
 
     assert response.status_code == 403
+
+
+@pytest.mark.django_db
+def test_task_scope_rejects_a_non_numeric_project_query() -> None:
+    user = UserFactory.create()
+    client = Client()
+    client.force_login(user)
+
+    response = client.get("/tasks/?project=not-a-number")
+
+    assert response.status_code == 404
+
+
+@pytest.mark.django_db
+def test_task_cannot_be_assigned_to_another_users_project() -> None:
+    user = UserFactory.create()
+    task = TodoFactory.create(user=user)
+    other_project = ProjectFactory.create(name="Private project")
+    client = Client()
+    client.force_login(user)
+
+    response = client.post(
+        f"/tasks/{task.id}/project/",
+        {"project_id": str(other_project.id)},
+        HTTP_HX_REQUEST="true",
+    )
+
+    task.refresh_from_db()
+    assert response.status_code == 404
+    assert task.project_id is None
+
+
+@pytest.mark.django_db
+def test_projects_page_rejects_a_duplicate_project_name() -> None:
+    user = UserFactory.create()
+    ProjectFactory.create(user=user, name="Launch")
+    client = Client()
+    client.force_login(user)
+
+    response = client.post(
+        "/projects/create/",
+        {"name": "Launch"},
+        HTTP_HX_REQUEST="true",
+    )
+
+    assert response.status_code == 400
+    assert "name" in response.json()["errors"]
+    assert Project.objects.filter(user=user, name="Launch").count() == 1
+
+
+@pytest.mark.django_db
+def test_resolve_task_project_returns_data_without_a_project_id() -> None:
+    user = UserFactory.create()
+
+    data = _resolve_task_project(TodoRepository(), user, {"title": "Keep me"})
+
+    assert data == {"title": "Keep me"}
+
+
+@pytest.mark.django_db
+def test_resolve_task_project_rejects_a_non_integer_project_id() -> None:
+    user = UserFactory.create()
+
+    with pytest.raises(NotFound):
+        _resolve_task_project(TodoRepository(), user, {"project_id": "not-a-number"})
