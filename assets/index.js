@@ -1,4 +1,14 @@
+import Alpine from "alpinejs";
+import htmx from "htmx.org";
+// Registers the "morph" swap extension on htmx (hx-ext="morph"), which diffs
+// the DOM in place instead of replacing it — preserving Alpine state, focus,
+// and existing SortableJS instances across swaps.
+import "idiomorph/htmx";
 import Sortable from "sortablejs";
+
+window.Alpine = Alpine;
+window.htmx = htmx;
+Alpine.start();
 
 const dragItemSelector = "[data-drag-item]";
 const dragListSelector = "[data-drag-list]";

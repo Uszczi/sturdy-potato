@@ -8,7 +8,7 @@ RUN npm ci
 COPY assets ./assets
 COPY templates ./templates
 COPY static ./static
-COPY vite.config.js ./
+COPY vite.config.mjs ./
 RUN npm run build
 
 

@@ -31,13 +31,11 @@
         <link rel="stylesheet"
               href="{% vite_asset_url 'assets/style.css' %}?direct">
         {% vite_hmr_client %}
-        <script src="https://unpkg.com/htmx.org@2.0.4" defer></script>
-        <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"
-                defer></script>
+        {# htmx, Alpine and the idiomorph morph extension are bundled in index.js #}
         {% vite_asset 'assets/index.js' %}
         {% block extra_head %}{% endblock %}
     </head>
-    <body class="min-h-screen bg-base-100 text-base-content">
+    <body class="min-h-screen bg-base-100 text-base-content" hx-ext="morph">
         <div x-data="{ sidebarOpen: false }"
              @keydown.escape.window="sidebarOpen = false"
              class="min-h-screen">

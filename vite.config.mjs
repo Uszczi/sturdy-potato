@@ -8,13 +8,13 @@ export default defineConfig({
   build: {
     // Where Vite will save its output files.
     // This should be something in your settings.STATICFILES_DIRS
-    outDir: path.resolve(__dirname, "./static"),
+    outDir: path.resolve(import.meta.dirname, "./static"),
     emptyOutDir: false, // Preserve the outDir to not clobber Django's other files.
     manifest: "manifest.json",
     rollupOptions: {
       input: {
-        index: path.resolve(__dirname, "./assets/index.js"),
-        style: path.resolve(__dirname, "./assets/style.css"),
+        index: path.resolve(import.meta.dirname, "./assets/index.js"),
+        style: path.resolve(import.meta.dirname, "./assets/style.css"),
       },
       output: {
         // Output JS bundles to js/ directory with -bundle suffix

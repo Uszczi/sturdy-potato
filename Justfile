@@ -2,6 +2,10 @@ run:
 	cd potato && \
 	uv run python manage.py runserver
 
+manage *args:
+	cd potato && \
+	uv run python manage.py {{args}}
+
 makemigrations:
 	cd potato && \
 	uv run python manage.py makemigrations
@@ -9,6 +13,10 @@ makemigrations:
 migrate:
 	cd potato && \
 	uv run python manage.py migrate
+
+seeddb:
+	cd potato && \
+	uv run python manage.py seeddb
 
 lint:
 	uv run black .

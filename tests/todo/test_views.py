@@ -70,7 +70,7 @@ def test_task_page_lists_only_the_authenticated_users_tasks() -> None:
     assert task.title in response.content.decode()
     assert open_task.title in response.content.decode()
     assert "Task details" in response.content.decode()
-    assert "alpinejs@3.x.x" in response.content.decode()
+    assert "assets/index.js" in response.content.decode()
     assert "Open navigation" in response.content.decode()
     assert "modal-open" in response.content.decode()
     assert "container mx-auto" in response.content.decode()

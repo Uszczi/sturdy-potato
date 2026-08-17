@@ -34,4 +34,55 @@ test.describe("tasks", () => {
       page.getByRole("button", { name: `Mark ${title} as open`, exact: true }),
     ).toBeVisible();
   });
+
+  test("morph swap preserves sibling task nodes across a toggle", async ({
+    page,
+  }) => {
+    const stamp = Date.now();
+    const toggled = `Morph toggled ${stamp}`;
+    const sibling = `Morph sibling ${stamp}`;
+
+    await page.goto("/tasks/");
+
+    // Add both tasks through the HTMX composer.
+    await page.getByRole("button", { name: "Add task" }).first().click();
+    const titleInput = page.getByPlaceholder("What needs to be done?");
+    const submit = page.locator("#task-composer button[type='submit']");
+    for (const title of [sibling, toggled]) {
+      await titleInput.fill(title);
+      await submit.click();
+      await expect(
+        page.locator("#task-list").getByText(title, { exact: true }),
+      ).toBeVisible();
+    }
+
+    // Brand the sibling's <li> with a JS-only expando property. It lives on the
+    // DOM node itself, not in the server HTML, so it can only survive the toggle
+    // if morph keeps that exact node instead of recreating it (as innerHTML
+    // swapping would).
+    const siblingRow = page.locator("#task-list > li", { hasText: sibling });
+    await siblingRow.evaluate((el) => {
+      (el as HTMLElement & { __morphKeep?: string }).__morphKeep = "kept";
+    });
+
+    // Toggle the *other* task. The response re-renders the whole list; morph
+    // reconciles it in place.
+    await page
+      .getByRole("button", { name: `Mark ${toggled} as complete`, exact: true })
+      .click();
+    await expect(
+      page.getByRole("button", { name: `Mark ${toggled} as open`, exact: true }),
+    ).toBeVisible();
+
+    // The sibling node was never touched by the change, so morph left it — and
+    // its expando — intact.
+    await expect
+      .poll(() =>
+        siblingRow.evaluate(
+          (el) =>
+            (el as HTMLElement & { __morphKeep?: string }).__morphKeep ?? null,
+        ),
+      )
+      .toBe("kept");
+  });
 });

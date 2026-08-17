@@ -19,6 +19,7 @@ dependencies = [
 [dependency-groups]
 dev = [
     "black>=26.5.1",
+    "django-browser-reload>=1.21.0",
     "django-stubs[compatible-mypy]>=6.1.0",
     "djangorestframework-stubs>=3.18.0",
     "djlint>=1.44.2",

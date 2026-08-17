@@ -96,6 +96,13 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
+# django-browser-reload: development-only live reload for templates and static
+# files. Gated on DEBUG so it is never wired in production (and the dependency
+# lives in the dev group). Tests run with DEBUG on, so these lines stay covered.
+if DEBUG:
+    INSTALLED_APPS += ["django_browser_reload"]
+    MIDDLEWARE += ["django_browser_reload.middleware.BrowserReloadMiddleware"]
+
 ROOT_URLCONF = "config.urls"
 
 LOGIN_REDIRECT_URL = "home-page"
@@ -173,7 +180,14 @@ STATIC_ROOT = BASE_DIR.parent / "staticfiles"
 
 STORAGES = {
     "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        # Hashed/compressed manifest storage in production; plain storage in
+        # development so templates can resolve {% static %} without first
+        # running collectstatic (the manifest backend errors on missing entries).
+        "BACKEND": (
+            "django.contrib.staticfiles.storage.StaticFilesStorage"
+            if DEBUG
+            else "whitenoise.storage.CompressedManifestStaticFilesStorage"
+        ),
     },
 }
 

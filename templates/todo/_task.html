@@ -6,14 +6,17 @@
     data-drag-label="{{ task.title }}"
     aria-grabbed="false"
     x-data="{
-        task: {
-            title: $el.dataset.title,
-            description: $el.dataset.description,
-            completed: $el.dataset.completed === 'true',
-            projectName: $el.dataset.projectName,
-            dueDate: $el.dataset.dueDate,
-            createdAt: $el.dataset.createdAt,
-            updatedAt: $el.dataset.updatedAt
+        open() {
+            const data = this.$el.dataset;
+            this.$dispatch('task-opened', {
+                title: data.title,
+                description: data.description,
+                completed: data.completed === 'true',
+                projectName: data.projectName,
+                dueDate: data.dueDate,
+                createdAt: data.createdAt,
+                updatedAt: data.updatedAt
+            });
         }
     }"
     data-title="{{ task.title }}"
@@ -25,9 +28,9 @@
     data-updated-at="{{ task.updated_at|date:'M j, Y g:i A' }}"
     role="button"
     tabindex="0"
-    @click="$dispatch('task-opened', task)"
-    @keydown.enter.prevent="$dispatch('task-opened', task)"
-    @keydown.space.prevent="$dispatch('task-opened', task)">
+    @click="open()"
+    @keydown.enter.prevent="open()"
+    @keydown.space.prevent="open()">
     <div class="flex items-start gap-3 px-3 py-3 sm:px-4">
         <button type="button"
                 class="drag-handle mt-0.5 grid size-5 shrink-0 place-items-center rounded text-base-content/25 transition hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
@@ -48,7 +51,7 @@
         <form hx-post="{% url 'task-toggle' task.id %}{{ task_query }}"
               hx-trigger="submit"
               hx-target="#task-list"
-              hx-swap="innerHTML"
+              hx-swap="morph:innerHTML"
               class="mt-0.5 shrink-0"
               @click.stop
               @keydown.stop>
