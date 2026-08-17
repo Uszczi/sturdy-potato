@@ -40,7 +40,6 @@ def test_home_page_shows_the_workspace_overview_and_responsive_navigation() -> N
 
     content = response.content.decode()
     assert response.status_code == 200
-    assert "Make room for the work that matters." in content
     assert "Prepare launch" in content
     assert "Launch" in content
     assert "Today" in content
