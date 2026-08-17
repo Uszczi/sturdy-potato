@@ -9,16 +9,16 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from infrastructure.repositories import ProjectRepository, TodoRepository
-from potato.auth import get_authenticated_user
-from potato.containers import Container
-from potato.repository_helpers import (
+from config.auth import get_authenticated_user
+from config.containers import Container
+from config.repository_helpers import (
     dump_project,
     dump_task,
     get_project_or_404,
     get_task_or_404,
     resolve_project,
 )
+from infrastructure.repositories import ProjectRepository, TodoRepository
 from serializers.order import ReorderInput
 from serializers.project.project import (
     ProjectCreateInput,

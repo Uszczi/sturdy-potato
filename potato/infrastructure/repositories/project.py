@@ -68,7 +68,9 @@ class ProjectRepository:
     async def update(self, project: Project, data: Mapping[str, Any]) -> Project:
         for field, value in data.items():
             setattr(project, field, value)
-        await project.asave()
+        # Only write changed fields (plus auto_now) to avoid clobbering columns
+        # touched by a concurrent request.
+        await project.asave(update_fields=[*data, "updated_at"])
         refreshed = await (
             Project.objects.filter(id=project.id)
             .annotate(task_count=Count("tasks"))

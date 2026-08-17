@@ -96,5 +96,7 @@ def test_seedheavy_requires_a_password_without_an_interactive_terminal(
     monkeypatch.setattr(sys, "stdin", stdin)
     monkeypatch.delenv("SEEDDB_HEAVY_PASSWORD", raising=False)
 
-    with pytest.raises(CommandError, match="Provide --password or SEEDDB_HEAVY_PASSWORD"):
+    with pytest.raises(
+        CommandError, match="Provide --password or SEEDDB_HEAVY_PASSWORD"
+    ):
         call_command("seedheavy", projects=0, tasks_per_project=0)

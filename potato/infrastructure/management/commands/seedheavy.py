@@ -55,7 +55,9 @@ class Command(BaseCommand):
         projects = options["projects"]
         tasks_per_project = options["tasks_per_project"]
         if projects < 0 or tasks_per_project < 0:
-            raise CommandError("--projects and --tasks-per-project must be non-negative.")
+            raise CommandError(
+                "--projects and --tasks-per-project must be non-negative."
+            )
 
         with transaction.atomic():
             user, user_created = self._get_or_create_user(
@@ -94,9 +96,7 @@ class Command(BaseCommand):
         existing_names = set(
             Project.objects.filter(user=user).values_list("name", flat=True)
         )
-        base_position = (
-            Project.objects.filter(user=user).count()
-        )
+        base_position = Project.objects.filter(user=user).count()
 
         new_projects = []
         position = base_position
@@ -104,9 +104,7 @@ class Command(BaseCommand):
             name = f"Heavy project {index + 1:03d}"
             if name in existing_names:
                 continue
-            new_projects.append(
-                Project(user=user, name=name, position=position)
-            )
+            new_projects.append(Project(user=user, name=name, position=position))
             position += 1
 
         Project.objects.bulk_create(new_projects, batch_size=BULK_BATCH_SIZE)

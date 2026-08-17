@@ -64,9 +64,7 @@ class TodoRepository:
             queryset = queryset.filter(completed=completed)
         return await queryset.acount()
 
-    async def get_project_for_user(
-        self, user: User, project_id: int
-    ) -> Project | None:
+    async def get_project_for_user(self, user: User, project_id: int) -> Project | None:
         return await Project.objects.filter(user=user, id=project_id).afirst()
 
     async def get_for_user(self, user: User, task_id: int) -> Todo | None:
@@ -105,7 +103,9 @@ class TodoRepository:
     async def update(self, task: Todo, data: Mapping[str, Any]) -> Todo:
         for field, value in data.items():
             setattr(task, field, value)
-        await task.asave()
+        # Only write the fields that changed (plus the auto_now timestamp) so we
+        # don't clobber columns another request may have updated concurrently.
+        await task.asave(update_fields=[*data, "updated_at"])
         return task
 
     async def delete(self, task: Todo) -> None:

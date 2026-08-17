@@ -10,9 +10,9 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 
 from api.decorators import html_response
+from config.auth import get_authenticated_user
+from config.containers import Container
 from infrastructure.repositories import ProjectRepository, TodoRepository
-from potato.auth import get_authenticated_user
-from potato.containers import Container
 
 
 @api_view(["GET"])

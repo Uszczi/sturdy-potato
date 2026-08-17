@@ -34,7 +34,7 @@ dev = [
 ]
 
 [tool.pytest.ini_options]
-DJANGO_SETTINGS_MODULE = "potato.settings"
+DJANGO_SETTINGS_MODULE = "config.settings"
 pythonpath = ["potato"]
 
 [tool.coverage.run]
@@ -44,7 +44,7 @@ omit = ["potato/world/*"]
 exclude = ["**/migrations/**"]
 
 [tool.ruff.lint.isort]
-known-first-party = ["api", "infrastructure", "potato", "serializers", "todo", "web"]
+known-first-party = ["api", "config", "infrastructure", "serializers", "todo", "web"]
 
 [tool.mypy]
 mypy_path = ["potato"]
@@ -59,10 +59,10 @@ module = ["adrf.*"]
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
-module = ["web.views", "api.views"]
+module = ["web.views", "web.home_views", "api.views"]
 disallow_untyped_decorators = false
 disallow_subclassing_any = false
 disable_error_code = ["type-var"]
 
 [tool.django-stubs]
-django_settings_module = "potato.settings"
+django_settings_module = "config.settings"

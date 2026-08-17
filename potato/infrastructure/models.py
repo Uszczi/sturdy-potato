@@ -14,7 +14,7 @@ class Project(models.Model):
         related_name="projects",
     )
     name = models.CharField(max_length=100)
-    position = models.PositiveIntegerField(default=0, db_index=True)
+    position = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -25,6 +25,11 @@ class Project(models.Model):
                 fields=["user", "name"],
                 name="unique_project_name_per_user",
             ),
+        ]
+        # Every project query filters by user then orders by position; a
+        # composite index serves that directly (a lone position index did not).
+        indexes = [  # noqa: RUF012
+            models.Index(fields=["user", "position"]),
         ]
 
     def __str__(self) -> str:
@@ -47,13 +52,19 @@ class Todo(models.Model):
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True)
     completed = models.BooleanField(default=False)
-    position = models.PositiveIntegerField(default=0, db_index=True)
+    position = models.PositiveIntegerField(default=0)
     due_date = models.DateField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         db_table = "todo_todo"
+        # Matches the repository access patterns: list-all (user, position)
+        # and the open-tasks view (user, completed, position).
+        indexes = [  # noqa: RUF012
+            models.Index(fields=["user", "position"]),
+            models.Index(fields=["user", "completed", "position"]),
+        ]
 
     def __str__(self) -> str:
         return self.title
