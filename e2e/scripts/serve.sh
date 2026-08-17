@@ -11,7 +11,7 @@ PORT="${E2E_PORT:-8099}"
 
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 
-export DJANGO_DB_PATH="${DJANGO_DB_PATH:-$ROOT/potato/e2e-db.sqlite3}"
+export DJANGO_DB_PATH="${DJANGO_DB_PATH:-$ROOT/e2e-db.sqlite3}"
 export SEEDDB_DEMO_PASSWORD="${SEEDDB_DEMO_PASSWORD:-demo-password-123}"
 export SEEDDB_SUPERUSER_PASSWORD="${SEEDDB_SUPERUSER_PASSWORD:-admin-password-123}"
 

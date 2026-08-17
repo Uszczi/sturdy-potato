@@ -9,8 +9,8 @@ wheels/
 # Virtual environments
 .venv
 
-potato/db.sqlite3
-potato/e2e-db.sqlite3
+db.sqlite3
+e2e-db.sqlite3
 
 node_modules/
 

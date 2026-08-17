@@ -113,7 +113,9 @@ WSGI_APPLICATION = "potato.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
-        "NAME": Path(os.environ.get("DJANGO_DB_PATH", str(BASE_DIR / "db.sqlite3"))),
+        "NAME": Path(
+            os.environ.get("DJANGO_DB_PATH", str(BASE_DIR.parent / "db.sqlite3"))
+        ),
     }
 }
 
