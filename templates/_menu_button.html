@@ -1,0 +1,7 @@
+{# Sidebar toggle — sits inline with a page's first row on every breakpoint #}
+<button type="button"
+        class="btn btn-square btn-ghost -ml-2 shrink-0"
+        @click="sidebarOpen = !sidebarOpen"
+        :aria-label="sidebarOpen ? 'Close navigation' : 'Open navigation'">
+    <span aria-hidden="true" class="text-xl">☰</span>
+</button>

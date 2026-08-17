@@ -21,6 +21,7 @@
          @keydown.escape.window="modalOpen = false; composerOpen = false">
         <header class="mb-7 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div class="flex items-start gap-3">
+                {% include "_menu_button.html" %}
                 {% if project %}
                     <span class="mt-2 size-3 shrink-0 rounded-full bg-primary"
                           aria-hidden="true"></span>

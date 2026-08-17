@@ -3,8 +3,11 @@
 {% block content %}
     <div class="container mx-auto min-h-screen max-w-5xl px-4 py-6 sm:px-6 sm:py-10 lg:px-8">
         <header class="flex flex-col gap-5 border-b border-base-300 pb-6 sm:flex-row sm:items-start sm:justify-between">
-            <div>
-                <p class="text-xs font-bold uppercase tracking-[0.18em] text-base-content/45">{{ today|date:"l, F j" }}</p>
+            <div class="flex items-start gap-3">
+                {% include "_menu_button.html" %}
+                <div>
+                    <p class="text-xs font-bold uppercase tracking-[0.18em] text-base-content/45">{{ today|date:"l, F j" }}</p>
+                </div>
             </div>
             <div class="flex items-center gap-3 sm:pt-1">
                 <span class="hidden text-right sm:block">
