@@ -10,13 +10,14 @@ All URIs are relative to *http://localhost*
 | [**apiProjectsPartialUpdate**](ApiApi.md#apiprojectspartialupdate) | **PATCH** /api/projects/{id}/ |  |
 | [**apiProjectsReorderCreate**](ApiApi.md#apiprojectsreordercreate) | **POST** /api/projects/reorder/ |  |
 | [**apiProjectsRetrieve**](ApiApi.md#apiprojectsretrieve) | **GET** /api/projects/{id}/ |  |
-| [**apiSchemaRetrieve**](ApiApi.md#apischemaretrieve) | **GET** /api/schema/ |  |
 | [**apiTasksCreate**](ApiApi.md#apitaskscreate) | **POST** /api/tasks/ |  |
 | [**apiTasksDestroy**](ApiApi.md#apitasksdestroy) | **DELETE** /api/tasks/{id}/ |  |
 | [**apiTasksList**](ApiApi.md#apitaskslist) | **GET** /api/tasks/ |  |
 | [**apiTasksPartialUpdate**](ApiApi.md#apitaskspartialupdate) | **PATCH** /api/tasks/{id}/ |  |
 | [**apiTasksReorderCreate**](ApiApi.md#apitasksreordercreate) | **POST** /api/tasks/reorder/ |  |
 | [**apiTasksRetrieve**](ApiApi.md#apitasksretrieve) | **GET** /api/tasks/{id}/ |  |
+| [**apiTokenCreate**](ApiApi.md#apitokencreate) | **POST** /api/token/ |  |
+| [**apiTokenRefreshCreate**](ApiApi.md#apitokenrefreshcreate) | **POST** /api/token/refresh/ |  |
 
 
 
@@ -40,11 +41,10 @@ import type { ApiProjectsCreateRequest } from '';
 async function example() {
   console.log("🚀 Testing  SDK...");
   const config = new Configuration({ 
-    // To configure HTTP basic authorization: basicAuth
-    username: "YOUR USERNAME",
-    password: "YOUR PASSWORD",
     // To configure API key authorization: cookieAuth
     apiKey: "YOUR API KEY",
+    // Configure HTTP bearer authorization: jwtAuth
+    accessToken: "YOUR BEARER TOKEN",
   });
   const api = new ApiApi(config);
 
@@ -78,7 +78,7 @@ example().catch(console.error);
 
 ### Authorization
 
-[basicAuth](../README.md#basicAuth), [cookieAuth](../README.md#cookieAuth)
+[cookieAuth](../README.md#cookieAuth), [jwtAuth](../README.md#jwtAuth)
 
 ### HTTP request headers
 
@@ -114,11 +114,10 @@ import type { ApiProjectsDestroyRequest } from '';
 async function example() {
   console.log("🚀 Testing  SDK...");
   const config = new Configuration({ 
-    // To configure HTTP basic authorization: basicAuth
-    username: "YOUR USERNAME",
-    password: "YOUR PASSWORD",
     // To configure API key authorization: cookieAuth
     apiKey: "YOUR API KEY",
+    // Configure HTTP bearer authorization: jwtAuth
+    accessToken: "YOUR BEARER TOKEN",
   });
   const api = new ApiApi(config);
 
@@ -152,7 +151,7 @@ example().catch(console.error);
 
 ### Authorization
 
-[basicAuth](../README.md#basicAuth), [cookieAuth](../README.md#cookieAuth)
+[cookieAuth](../README.md#cookieAuth), [jwtAuth](../README.md#jwtAuth)
 
 ### HTTP request headers
 
@@ -188,11 +187,10 @@ import type { ApiProjectsListRequest } from '';
 async function example() {
   console.log("🚀 Testing  SDK...");
   const config = new Configuration({ 
-    // To configure HTTP basic authorization: basicAuth
-    username: "YOUR USERNAME",
-    password: "YOUR PASSWORD",
     // To configure API key authorization: cookieAuth
     apiKey: "YOUR API KEY",
+    // Configure HTTP bearer authorization: jwtAuth
+    accessToken: "YOUR BEARER TOKEN",
   });
   const api = new ApiApi(config);
 
@@ -218,7 +216,7 @@ This endpoint does not need any parameter.
 
 ### Authorization
 
-[basicAuth](../README.md#basicAuth), [cookieAuth](../README.md#cookieAuth)
+[cookieAuth](../README.md#cookieAuth), [jwtAuth](../README.md#jwtAuth)
 
 ### HTTP request headers
 
@@ -254,11 +252,10 @@ import type { ApiProjectsPartialUpdateRequest } from '';
 async function example() {
   console.log("🚀 Testing  SDK...");
   const config = new Configuration({ 
-    // To configure HTTP basic authorization: basicAuth
-    username: "YOUR USERNAME",
-    password: "YOUR PASSWORD",
     // To configure API key authorization: cookieAuth
     apiKey: "YOUR API KEY",
+    // Configure HTTP bearer authorization: jwtAuth
+    accessToken: "YOUR BEARER TOKEN",
   });
   const api = new ApiApi(config);
 
@@ -295,7 +292,7 @@ example().catch(console.error);
 
 ### Authorization
 
-[basicAuth](../README.md#basicAuth), [cookieAuth](../README.md#cookieAuth)
+[cookieAuth](../README.md#cookieAuth), [jwtAuth](../README.md#jwtAuth)
 
 ### HTTP request headers
 
@@ -331,11 +328,10 @@ import type { ApiProjectsReorderCreateRequest } from '';
 async function example() {
   console.log("🚀 Testing  SDK...");
   const config = new Configuration({ 
-    // To configure HTTP basic authorization: basicAuth
-    username: "YOUR USERNAME",
-    password: "YOUR PASSWORD",
     // To configure API key authorization: cookieAuth
     apiKey: "YOUR API KEY",
+    // Configure HTTP bearer authorization: jwtAuth
+    accessToken: "YOUR BEARER TOKEN",
   });
   const api = new ApiApi(config);
 
@@ -361,7 +357,7 @@ This endpoint does not need any parameter.
 
 ### Authorization
 
-[basicAuth](../README.md#basicAuth), [cookieAuth](../README.md#cookieAuth)
+[cookieAuth](../README.md#cookieAuth), [jwtAuth](../README.md#jwtAuth)
 
 ### HTTP request headers
 
@@ -397,11 +393,10 @@ import type { ApiProjectsRetrieveRequest } from '';
 async function example() {
   console.log("🚀 Testing  SDK...");
   const config = new Configuration({ 
-    // To configure HTTP basic authorization: basicAuth
-    username: "YOUR USERNAME",
-    password: "YOUR PASSWORD",
     // To configure API key authorization: cookieAuth
     apiKey: "YOUR API KEY",
+    // Configure HTTP bearer authorization: jwtAuth
+    accessToken: "YOUR BEARER TOKEN",
   });
   const api = new ApiApi(config);
 
@@ -435,89 +430,12 @@ example().catch(console.error);
 
 ### Authorization
 
-[basicAuth](../README.md#basicAuth), [cookieAuth](../README.md#cookieAuth)
+[cookieAuth](../README.md#cookieAuth), [jwtAuth](../README.md#jwtAuth)
 
 ### HTTP request headers
 
 - **Content-Type**: Not defined
 - **Accept**: `application/json`
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** |  |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
-
-## apiSchemaRetrieve
-
-> { [key: string]: any; } apiSchemaRetrieve(format, lang)
-
-
-
-OpenApi3 schema for this API. Format can be selected via content negotiation.  - YAML: application/vnd.oai.openapi - JSON: application/vnd.oai.openapi+json
-
-### Example
-
-```ts
-import {
-  Configuration,
-  ApiApi,
-} from '';
-import type { ApiSchemaRetrieveRequest } from '';
-
-async function example() {
-  console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
-    // To configure HTTP basic authorization: basicAuth
-    username: "YOUR USERNAME",
-    password: "YOUR PASSWORD",
-    // To configure API key authorization: cookieAuth
-    apiKey: "YOUR API KEY",
-  });
-  const api = new ApiApi(config);
-
-  const body = {
-    // 'json' | 'yaml' (optional)
-    format: format_example,
-    // 'af' | 'ar' | 'ar-dz' | 'ast' | 'az' | 'be' | 'bg' | 'bn' | 'br' | 'bs' | 'ca' | 'ckb' | 'cs' | 'cy' | 'da' | 'de' | 'dsb' | 'el' | 'en' | 'en-au' | 'en-gb' | 'eo' | 'es' | 'es-ar' | 'es-co' | 'es-mx' | 'es-ni' | 'es-ve' | 'et' | 'eu' | 'fa' | 'fi' | 'fr' | 'fy' | 'ga' | 'gd' | 'gl' | 'he' | 'hi' | 'hr' | 'hsb' | 'ht' | 'hu' | 'hy' | 'ia' | 'id' | 'ig' | 'io' | 'is' | 'it' | 'ja' | 'ka' | 'kab' | 'kk' | 'km' | 'kn' | 'ko' | 'ky' | 'lb' | 'lt' | 'lv' | 'mk' | 'ml' | 'mn' | 'mr' | 'ms' | 'my' | 'nb' | 'ne' | 'nl' | 'nn' | 'os' | 'pa' | 'pl' | 'pt' | 'pt-br' | 'ro' | 'ru' | 'sk' | 'sl' | 'sq' | 'sr' | 'sr-latn' | 'sv' | 'sw' | 'ta' | 'te' | 'tg' | 'th' | 'tk' | 'tr' | 'tt' | 'udm' | 'ug' | 'uk' | 'ur' | 'uz' | 'vi' | 'zh-hans' | 'zh-hant' (optional)
-    lang: lang_example,
-  } satisfies ApiSchemaRetrieveRequest;
-
-  try {
-    const data = await api.apiSchemaRetrieve(body);
-    console.log(data);
-  } catch (error) {
-    console.error(error);
-  }
-}
-
-// Run the test
-example().catch(console.error);
-```
-
-### Parameters
-
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **format** | `json`, `yaml` |  | [Optional] [Defaults to `undefined`] [Enum: json, yaml] |
-| **lang** | `af`, `ar`, `ar-dz`, `ast`, `az`, `be`, `bg`, `bn`, `br`, `bs`, `ca`, `ckb`, `cs`, `cy`, `da`, `de`, `dsb`, `el`, `en`, `en-au`, `en-gb`, `eo`, `es`, `es-ar`, `es-co`, `es-mx`, `es-ni`, `es-ve`, `et`, `eu`, `fa`, `fi`, `fr`, `fy`, `ga`, `gd`, `gl`, `he`, `hi`, `hr`, `hsb`, `ht`, `hu`, `hy`, `ia`, `id`, `ig`, `io`, `is`, `it`, `ja`, `ka`, `kab`, `kk`, `km`, `kn`, `ko`, `ky`, `lb`, `lt`, `lv`, `mk`, `ml`, `mn`, `mr`, `ms`, `my`, `nb`, `ne`, `nl`, `nn`, `os`, `pa`, `pl`, `pt`, `pt-br`, `ro`, `ru`, `sk`, `sl`, `sq`, `sr`, `sr-latn`, `sv`, `sw`, `ta`, `te`, `tg`, `th`, `tk`, `tr`, `tt`, `udm`, `ug`, `uk`, `ur`, `uz`, `vi`, `zh-hans`, `zh-hant` |  | [Optional] [Defaults to `undefined`] [Enum: af, ar, ar-dz, ast, az, be, bg, bn, br, bs, ca, ckb, cs, cy, da, de, dsb, el, en, en-au, en-gb, eo, es, es-ar, es-co, es-mx, es-ni, es-ve, et, eu, fa, fi, fr, fy, ga, gd, gl, he, hi, hr, hsb, ht, hu, hy, ia, id, ig, io, is, it, ja, ka, kab, kk, km, kn, ko, ky, lb, lt, lv, mk, ml, mn, mr, ms, my, nb, ne, nl, nn, os, pa, pl, pt, pt-br, ro, ru, sk, sl, sq, sr, sr-latn, sv, sw, ta, te, tg, th, tk, tr, tt, udm, ug, uk, ur, uz, vi, zh-hans, zh-hant] |
-
-### Return type
-
-**{ [key: string]: any; }**
-
-### Authorization
-
-[basicAuth](../README.md#basicAuth), [cookieAuth](../README.md#cookieAuth)
-
-### HTTP request headers
-
-- **Content-Type**: Not defined
-- **Accept**: `application/vnd.oai.openapi`, `application/yaml`, `application/vnd.oai.openapi+json`, `application/json`
 
 
 ### HTTP response details
@@ -548,11 +466,10 @@ import type { ApiTasksCreateRequest } from '';
 async function example() {
   console.log("🚀 Testing  SDK...");
   const config = new Configuration({ 
-    // To configure HTTP basic authorization: basicAuth
-    username: "YOUR USERNAME",
-    password: "YOUR PASSWORD",
     // To configure API key authorization: cookieAuth
     apiKey: "YOUR API KEY",
+    // Configure HTTP bearer authorization: jwtAuth
+    accessToken: "YOUR BEARER TOKEN",
   });
   const api = new ApiApi(config);
 
@@ -586,7 +503,7 @@ example().catch(console.error);
 
 ### Authorization
 
-[basicAuth](../README.md#basicAuth), [cookieAuth](../README.md#cookieAuth)
+[cookieAuth](../README.md#cookieAuth), [jwtAuth](../README.md#jwtAuth)
 
 ### HTTP request headers
 
@@ -622,11 +539,10 @@ import type { ApiTasksDestroyRequest } from '';
 async function example() {
   console.log("🚀 Testing  SDK...");
   const config = new Configuration({ 
-    // To configure HTTP basic authorization: basicAuth
-    username: "YOUR USERNAME",
-    password: "YOUR PASSWORD",
     // To configure API key authorization: cookieAuth
     apiKey: "YOUR API KEY",
+    // Configure HTTP bearer authorization: jwtAuth
+    accessToken: "YOUR BEARER TOKEN",
   });
   const api = new ApiApi(config);
 
@@ -660,7 +576,7 @@ example().catch(console.error);
 
 ### Authorization
 
-[basicAuth](../README.md#basicAuth), [cookieAuth](../README.md#cookieAuth)
+[cookieAuth](../README.md#cookieAuth), [jwtAuth](../README.md#jwtAuth)
 
 ### HTTP request headers
 
@@ -696,11 +612,10 @@ import type { ApiTasksListRequest } from '';
 async function example() {
   console.log("🚀 Testing  SDK...");
   const config = new Configuration({ 
-    // To configure HTTP basic authorization: basicAuth
-    username: "YOUR USERNAME",
-    password: "YOUR PASSWORD",
     // To configure API key authorization: cookieAuth
     apiKey: "YOUR API KEY",
+    // Configure HTTP bearer authorization: jwtAuth
+    accessToken: "YOUR BEARER TOKEN",
   });
   const api = new ApiApi(config);
 
@@ -726,7 +641,7 @@ This endpoint does not need any parameter.
 
 ### Authorization
 
-[basicAuth](../README.md#basicAuth), [cookieAuth](../README.md#cookieAuth)
+[cookieAuth](../README.md#cookieAuth), [jwtAuth](../README.md#jwtAuth)
 
 ### HTTP request headers
 
@@ -762,11 +677,10 @@ import type { ApiTasksPartialUpdateRequest } from '';
 async function example() {
   console.log("🚀 Testing  SDK...");
   const config = new Configuration({ 
-    // To configure HTTP basic authorization: basicAuth
-    username: "YOUR USERNAME",
-    password: "YOUR PASSWORD",
     // To configure API key authorization: cookieAuth
     apiKey: "YOUR API KEY",
+    // Configure HTTP bearer authorization: jwtAuth
+    accessToken: "YOUR BEARER TOKEN",
   });
   const api = new ApiApi(config);
 
@@ -803,7 +717,7 @@ example().catch(console.error);
 
 ### Authorization
 
-[basicAuth](../README.md#basicAuth), [cookieAuth](../README.md#cookieAuth)
+[cookieAuth](../README.md#cookieAuth), [jwtAuth](../README.md#jwtAuth)
 
 ### HTTP request headers
 
@@ -839,11 +753,10 @@ import type { ApiTasksReorderCreateRequest } from '';
 async function example() {
   console.log("🚀 Testing  SDK...");
   const config = new Configuration({ 
-    // To configure HTTP basic authorization: basicAuth
-    username: "YOUR USERNAME",
-    password: "YOUR PASSWORD",
     // To configure API key authorization: cookieAuth
     apiKey: "YOUR API KEY",
+    // Configure HTTP bearer authorization: jwtAuth
+    accessToken: "YOUR BEARER TOKEN",
   });
   const api = new ApiApi(config);
 
@@ -869,7 +782,7 @@ This endpoint does not need any parameter.
 
 ### Authorization
 
-[basicAuth](../README.md#basicAuth), [cookieAuth](../README.md#cookieAuth)
+[cookieAuth](../README.md#cookieAuth), [jwtAuth](../README.md#jwtAuth)
 
 ### HTTP request headers
 
@@ -905,11 +818,10 @@ import type { ApiTasksRetrieveRequest } from '';
 async function example() {
   console.log("🚀 Testing  SDK...");
   const config = new Configuration({ 
-    // To configure HTTP basic authorization: basicAuth
-    username: "YOUR USERNAME",
-    password: "YOUR PASSWORD",
     // To configure API key authorization: cookieAuth
     apiKey: "YOUR API KEY",
+    // Configure HTTP bearer authorization: jwtAuth
+    accessToken: "YOUR BEARER TOKEN",
   });
   const api = new ApiApi(config);
 
@@ -943,11 +855,145 @@ example().catch(console.error);
 
 ### Authorization
 
-[basicAuth](../README.md#basicAuth), [cookieAuth](../README.md#cookieAuth)
+[cookieAuth](../README.md#cookieAuth), [jwtAuth](../README.md#jwtAuth)
 
 ### HTTP request headers
 
 - **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** |  |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## apiTokenCreate
+
+> TokenObtainPair apiTokenCreate(tokenObtainPair)
+
+
+
+Takes a set of user credentials and returns an access and refresh JSON web token pair to prove the authentication of those credentials.
+
+### Example
+
+```ts
+import {
+  Configuration,
+  ApiApi,
+} from '';
+import type { ApiTokenCreateRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new ApiApi();
+
+  const body = {
+    // TokenObtainPair
+    tokenObtainPair: ...,
+  } satisfies ApiTokenCreateRequest;
+
+  try {
+    const data = await api.apiTokenCreate(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **tokenObtainPair** | [TokenObtainPair](TokenObtainPair.md) |  | |
+
+### Return type
+
+[**TokenObtainPair**](TokenObtainPair.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** |  |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## apiTokenRefreshCreate
+
+> TokenRefresh apiTokenRefreshCreate(tokenRefresh)
+
+
+
+Takes a refresh type JSON web token and returns an access type JSON web token if the refresh token is valid.
+
+### Example
+
+```ts
+import {
+  Configuration,
+  ApiApi,
+} from '';
+import type { ApiTokenRefreshCreateRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new ApiApi();
+
+  const body = {
+    // TokenRefresh
+    tokenRefresh: ...,
+  } satisfies ApiTokenRefreshCreateRequest;
+
+  try {
+    const data = await api.apiTokenRefreshCreate(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **tokenRefresh** | [TokenRefresh](TokenRefresh.md) |  | |
+
+### Return type
+
+[**TokenRefresh**](TokenRefresh.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
 - **Accept**: `application/json`
 
 

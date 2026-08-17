@@ -26,11 +26,10 @@ import type { RootRetrieveRequest } from '';
 async function example() {
   console.log("🚀 Testing  SDK...");
   const config = new Configuration({ 
-    // To configure HTTP basic authorization: basicAuth
-    username: "YOUR USERNAME",
-    password: "YOUR PASSWORD",
     // To configure API key authorization: cookieAuth
     apiKey: "YOUR API KEY",
+    // Configure HTTP bearer authorization: jwtAuth
+    accessToken: "YOUR BEARER TOKEN",
   });
   const api = new DefaultApi(config);
 
@@ -56,7 +55,7 @@ This endpoint does not need any parameter.
 
 ### Authorization
 
-[basicAuth](../README.md#basicAuth), [cookieAuth](../README.md#cookieAuth)
+[cookieAuth](../README.md#cookieAuth), [jwtAuth](../README.md#jwtAuth)
 
 ### HTTP request headers
 

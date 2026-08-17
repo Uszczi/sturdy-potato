@@ -1,3 +1,4 @@
+.openapi-generator-ignore
 apis/ApiApi.ts
 apis/DefaultApi.ts
 apis/ProjectsApi.ts
@@ -14,6 +15,8 @@ docs/TodoCreateInput.md
 docs/TodoProjectInput.md
 docs/TodoSchema.md
 docs/TodoUpdateInput.md
+docs/TokenObtainPair.md
+docs/TokenRefresh.md
 index.ts
 models/ProjectCreateInput.ts
 models/ProjectSchema.ts
@@ -22,5 +25,7 @@ models/TodoCreateInput.ts
 models/TodoProjectInput.ts
 models/TodoSchema.ts
 models/TodoUpdateInput.ts
+models/TokenObtainPair.ts
+models/TokenRefresh.ts
 models/index.ts
 runtime.ts
