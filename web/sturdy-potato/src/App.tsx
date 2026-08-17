@@ -1,11 +1,30 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { useState } from "react";
+import reactLogo from "./assets/react.svg";
+import viteLogo from "./assets/vite.svg";
+import heroImg from "./assets/hero.png";
+import "./App.css";
+
+import { Configuration, ApiApi } from "../api-client";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [count, setCount] = useState(0);
+
+  const config = new Configuration({
+    basePath: "http://localhost:8000",
+  });
+
+  const api = new ApiApi(config);
+
+  async function getUserData() {
+    try {
+      const users = await api.apiProjectsList();
+      console.log("Users:", users);
+    } catch (error) {
+      console.error("Failed to fetch users:", error);
+    }
+  }
+
+  getUserData();
 
   return (
     <>
@@ -116,7 +135,7 @@ function App() {
       <div className="ticks"></div>
       <section id="spacer"></section>
     </>
-  )
+  );
 }
 
-export default App
+export default App;
