@@ -23,7 +23,7 @@ lint-check:
 	uv run djlint . --check
 
 test:
-	uv run pytest --cov=potato --cov-report=html:skip-covered tests/
+	uv run pytest -n auto --cov=potato --cov-report=html:skip-covered --cov-fail-under=100 -v tests/
 
 # Install the browsers Playwright needs to run the e2e suite.
 e2e-install:
