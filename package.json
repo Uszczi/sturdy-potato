@@ -10,6 +10,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "vite build",
     "dev": "vite",
+    "format": "prettier --write templates assets e2e tests vite.config.mjs playwright.config.ts package.json aspire.config.json docker-compose.yml",
+    "format:check": "prettier --check templates assets e2e tests vite.config.mjs playwright.config.ts package.json aspire.config.json docker-compose.yml",
     "aspire:start": "npm --prefix aspire-apphost run aspire:start",
     "aspire:build": "npm --prefix aspire-apphost run aspire:build",
     "aspire:dev": "npm --prefix aspire-apphost run aspire:dev"
@@ -28,6 +30,9 @@
     "@playwright/test": "^1.62.1",
     "@tailwindcss/vite": "^4.3.3",
     "daisyui": "^5.7.17",
+    "prettier": "^3.9.6",
+    "prettier-plugin-jinja-template": "^2.2.0",
+    "prettier-plugin-tailwindcss": "^0.8.1",
     "vite": "^8.2.1"
   },
   "dependencies": {

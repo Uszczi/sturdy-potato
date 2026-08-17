@@ -194,7 +194,9 @@ document.addEventListener("keydown", handleKeyboardReorder, true);
 document.addEventListener("htmx:afterSwap", initializeDragLists);
 
 if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", initializeDragLists, { once: true });
+  document.addEventListener("DOMContentLoaded", initializeDragLists, {
+    once: true,
+  });
 } else {
   initializeDragLists();
 }

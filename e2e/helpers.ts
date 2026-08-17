@@ -2,7 +2,8 @@
 // by `seeddb` and the defaults in e2e/scripts/serve.sh.
 
 export const DEMO_USER = "demo";
-export const DEMO_PASSWORD = process.env.SEEDDB_DEMO_PASSWORD ?? "demo-password-123";
+export const DEMO_PASSWORD =
+  process.env.SEEDDB_DEMO_PASSWORD ?? "demo-password-123";
 
 // Where the authenticated session is persisted by e2e/global-setup.ts and
 // reused by every test project (see storageState in playwright.config.ts).

@@ -71,7 +71,10 @@ test.describe("tasks", () => {
       .getByRole("button", { name: `Mark ${toggled} as complete`, exact: true })
       .click();
     await expect(
-      page.getByRole("button", { name: `Mark ${toggled} as open`, exact: true }),
+      page.getByRole("button", {
+        name: `Mark ${toggled} as open`,
+        exact: true,
+      }),
     ).toBeVisible();
 
     // The sibling node was never touched by the change, so morph left it — and

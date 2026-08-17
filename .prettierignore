@@ -1,0 +1,11 @@
+# Dependencies & build output
+node_modules
+static
+staticfiles
+playwright-report
+test-results
+
+# Python / data
+*.sqlite3
+uv.lock
+package-lock.json
