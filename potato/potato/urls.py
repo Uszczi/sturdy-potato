@@ -1,6 +1,5 @@
 from django.contrib import admin
 from django.urls import include, path
-from django.views.generic import TemplateView
 from drf_spectacular.views import (
     SpectacularAPIView,
     SpectacularRedocView,
@@ -15,7 +14,6 @@ urlpatterns = [
     path("tasks/", include("web.urls")),
     path("projects/", include("web.project_urls")),
     path("admin/", admin.site.urls),
-    path("hello-vite/", TemplateView.as_view(template_name="hello_vite.html")),
     path(
         "api/schema/swagger-ui/",
         SpectacularSwaggerView.as_view(url_name="schema"),
