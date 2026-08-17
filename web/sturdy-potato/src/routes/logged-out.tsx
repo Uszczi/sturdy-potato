@@ -1,8 +1,10 @@
-type LoggedOutProps = {
-  onLogin: () => void;
-};
+import { createFileRoute, Link } from "@tanstack/react-router";
 
-function LoggedOut({ onLogin }: LoggedOutProps) {
+export const Route = createFileRoute("/logged-out")({
+  component: LoggedOut,
+});
+
+function LoggedOut() {
   return (
     <main className="grid min-h-screen place-items-center bg-base-200 p-4">
       <div className="card w-full max-w-sm bg-base-100 shadow-xl">
@@ -12,18 +14,12 @@ function LoggedOut({ onLogin }: LoggedOutProps) {
             You have been signed out of your account.
           </p>
           <div className="card-actions mt-2 w-full">
-            <button
-              type="button"
-              className="btn btn-primary btn-block"
-              onClick={onLogin}
-            >
+            <Link to="/login" className="btn btn-primary btn-block">
               Log in again
-            </button>
+            </Link>
           </div>
         </div>
       </div>
     </main>
   );
 }
-
-export default LoggedOut;

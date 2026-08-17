@@ -1,2 +1,167 @@
 @import "tailwindcss";
-@plugin "daisyui";
+
+/* Single source of truth for the app's colors. Change values here and every
+   component/page that uses daisyUI semantic classes updates automatically. */
+@plugin "daisyui" {
+  themes: false;
+}
+
+@plugin "daisyui/theme" {
+  name: "potato";
+  default: true;
+  prefersdark: false;
+  color-scheme: light;
+
+  --color-base-100: rgb(251 248 241);
+  --color-base-200: rgb(245 238 224);
+  --color-base-300: rgb(231 221 200);
+  --color-base-content: rgb(50 38 24);
+  --color-primary: rgb(187 115 27);
+  --color-primary-content: rgb(253 247 242);
+  --color-secondary: rgb(99 142 89);
+  --color-secondary-content: rgb(245 250 244);
+  --color-accent: rgb(223 115 62);
+  --color-accent-content: rgb(255 246 243);
+  --color-neutral: rgb(61 48 34);
+  --color-neutral-content: rgb(246 241 235);
+  --color-info: rgb(40 172 223);
+  --color-info-content: rgb(242 250 254);
+  --color-success: rgb(67 168 76);
+  --color-success-content: rgb(244 250 244);
+  --color-warning: rgb(240 177 53);
+  --color-warning-content: rgb(54 38 7);
+  --color-error: rgb(219 66 60);
+  --color-error-content: rgb(255 246 245);
+
+  --radius-selector: 1rem;
+  --radius-field: 0.25rem;
+  --radius-box: 0.5rem;
+
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+
+  --border: 1px;
+
+  --depth: 1;
+  --noise: 0;
+}
+
+@plugin "daisyui/theme" {
+  name: "potato-dark";
+  default: false;
+  prefersdark: true;
+  color-scheme: dark;
+
+  --color-base-100: rgb(31 25 19);
+  --color-base-200: rgb(24 19 12);
+  --color-base-300: rgb(17 12 7);
+  --color-base-content: rgb(229 221 208);
+  --color-primary: rgb(216 148 77);
+  --color-primary-content: rgb(34 18 2);
+  --color-secondary: rgb(122 166 113);
+  --color-secondary-content: rgb(10 21 8);
+  --color-accent: rgb(229 127 79);
+  --color-accent-content: rgb(32 11 3);
+  --color-neutral: rgb(56 43 29);
+  --color-neutral-content: rgb(236 227 214);
+  --color-info: rgb(50 179 230);
+  --color-info-content: rgb(0 20 32);
+  --color-success: rgb(84 184 91);
+  --color-success-content: rgb(5 22 6);
+  --color-warning: rgb(247 184 61);
+  --color-warning-content: rgb(39 23 0);
+  --color-error: rgb(247 94 84);
+  --color-error-content: rgb(32 10 8);
+
+  --radius-selector: 1rem;
+  --radius-field: 0.25rem;
+  --radius-box: 0.5rem;
+
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+
+  --border: 1px;
+
+  --depth: 1;
+  --noise: 0;
+}
+
+@plugin "daisyui/theme" {
+  name: "potato-mint";
+  default: false;
+  prefersdark: false;
+  color-scheme: light;
+
+  --color-base-100: rgb(244 250 245);
+  --color-base-200: rgb(230 243 232);
+  --color-base-300: rgb(209 228 212);
+  --color-base-content: rgb(27 46 36);
+  --color-primary: rgb(23 151 101);
+  --color-primary-content: rgb(243 251 246);
+  --color-secondary: rgb(33 150 167);
+  --color-secondary-content: rgb(241 250 252);
+  --color-accent: rgb(196 128 212);
+  --color-accent-content: rgb(252 246 253);
+  --color-neutral: rgb(37 56 46);
+  --color-neutral-content: rgb(236 244 239);
+  --color-info: rgb(40 172 223);
+  --color-info-content: rgb(242 250 254);
+  --color-success: rgb(67 168 76);
+  --color-success-content: rgb(244 250 244);
+  --color-warning: rgb(240 177 53);
+  --color-warning-content: rgb(54 38 7);
+  --color-error: rgb(219 66 60);
+  --color-error-content: rgb(255 246 245);
+
+  --radius-selector: 1rem;
+  --radius-field: 0.25rem;
+  --radius-box: 0.5rem;
+
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+
+  --border: 1px;
+
+  --depth: 1;
+  --noise: 0;
+}
+
+@plugin "daisyui/theme" {
+  name: "potato-night";
+  default: false;
+  prefersdark: false;
+  color-scheme: dark;
+
+  --color-base-100: rgb(18 22 31);
+  --color-base-200: rgb(11 15 24);
+  --color-base-300: rgb(6 9 17);
+  --color-base-content: rgb(215 222 236);
+  --color-primary: rgb(115 155 245);
+  --color-primary-content: rgb(9 17 35);
+  --color-secondary: rgb(20 187 194);
+  --color-secondary-content: rgb(0 21 23);
+  --color-accent: rgb(216 127 209);
+  --color-accent-content: rgb(27 10 26);
+  --color-neutral: rgb(38 46 61);
+  --color-neutral-content: rgb(222 229 242);
+  --color-info: rgb(50 179 230);
+  --color-info-content: rgb(0 20 32);
+  --color-success: rgb(84 184 91);
+  --color-success-content: rgb(5 22 6);
+  --color-warning: rgb(247 184 61);
+  --color-warning-content: rgb(39 23 0);
+  --color-error: rgb(247 94 84);
+  --color-error-content: rgb(32 10 8);
+
+  --radius-selector: 1rem;
+  --radius-field: 0.25rem;
+  --radius-box: 0.5rem;
+
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+
+  --border: 1px;
+
+  --depth: 1;
+  --noise: 0;
+}

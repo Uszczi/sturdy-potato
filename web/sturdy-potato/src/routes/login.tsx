@@ -1,12 +1,31 @@
 import { useState } from "react";
+import {
+  createFileRoute,
+  redirect,
+  useNavigate,
+} from "@tanstack/react-router";
 import { ResponseError } from "../../api-client";
 import { login } from "../services/auth";
 
-type LoginProps = {
-  onSuccess: () => void;
+type LoginSearch = {
+  redirect?: string;
 };
 
-function Login({ onSuccess }: LoginProps) {
+export const Route = createFileRoute("/login")({
+  validateSearch: (search: Record<string, unknown>): LoginSearch => ({
+    redirect: typeof search.redirect === "string" ? search.redirect : undefined,
+  }),
+  beforeLoad: ({ context, search }) => {
+    if (context.isAuthenticated()) {
+      throw redirect({ to: search.redirect ?? "/" });
+    }
+  },
+  component: Login,
+});
+
+function Login() {
+  const navigate = useNavigate();
+  const search = Route.useSearch();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -18,7 +37,7 @@ function Login({ onSuccess }: LoginProps) {
     setSubmitting(true);
     try {
       await login(username, password);
-      onSuccess();
+      navigate({ to: search.redirect ?? "/" });
     } catch (err) {
       setError(
         err instanceof ResponseError && err.response.status === 401
@@ -85,5 +104,3 @@ function Login({ onSuccess }: LoginProps) {
     </main>
   );
 }
-
-export default Login;
