@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/6.1/ref/settings/
 """
 
 import os
+from datetime import timedelta
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -74,6 +75,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django_vite",
+    "corsheaders",
     "rest_framework",
     "drf_spectacular",
     "config.apps.ConfigConfig",
@@ -88,6 +90,7 @@ AUTH_USER_MODEL = "infrastructure.User"
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -216,9 +219,45 @@ MAILERS = {
 }
 
 REST_FRAMEWORK = {
-    # your other DRF settings here
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    # Session auth stays first so the server-rendered web app and browsable API
+    # keep their existing behaviour (a credential-less request gets 403, not the
+    # 401 that a JWT-first order would return). JWTAuthentication runs next: with
+    # no session cookie SessionAuthentication returns None, so a request bearing
+    # an Authorization: Bearer <token> header is authenticated via JWT. This is
+    # what lets the React SPA talk to the same endpoints with a token.
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework.authentication.SessionAuthentication",
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ),
 }
+
+# JSON Web Token settings. Access tokens are short-lived; the SPA refreshes them
+# with the longer-lived refresh token via /api/token/refresh/.
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
+}
+
+# Advertise the bearer scheme in the OpenAPI schema so the generated TypeScript
+# client wires up `accessToken`. drf-spectacular auto-detects JWTAuthentication.
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Sturdy Potato API",
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
+}
+
+# Cross-origin requests from the Vite dev server (React SPA on another origin).
+# Bearer tokens are sent in the Authorization header, so credentialed cookies
+# are not required here.
+CORS_ALLOWED_ORIGINS = [
+    origin.strip()
+    for origin in os.environ.get(
+        "DJANGO_CORS_ALLOWED_ORIGINS",
+        "http://localhost:5173,http://127.0.0.1:5173",
+    ).split(",")
+    if origin.strip()
+]
 
 # Logging: stream to stdout so the container runtime collects it. Level is
 # overridable per-deploy via DJANGO_LOG_LEVEL without touching code.

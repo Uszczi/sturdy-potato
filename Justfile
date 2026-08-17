@@ -18,6 +18,9 @@ seeddb:
 	cd potato && \
 	uv run python manage.py seeddb
 
+generate-api-client:
+	openapi-generator-cli generate -i http://localhost:8000/api/schema/ -g typescript-fetch -o ./web/sturdy-potato/api-client
+
 lint:
 	uv run black .
 	uv run mypy .
@@ -70,3 +73,4 @@ prod-logs:
 
 prod-manage *args:
 	docker compose -f deployment/prod/docker-compose.yml run --rm web python manage.py {{args}}
+
