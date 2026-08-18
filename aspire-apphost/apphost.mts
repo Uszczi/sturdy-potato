@@ -5,10 +5,15 @@ import { createBuilder } from "./.aspire/modules/aspire.mjs";
 
 const builder = await createBuilder();
 
-const django = await builder.addPythonApp("django", "..", "server/manage.py");
-await django.withUv();
-await django.withArgs(["runserver", "0.0.0.0:8001"]);
-await django.withHttpEndpoint({ targetPort: 8001 });
-await django.withExternalHttpEndpoints();
+const server = await builder.addUvicornApp("server", "../server/src", "main:app");
+await server.withUv();
+await server.withHttpEndpoint({ port: 8000, targetPort: 8000, isProxied: false });
+await server.withExternalHttpEndpoints();
+
+const client = await builder.addViteApp("client", "../client");
+await client.withHttpEndpoint({ port: 5173, targetPort: 5173, isProxied: false });
+await client.withReference(server);
+await client.waitFor(server);
+await client.withExternalHttpEndpoints();
 
 await builder.build().run();
