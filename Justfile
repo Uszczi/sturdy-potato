@@ -1,44 +1,36 @@
 run:
 	cd server && \
-	uv run python manage.py runserver
-
-manage *args:
-	cd server && \
-	uv run python manage.py {{args}}
-
-makemigrations:
-	cd server && \
-	uv run python manage.py makemigrations
+	uv run uvicorn main:app --reload
 
 migrate:
-	cd server && \
-	uv run python manage.py migrate
+	uv run alembic upgrade head
 
-seeddb:
+makemigrations message:
+	uv run alembic revision --autogenerate -m "{{message}}"
+
+seed:
 	cd server && \
-	uv run python manage.py seeddb
+	uv run python -m seed
 
 generate-api-client:
-	openapi-generator-cli generate -i http://localhost:8000/api/schema/ -g typescript-fetch -o ./client/api-client
+	openapi-generator-cli generate -i http://localhost:8000/openapi.json -g typescript-fetch -o ./client/api-client
 
 lint:
-	uv run black .
-	uv run mypy .
 	uv run ruff check . --fix
-	uv run djlint . --reformat
+	uv run ruff format .
+	uv run mypy .
 
 lint-check:
-	uv run black . --check
-	uv run mypy .
 	uv run ruff check .
-	uv run djlint . --check
+	uv run ruff format . --check
+	uv run mypy .
 
 test:
-	uv run pytest -n auto --cov=server --cov-report=html:skip-covered --cov-fail-under=100 -v tests/
+	uv run pytest --cov=server --cov-report=html:skip-covered --cov-fail-under=100 -v tests/
 
 # The e2e suite lives with the React SPA it drives (client). Each
 # recipe runs Playwright from there; it boots the SPA (Vite preview) and a
-# freshly-seeded Django API server itself.
+# freshly-seeded FastAPI server itself.
 
 # Install the browsers Playwright needs to run the e2e suite.
 e2e-install:
@@ -74,7 +66,3 @@ prod-down:
 
 prod-logs:
 	docker compose -f deployment/prod/docker-compose.yml logs -f web
-
-prod-manage *args:
-	docker compose -f deployment/prod/docker-compose.yml run --rm web python manage.py {{args}}
-

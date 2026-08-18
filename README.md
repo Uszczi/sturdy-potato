@@ -1,43 +1,46 @@
 # Sturdy Potato
 
-The Django project is split into two application boundaries:
+A FastAPI backend for a React todo SPA. The server is organized as:
 
-- `server/api` owns the REST API and its `/api/` routes.
-- `server/web` owns the authenticated task and project pages under `/tasks/` and `/projects/`.
-- `server/infrastructure` owns the database models and repositories shared by both.
-- Projects belong to one user, and tasks may be assigned to one of that user's projects.
-- `server/serializers/todo/task.py` contains the shared task validation schemas.
+- `server/main.py` builds the FastAPI app and wires the routers.
+- `server/routes/` owns the HTTP layer (`/api/tasks/`, `/api/projects/`, `/api/token/`).
+- `server/repositories/` holds the async SQLAlchemy data access, one class per aggregate.
+- `server/models.py` defines the SQLModel tables (`User`, `Project`, `Todo`).
+- `server/schemas/` contains the Pydantic request/response models.
+- `server/auth.py` handles password hashing (argon2) and JWT issue/verify.
+- `server/seed.py` seeds the demo user and example data.
 
-Both surfaces use the same Django settings, authentication, dependency-injection container,
-and database. The split keeps transport-specific code separate without changing the public
-URLs or the existing task behavior.
+Projects belong to one user, and tasks may be assigned to one of that user's projects.
+Schema changes are versioned with Alembic (`server/alembic/`, config in `alembic.ini`).
 
 ## Development
 
-Install Python dependencies with `uv` and JavaScript dependencies with `npm install`.
+Install Python dependencies with `uv` and JavaScript dependencies (for the SPA and
+e2e suite) with `npm install` inside `client/`.
 
-Run the Django application:
+Apply migrations and seed the demo data:
 
 ```bash
-uv run python server/manage.py runserver
+just migrate
+just seed
 ```
 
-Build the Vite assets:
+Run the API (http://localhost:8000, docs at `/docs`):
 
 ```bash
-npm run build
+just run
 ```
 
-Run the test suite:
+Create a new migration after changing the models:
 
 ```bash
-uv run pytest
+just makemigrations "describe the change"
 ```
 
-Run the Django project through Aspire:
+Run the test suite (100% coverage required):
 
 ```bash
-npm run aspire:start
+just test
 ```
 
 Run the application with Docker Compose:
@@ -46,17 +49,13 @@ Run the application with Docker Compose:
 docker compose up --build
 ```
 
-The application is available at `http://localhost:8000`. SQLite data is stored in
-the `sqlite_data` Compose volume.
+The API is available at `http://localhost:8000`. SQLite data is stored in the
+`sqlite_data` Compose volume.
 
-Run the production Compose deployment with `DJANGO_DEBUG=false` and
-`DJANGO_ENV=prod`. It serves the Django ASGI application with Uvicorn for
-async and WebSocket support:
+Run the production Compose deployment (serves the ASGI app with Uvicorn workers):
 
 ```bash
-DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1 \
-DJANGO_SECRET_KEY=replace-with-a-long-random-value \
+SECRET_KEY=replace-with-a-long-random-value \
+CORS_ORIGINS=https://example.com \
 docker compose -f deployment/prod/docker-compose.yml up --build
 ```
-
-The production site is available at `http://localhost:8000`.

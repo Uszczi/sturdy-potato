@@ -1,17 +1,3 @@
-FROM node:22-bookworm-slim AS frontend
-
-WORKDIR /app
-
-COPY package.json package-lock.json ./
-RUN npm ci
-
-COPY assets ./assets
-COPY templates ./templates
-COPY static ./static
-COPY vite.config.mjs ./
-RUN npm run build
-
-
 FROM python:3.13-slim-bookworm AS python-dependencies
 
 COPY --from=ghcr.io/astral-sh/uv:0.11.19 /uv /uvx /bin/
@@ -32,27 +18,14 @@ WORKDIR /app
 ENV PATH="/app/.venv/bin:$PATH" \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    DJANGO_DEBUG=false \
-    DJANGO_ENV=prod \
-    DJANGO_ALLOWED_HOSTS="localhost,127.0.0.1"
-
-RUN apt-get update \
-    && apt-get install --no-install-recommends -y \
-        libgdal32 \
-        libsqlite3-mod-spatialite \
-    && rm -rf /var/lib/apt/lists/*
+    PYTHONPATH=/app/server
 
 COPY --from=python-dependencies /app/.venv /app/.venv
-COPY --from=frontend /app/static /app/static
 COPY server ./server
-COPY templates ./templates
+COPY alembic.ini ./
 
-RUN mkdir -p /app/staticfiles /app/data \
-    && python server/manage.py collectstatic --noinput \
-    && python server/manage.py check
-
-WORKDIR /app/server
+RUN mkdir -p /app/data
 
 EXPOSE 8000
 
-CMD ["uvicorn", "config.asgi:application", "--host", "0.0.0.0", "--port", "8000", "--workers", "3"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "3"]

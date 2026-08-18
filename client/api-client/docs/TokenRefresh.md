@@ -6,7 +6,6 @@
 
 Name | Type
 ------------ | -------------
-`access` | string
 `refresh` | string
 
 ## Example
@@ -16,7 +15,6 @@ import type { TokenRefresh } from ''
 
 // TODO: Update the object below with actual values
 const example = {
-  "access": null,
   "refresh": null,
 } satisfies TokenRefresh
 

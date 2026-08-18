@@ -19,10 +19,6 @@ export function instanceOfTokenObtainPair(value) {
         return false;
     if (!('password' in value) || value['password'] === undefined)
         return false;
-    if (!('access' in value) || value['access'] === undefined)
-        return false;
-    if (!('refresh' in value) || value['refresh'] === undefined)
-        return false;
     return true;
 }
 export function TokenObtainPairFromJSON(json) {
@@ -35,8 +31,6 @@ export function TokenObtainPairFromJSONTyped(json, ignoreDiscriminator) {
     return {
         'username': json['username'],
         'password': json['password'],
-        'access': json['access'],
-        'refresh': json['refresh'],
     };
 }
 export function TokenObtainPairToJSON(json) {

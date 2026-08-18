@@ -12,14 +12,18 @@
  * Do not edit the class manually.
  */
 import * as runtime from '../runtime';
+import { AccessTokenFromJSON, } from '../models/AccessToken';
 import { ProjectCreateInputToJSON, } from '../models/ProjectCreateInput';
 import { ProjectSchemaFromJSON, } from '../models/ProjectSchema';
 import { ProjectUpdateInputToJSON, } from '../models/ProjectUpdateInput';
+import { ReorderInputToJSON, } from '../models/ReorderInput';
+import { TaskCountSchemaFromJSON, } from '../models/TaskCountSchema';
 import { TodoCreateInputToJSON, } from '../models/TodoCreateInput';
 import { TodoSchemaFromJSON, } from '../models/TodoSchema';
 import { TodoUpdateInputToJSON, } from '../models/TodoUpdateInput';
-import { TokenObtainPairFromJSON, TokenObtainPairToJSON, } from '../models/TokenObtainPair';
-import { TokenRefreshFromJSON, TokenRefreshToJSON, } from '../models/TokenRefresh';
+import { TokenObtainPairToJSON, } from '../models/TokenObtainPair';
+import { TokenPairFromJSON, } from '../models/TokenPair';
+import { TokenRefreshToJSON, } from '../models/TokenRefresh';
 /**
  *
  */
@@ -28,12 +32,15 @@ export class ApiApi extends runtime.BaseAPI {
      * Creates request options for apiProjectsCreate without sending the request
      */
     async apiProjectsCreateRequestOpts(requestParameters) {
+        if (requestParameters['projectCreateInput'] == null) {
+            throw new runtime.RequiredError('projectCreateInput', 'Required parameter "projectCreateInput" was null or undefined when calling apiProjectsCreate().');
+        }
         const queryParameters = {};
         const headerParameters = {};
         headerParameters['Content-Type'] = 'application/json';
         if (this.configuration && this.configuration.accessToken) {
             const token = this.configuration.accessToken;
-            const tokenString = await token("jwtAuth", []);
+            const tokenString = await token("HTTPBearer", []);
             if (tokenString) {
                 headerParameters["Authorization"] = `Bearer ${tokenString}`;
             }
@@ -48,7 +55,7 @@ export class ApiApi extends runtime.BaseAPI {
         };
     }
     /**
-     * This is the magic.  Overrides `.as_view()` so that it takes an `actions` keyword that performs the binding of HTTP methods to actions on the Resource.  For example, to create a concrete view binding the \'GET\' and \'POST\' methods to the \'alist\' and \'acreate\' actions...  view = MyViewSet.as_view({\'get\': \'alist\', \'post\': \'acreate\'})
+     * Create Project
      */
     async apiProjectsCreateRaw(requestParameters, initOverrides) {
         const requestOptions = await this.apiProjectsCreateRequestOpts(requestParameters);
@@ -56,9 +63,9 @@ export class ApiApi extends runtime.BaseAPI {
         return new runtime.JSONApiResponse(response, (jsonValue) => ProjectSchemaFromJSON(jsonValue));
     }
     /**
-     * This is the magic.  Overrides `.as_view()` so that it takes an `actions` keyword that performs the binding of HTTP methods to actions on the Resource.  For example, to create a concrete view binding the \'GET\' and \'POST\' methods to the \'alist\' and \'acreate\' actions...  view = MyViewSet.as_view({\'get\': \'alist\', \'post\': \'acreate\'})
+     * Create Project
      */
-    async apiProjectsCreate(requestParameters = {}, initOverrides) {
+    async apiProjectsCreate(requestParameters, initOverrides) {
         const response = await this.apiProjectsCreateRaw(requestParameters, initOverrides);
         return await response.value();
     }
@@ -73,7 +80,7 @@ export class ApiApi extends runtime.BaseAPI {
         const headerParameters = {};
         if (this.configuration && this.configuration.accessToken) {
             const token = this.configuration.accessToken;
-            const tokenString = await token("jwtAuth", []);
+            const tokenString = await token("HTTPBearer", []);
             if (tokenString) {
                 headerParameters["Authorization"] = `Bearer ${tokenString}`;
             }
@@ -88,7 +95,7 @@ export class ApiApi extends runtime.BaseAPI {
         };
     }
     /**
-     * This is the magic.  Overrides `.as_view()` so that it takes an `actions` keyword that performs the binding of HTTP methods to actions on the Resource.  For example, to create a concrete view binding the \'GET\' and \'POST\' methods to the \'alist\' and \'acreate\' actions...  view = MyViewSet.as_view({\'get\': \'alist\', \'post\': \'acreate\'})
+     * Delete Project
      */
     async apiProjectsDestroyRaw(requestParameters, initOverrides) {
         const requestOptions = await this.apiProjectsDestroyRequestOpts(requestParameters);
@@ -96,7 +103,7 @@ export class ApiApi extends runtime.BaseAPI {
         return new runtime.VoidApiResponse(response);
     }
     /**
-     * This is the magic.  Overrides `.as_view()` so that it takes an `actions` keyword that performs the binding of HTTP methods to actions on the Resource.  For example, to create a concrete view binding the \'GET\' and \'POST\' methods to the \'alist\' and \'acreate\' actions...  view = MyViewSet.as_view({\'get\': \'alist\', \'post\': \'acreate\'})
+     * Delete Project
      */
     async apiProjectsDestroy(requestParameters, initOverrides) {
         await this.apiProjectsDestroyRaw(requestParameters, initOverrides);
@@ -109,7 +116,7 @@ export class ApiApi extends runtime.BaseAPI {
         const headerParameters = {};
         if (this.configuration && this.configuration.accessToken) {
             const token = this.configuration.accessToken;
-            const tokenString = await token("jwtAuth", []);
+            const tokenString = await token("HTTPBearer", []);
             if (tokenString) {
                 headerParameters["Authorization"] = `Bearer ${tokenString}`;
             }
@@ -123,7 +130,7 @@ export class ApiApi extends runtime.BaseAPI {
         };
     }
     /**
-     * This is the magic.  Overrides `.as_view()` so that it takes an `actions` keyword that performs the binding of HTTP methods to actions on the Resource.  For example, to create a concrete view binding the \'GET\' and \'POST\' methods to the \'alist\' and \'acreate\' actions...  view = MyViewSet.as_view({\'get\': \'alist\', \'post\': \'acreate\'})
+     * List Projects
      */
     async apiProjectsListRaw(initOverrides) {
         const requestOptions = await this.apiProjectsListRequestOpts();
@@ -131,7 +138,7 @@ export class ApiApi extends runtime.BaseAPI {
         return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ProjectSchemaFromJSON));
     }
     /**
-     * This is the magic.  Overrides `.as_view()` so that it takes an `actions` keyword that performs the binding of HTTP methods to actions on the Resource.  For example, to create a concrete view binding the \'GET\' and \'POST\' methods to the \'alist\' and \'acreate\' actions...  view = MyViewSet.as_view({\'get\': \'alist\', \'post\': \'acreate\'})
+     * List Projects
      */
     async apiProjectsList(initOverrides) {
         const response = await this.apiProjectsListRaw(initOverrides);
@@ -144,12 +151,15 @@ export class ApiApi extends runtime.BaseAPI {
         if (requestParameters['id'] == null) {
             throw new runtime.RequiredError('id', 'Required parameter "id" was null or undefined when calling apiProjectsPartialUpdate().');
         }
+        if (requestParameters['projectUpdateInput'] == null) {
+            throw new runtime.RequiredError('projectUpdateInput', 'Required parameter "projectUpdateInput" was null or undefined when calling apiProjectsPartialUpdate().');
+        }
         const queryParameters = {};
         const headerParameters = {};
         headerParameters['Content-Type'] = 'application/json';
         if (this.configuration && this.configuration.accessToken) {
             const token = this.configuration.accessToken;
-            const tokenString = await token("jwtAuth", []);
+            const tokenString = await token("HTTPBearer", []);
             if (tokenString) {
                 headerParameters["Authorization"] = `Bearer ${tokenString}`;
             }
@@ -165,7 +175,7 @@ export class ApiApi extends runtime.BaseAPI {
         };
     }
     /**
-     * This is the magic.  Overrides `.as_view()` so that it takes an `actions` keyword that performs the binding of HTTP methods to actions on the Resource.  For example, to create a concrete view binding the \'GET\' and \'POST\' methods to the \'alist\' and \'acreate\' actions...  view = MyViewSet.as_view({\'get\': \'alist\', \'post\': \'acreate\'})
+     * Update Project
      */
     async apiProjectsPartialUpdateRaw(requestParameters, initOverrides) {
         const requestOptions = await this.apiProjectsPartialUpdateRequestOpts(requestParameters);
@@ -173,7 +183,7 @@ export class ApiApi extends runtime.BaseAPI {
         return new runtime.JSONApiResponse(response, (jsonValue) => ProjectSchemaFromJSON(jsonValue));
     }
     /**
-     * This is the magic.  Overrides `.as_view()` so that it takes an `actions` keyword that performs the binding of HTTP methods to actions on the Resource.  For example, to create a concrete view binding the \'GET\' and \'POST\' methods to the \'alist\' and \'acreate\' actions...  view = MyViewSet.as_view({\'get\': \'alist\', \'post\': \'acreate\'})
+     * Update Project
      */
     async apiProjectsPartialUpdate(requestParameters, initOverrides) {
         const response = await this.apiProjectsPartialUpdateRaw(requestParameters, initOverrides);
@@ -182,12 +192,16 @@ export class ApiApi extends runtime.BaseAPI {
     /**
      * Creates request options for apiProjectsReorderCreate without sending the request
      */
-    async apiProjectsReorderCreateRequestOpts() {
+    async apiProjectsReorderCreateRequestOpts(requestParameters) {
+        if (requestParameters['reorderInput'] == null) {
+            throw new runtime.RequiredError('reorderInput', 'Required parameter "reorderInput" was null or undefined when calling apiProjectsReorderCreate().');
+        }
         const queryParameters = {};
         const headerParameters = {};
+        headerParameters['Content-Type'] = 'application/json';
         if (this.configuration && this.configuration.accessToken) {
             const token = this.configuration.accessToken;
-            const tokenString = await token("jwtAuth", []);
+            const tokenString = await token("HTTPBearer", []);
             if (tokenString) {
                 headerParameters["Authorization"] = `Bearer ${tokenString}`;
             }
@@ -198,21 +212,22 @@ export class ApiApi extends runtime.BaseAPI {
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
+            body: ReorderInputToJSON(requestParameters['reorderInput']),
         };
     }
     /**
-     * This is the magic.  Overrides `.as_view()` so that it takes an `actions` keyword that performs the binding of HTTP methods to actions on the Resource.  For example, to create a concrete view binding the \'GET\' and \'POST\' methods to the \'alist\' and \'acreate\' actions...  view = MyViewSet.as_view({\'get\': \'alist\', \'post\': \'acreate\'})
+     * Reorder Projects
      */
-    async apiProjectsReorderCreateRaw(initOverrides) {
-        const requestOptions = await this.apiProjectsReorderCreateRequestOpts();
+    async apiProjectsReorderCreateRaw(requestParameters, initOverrides) {
+        const requestOptions = await this.apiProjectsReorderCreateRequestOpts(requestParameters);
         const response = await this.request(requestOptions, initOverrides);
         return new runtime.VoidApiResponse(response);
     }
     /**
-     * This is the magic.  Overrides `.as_view()` so that it takes an `actions` keyword that performs the binding of HTTP methods to actions on the Resource.  For example, to create a concrete view binding the \'GET\' and \'POST\' methods to the \'alist\' and \'acreate\' actions...  view = MyViewSet.as_view({\'get\': \'alist\', \'post\': \'acreate\'})
+     * Reorder Projects
      */
-    async apiProjectsReorderCreate(initOverrides) {
-        await this.apiProjectsReorderCreateRaw(initOverrides);
+    async apiProjectsReorderCreate(requestParameters, initOverrides) {
+        await this.apiProjectsReorderCreateRaw(requestParameters, initOverrides);
     }
     /**
      * Creates request options for apiProjectsRetrieve without sending the request
@@ -225,7 +240,7 @@ export class ApiApi extends runtime.BaseAPI {
         const headerParameters = {};
         if (this.configuration && this.configuration.accessToken) {
             const token = this.configuration.accessToken;
-            const tokenString = await token("jwtAuth", []);
+            const tokenString = await token("HTTPBearer", []);
             if (tokenString) {
                 headerParameters["Authorization"] = `Bearer ${tokenString}`;
             }
@@ -240,7 +255,7 @@ export class ApiApi extends runtime.BaseAPI {
         };
     }
     /**
-     * This is the magic.  Overrides `.as_view()` so that it takes an `actions` keyword that performs the binding of HTTP methods to actions on the Resource.  For example, to create a concrete view binding the \'GET\' and \'POST\' methods to the \'alist\' and \'acreate\' actions...  view = MyViewSet.as_view({\'get\': \'alist\', \'post\': \'acreate\'})
+     * Retrieve Project
      */
     async apiProjectsRetrieveRaw(requestParameters, initOverrides) {
         const requestOptions = await this.apiProjectsRetrieveRequestOpts(requestParameters);
@@ -248,22 +263,64 @@ export class ApiApi extends runtime.BaseAPI {
         return new runtime.JSONApiResponse(response, (jsonValue) => ProjectSchemaFromJSON(jsonValue));
     }
     /**
-     * This is the magic.  Overrides `.as_view()` so that it takes an `actions` keyword that performs the binding of HTTP methods to actions on the Resource.  For example, to create a concrete view binding the \'GET\' and \'POST\' methods to the \'alist\' and \'acreate\' actions...  view = MyViewSet.as_view({\'get\': \'alist\', \'post\': \'acreate\'})
+     * Retrieve Project
      */
     async apiProjectsRetrieve(requestParameters, initOverrides) {
         const response = await this.apiProjectsRetrieveRaw(requestParameters, initOverrides);
         return await response.value();
     }
     /**
+     * Creates request options for apiTasksCountRetrieve without sending the request
+     */
+    async apiTasksCountRetrieveRequestOpts(requestParameters) {
+        const queryParameters = {};
+        if (requestParameters['completed'] != null) {
+            queryParameters['completed'] = requestParameters['completed'];
+        }
+        const headerParameters = {};
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("HTTPBearer", []);
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        let urlPath = `/api/tasks/count/`;
+        return {
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+    /**
+     * Count Tasks
+     */
+    async apiTasksCountRetrieveRaw(requestParameters, initOverrides) {
+        const requestOptions = await this.apiTasksCountRetrieveRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+        return new runtime.JSONApiResponse(response, (jsonValue) => TaskCountSchemaFromJSON(jsonValue));
+    }
+    /**
+     * Count Tasks
+     */
+    async apiTasksCountRetrieve(requestParameters = {}, initOverrides) {
+        const response = await this.apiTasksCountRetrieveRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+    /**
      * Creates request options for apiTasksCreate without sending the request
      */
     async apiTasksCreateRequestOpts(requestParameters) {
+        if (requestParameters['todoCreateInput'] == null) {
+            throw new runtime.RequiredError('todoCreateInput', 'Required parameter "todoCreateInput" was null or undefined when calling apiTasksCreate().');
+        }
         const queryParameters = {};
         const headerParameters = {};
         headerParameters['Content-Type'] = 'application/json';
         if (this.configuration && this.configuration.accessToken) {
             const token = this.configuration.accessToken;
-            const tokenString = await token("jwtAuth", []);
+            const tokenString = await token("HTTPBearer", []);
             if (tokenString) {
                 headerParameters["Authorization"] = `Bearer ${tokenString}`;
             }
@@ -278,7 +335,7 @@ export class ApiApi extends runtime.BaseAPI {
         };
     }
     /**
-     * This is the magic.  Overrides `.as_view()` so that it takes an `actions` keyword that performs the binding of HTTP methods to actions on the Resource.  For example, to create a concrete view binding the \'GET\' and \'POST\' methods to the \'alist\' and \'acreate\' actions...  view = MyViewSet.as_view({\'get\': \'alist\', \'post\': \'acreate\'})
+     * Create Task
      */
     async apiTasksCreateRaw(requestParameters, initOverrides) {
         const requestOptions = await this.apiTasksCreateRequestOpts(requestParameters);
@@ -286,9 +343,9 @@ export class ApiApi extends runtime.BaseAPI {
         return new runtime.JSONApiResponse(response, (jsonValue) => TodoSchemaFromJSON(jsonValue));
     }
     /**
-     * This is the magic.  Overrides `.as_view()` so that it takes an `actions` keyword that performs the binding of HTTP methods to actions on the Resource.  For example, to create a concrete view binding the \'GET\' and \'POST\' methods to the \'alist\' and \'acreate\' actions...  view = MyViewSet.as_view({\'get\': \'alist\', \'post\': \'acreate\'})
+     * Create Task
      */
-    async apiTasksCreate(requestParameters = {}, initOverrides) {
+    async apiTasksCreate(requestParameters, initOverrides) {
         const response = await this.apiTasksCreateRaw(requestParameters, initOverrides);
         return await response.value();
     }
@@ -303,7 +360,7 @@ export class ApiApi extends runtime.BaseAPI {
         const headerParameters = {};
         if (this.configuration && this.configuration.accessToken) {
             const token = this.configuration.accessToken;
-            const tokenString = await token("jwtAuth", []);
+            const tokenString = await token("HTTPBearer", []);
             if (tokenString) {
                 headerParameters["Authorization"] = `Bearer ${tokenString}`;
             }
@@ -318,7 +375,7 @@ export class ApiApi extends runtime.BaseAPI {
         };
     }
     /**
-     * This is the magic.  Overrides `.as_view()` so that it takes an `actions` keyword that performs the binding of HTTP methods to actions on the Resource.  For example, to create a concrete view binding the \'GET\' and \'POST\' methods to the \'alist\' and \'acreate\' actions...  view = MyViewSet.as_view({\'get\': \'alist\', \'post\': \'acreate\'})
+     * Delete Task
      */
     async apiTasksDestroyRaw(requestParameters, initOverrides) {
         const requestOptions = await this.apiTasksDestroyRequestOpts(requestParameters);
@@ -326,7 +383,7 @@ export class ApiApi extends runtime.BaseAPI {
         return new runtime.VoidApiResponse(response);
     }
     /**
-     * This is the magic.  Overrides `.as_view()` so that it takes an `actions` keyword that performs the binding of HTTP methods to actions on the Resource.  For example, to create a concrete view binding the \'GET\' and \'POST\' methods to the \'alist\' and \'acreate\' actions...  view = MyViewSet.as_view({\'get\': \'alist\', \'post\': \'acreate\'})
+     * Delete Task
      */
     async apiTasksDestroy(requestParameters, initOverrides) {
         await this.apiTasksDestroyRaw(requestParameters, initOverrides);
@@ -339,7 +396,7 @@ export class ApiApi extends runtime.BaseAPI {
         const headerParameters = {};
         if (this.configuration && this.configuration.accessToken) {
             const token = this.configuration.accessToken;
-            const tokenString = await token("jwtAuth", []);
+            const tokenString = await token("HTTPBearer", []);
             if (tokenString) {
                 headerParameters["Authorization"] = `Bearer ${tokenString}`;
             }
@@ -353,7 +410,7 @@ export class ApiApi extends runtime.BaseAPI {
         };
     }
     /**
-     * This is the magic.  Overrides `.as_view()` so that it takes an `actions` keyword that performs the binding of HTTP methods to actions on the Resource.  For example, to create a concrete view binding the \'GET\' and \'POST\' methods to the \'alist\' and \'acreate\' actions...  view = MyViewSet.as_view({\'get\': \'alist\', \'post\': \'acreate\'})
+     * List Tasks
      */
     async apiTasksListRaw(initOverrides) {
         const requestOptions = await this.apiTasksListRequestOpts();
@@ -361,10 +418,49 @@ export class ApiApi extends runtime.BaseAPI {
         return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(TodoSchemaFromJSON));
     }
     /**
-     * This is the magic.  Overrides `.as_view()` so that it takes an `actions` keyword that performs the binding of HTTP methods to actions on the Resource.  For example, to create a concrete view binding the \'GET\' and \'POST\' methods to the \'alist\' and \'acreate\' actions...  view = MyViewSet.as_view({\'get\': \'alist\', \'post\': \'acreate\'})
+     * List Tasks
      */
     async apiTasksList(initOverrides) {
         const response = await this.apiTasksListRaw(initOverrides);
+        return await response.value();
+    }
+    /**
+     * Creates request options for apiTasksOpenList without sending the request
+     */
+    async apiTasksOpenListRequestOpts(requestParameters) {
+        const queryParameters = {};
+        if (requestParameters['limit'] != null) {
+            queryParameters['limit'] = requestParameters['limit'];
+        }
+        const headerParameters = {};
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("HTTPBearer", []);
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        let urlPath = `/api/tasks/open/`;
+        return {
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+    /**
+     * Open Tasks
+     */
+    async apiTasksOpenListRaw(requestParameters, initOverrides) {
+        const requestOptions = await this.apiTasksOpenListRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(TodoSchemaFromJSON));
+    }
+    /**
+     * Open Tasks
+     */
+    async apiTasksOpenList(requestParameters = {}, initOverrides) {
+        const response = await this.apiTasksOpenListRaw(requestParameters, initOverrides);
         return await response.value();
     }
     /**
@@ -374,12 +470,15 @@ export class ApiApi extends runtime.BaseAPI {
         if (requestParameters['id'] == null) {
             throw new runtime.RequiredError('id', 'Required parameter "id" was null or undefined when calling apiTasksPartialUpdate().');
         }
+        if (requestParameters['todoUpdateInput'] == null) {
+            throw new runtime.RequiredError('todoUpdateInput', 'Required parameter "todoUpdateInput" was null or undefined when calling apiTasksPartialUpdate().');
+        }
         const queryParameters = {};
         const headerParameters = {};
         headerParameters['Content-Type'] = 'application/json';
         if (this.configuration && this.configuration.accessToken) {
             const token = this.configuration.accessToken;
-            const tokenString = await token("jwtAuth", []);
+            const tokenString = await token("HTTPBearer", []);
             if (tokenString) {
                 headerParameters["Authorization"] = `Bearer ${tokenString}`;
             }
@@ -395,7 +494,7 @@ export class ApiApi extends runtime.BaseAPI {
         };
     }
     /**
-     * This is the magic.  Overrides `.as_view()` so that it takes an `actions` keyword that performs the binding of HTTP methods to actions on the Resource.  For example, to create a concrete view binding the \'GET\' and \'POST\' methods to the \'alist\' and \'acreate\' actions...  view = MyViewSet.as_view({\'get\': \'alist\', \'post\': \'acreate\'})
+     * Update Task
      */
     async apiTasksPartialUpdateRaw(requestParameters, initOverrides) {
         const requestOptions = await this.apiTasksPartialUpdateRequestOpts(requestParameters);
@@ -403,7 +502,7 @@ export class ApiApi extends runtime.BaseAPI {
         return new runtime.JSONApiResponse(response, (jsonValue) => TodoSchemaFromJSON(jsonValue));
     }
     /**
-     * This is the magic.  Overrides `.as_view()` so that it takes an `actions` keyword that performs the binding of HTTP methods to actions on the Resource.  For example, to create a concrete view binding the \'GET\' and \'POST\' methods to the \'alist\' and \'acreate\' actions...  view = MyViewSet.as_view({\'get\': \'alist\', \'post\': \'acreate\'})
+     * Update Task
      */
     async apiTasksPartialUpdate(requestParameters, initOverrides) {
         const response = await this.apiTasksPartialUpdateRaw(requestParameters, initOverrides);
@@ -412,12 +511,16 @@ export class ApiApi extends runtime.BaseAPI {
     /**
      * Creates request options for apiTasksReorderCreate without sending the request
      */
-    async apiTasksReorderCreateRequestOpts() {
+    async apiTasksReorderCreateRequestOpts(requestParameters) {
+        if (requestParameters['reorderInput'] == null) {
+            throw new runtime.RequiredError('reorderInput', 'Required parameter "reorderInput" was null or undefined when calling apiTasksReorderCreate().');
+        }
         const queryParameters = {};
         const headerParameters = {};
+        headerParameters['Content-Type'] = 'application/json';
         if (this.configuration && this.configuration.accessToken) {
             const token = this.configuration.accessToken;
-            const tokenString = await token("jwtAuth", []);
+            const tokenString = await token("HTTPBearer", []);
             if (tokenString) {
                 headerParameters["Authorization"] = `Bearer ${tokenString}`;
             }
@@ -428,21 +531,22 @@ export class ApiApi extends runtime.BaseAPI {
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
+            body: ReorderInputToJSON(requestParameters['reorderInput']),
         };
     }
     /**
-     * This is the magic.  Overrides `.as_view()` so that it takes an `actions` keyword that performs the binding of HTTP methods to actions on the Resource.  For example, to create a concrete view binding the \'GET\' and \'POST\' methods to the \'alist\' and \'acreate\' actions...  view = MyViewSet.as_view({\'get\': \'alist\', \'post\': \'acreate\'})
+     * Reorder Tasks
      */
-    async apiTasksReorderCreateRaw(initOverrides) {
-        const requestOptions = await this.apiTasksReorderCreateRequestOpts();
+    async apiTasksReorderCreateRaw(requestParameters, initOverrides) {
+        const requestOptions = await this.apiTasksReorderCreateRequestOpts(requestParameters);
         const response = await this.request(requestOptions, initOverrides);
         return new runtime.VoidApiResponse(response);
     }
     /**
-     * This is the magic.  Overrides `.as_view()` so that it takes an `actions` keyword that performs the binding of HTTP methods to actions on the Resource.  For example, to create a concrete view binding the \'GET\' and \'POST\' methods to the \'alist\' and \'acreate\' actions...  view = MyViewSet.as_view({\'get\': \'alist\', \'post\': \'acreate\'})
+     * Reorder Tasks
      */
-    async apiTasksReorderCreate(initOverrides) {
-        await this.apiTasksReorderCreateRaw(initOverrides);
+    async apiTasksReorderCreate(requestParameters, initOverrides) {
+        await this.apiTasksReorderCreateRaw(requestParameters, initOverrides);
     }
     /**
      * Creates request options for apiTasksRetrieve without sending the request
@@ -455,7 +559,7 @@ export class ApiApi extends runtime.BaseAPI {
         const headerParameters = {};
         if (this.configuration && this.configuration.accessToken) {
             const token = this.configuration.accessToken;
-            const tokenString = await token("jwtAuth", []);
+            const tokenString = await token("HTTPBearer", []);
             if (tokenString) {
                 headerParameters["Authorization"] = `Bearer ${tokenString}`;
             }
@@ -470,7 +574,7 @@ export class ApiApi extends runtime.BaseAPI {
         };
     }
     /**
-     * This is the magic.  Overrides `.as_view()` so that it takes an `actions` keyword that performs the binding of HTTP methods to actions on the Resource.  For example, to create a concrete view binding the \'GET\' and \'POST\' methods to the \'alist\' and \'acreate\' actions...  view = MyViewSet.as_view({\'get\': \'alist\', \'post\': \'acreate\'})
+     * Retrieve Task
      */
     async apiTasksRetrieveRaw(requestParameters, initOverrides) {
         const requestOptions = await this.apiTasksRetrieveRequestOpts(requestParameters);
@@ -478,10 +582,52 @@ export class ApiApi extends runtime.BaseAPI {
         return new runtime.JSONApiResponse(response, (jsonValue) => TodoSchemaFromJSON(jsonValue));
     }
     /**
-     * This is the magic.  Overrides `.as_view()` so that it takes an `actions` keyword that performs the binding of HTTP methods to actions on the Resource.  For example, to create a concrete view binding the \'GET\' and \'POST\' methods to the \'alist\' and \'acreate\' actions...  view = MyViewSet.as_view({\'get\': \'alist\', \'post\': \'acreate\'})
+     * Retrieve Task
      */
     async apiTasksRetrieve(requestParameters, initOverrides) {
         const response = await this.apiTasksRetrieveRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+    /**
+     * Creates request options for apiTasksViewList without sending the request
+     */
+    async apiTasksViewListRequestOpts(requestParameters) {
+        const queryParameters = {};
+        if (requestParameters['view'] != null) {
+            queryParameters['view'] = requestParameters['view'];
+        }
+        if (requestParameters['project'] != null) {
+            queryParameters['project'] = requestParameters['project'];
+        }
+        const headerParameters = {};
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("HTTPBearer", []);
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        let urlPath = `/api/tasks/view/`;
+        return {
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+    /**
+     * View Tasks
+     */
+    async apiTasksViewListRaw(requestParameters, initOverrides) {
+        const requestOptions = await this.apiTasksViewListRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(TodoSchemaFromJSON));
+    }
+    /**
+     * View Tasks
+     */
+    async apiTasksViewList(requestParameters = {}, initOverrides) {
+        const response = await this.apiTasksViewListRaw(requestParameters, initOverrides);
         return await response.value();
     }
     /**
@@ -504,15 +650,15 @@ export class ApiApi extends runtime.BaseAPI {
         };
     }
     /**
-     * Takes a set of user credentials and returns an access and refresh JSON web token pair to prove the authentication of those credentials.
+     * Obtain Token
      */
     async apiTokenCreateRaw(requestParameters, initOverrides) {
         const requestOptions = await this.apiTokenCreateRequestOpts(requestParameters);
         const response = await this.request(requestOptions, initOverrides);
-        return new runtime.JSONApiResponse(response, (jsonValue) => TokenObtainPairFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => TokenPairFromJSON(jsonValue));
     }
     /**
-     * Takes a set of user credentials and returns an access and refresh JSON web token pair to prove the authentication of those credentials.
+     * Obtain Token
      */
     async apiTokenCreate(requestParameters, initOverrides) {
         const response = await this.apiTokenCreateRaw(requestParameters, initOverrides);
@@ -538,15 +684,15 @@ export class ApiApi extends runtime.BaseAPI {
         };
     }
     /**
-     * Takes a refresh type JSON web token and returns an access type JSON web token if the refresh token is valid.
+     * Refresh Token
      */
     async apiTokenRefreshCreateRaw(requestParameters, initOverrides) {
         const requestOptions = await this.apiTokenRefreshCreateRequestOpts(requestParameters);
         const response = await this.request(requestOptions, initOverrides);
-        return new runtime.JSONApiResponse(response, (jsonValue) => TokenRefreshFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => AccessTokenFromJSON(jsonValue));
     }
     /**
-     * Takes a refresh type JSON web token and returns an access type JSON web token if the refresh token is valid.
+     * Refresh Token
      */
     async apiTokenRefreshCreate(requestParameters, initOverrides) {
         const response = await this.apiTokenRefreshCreateRaw(requestParameters, initOverrides);

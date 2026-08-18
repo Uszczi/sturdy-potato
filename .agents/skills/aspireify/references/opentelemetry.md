@@ -54,17 +54,21 @@ from opentelemetry.exporter.otlp.proto.grpc.metric_exporter import OTLPMetricExp
 from opentelemetry import trace, metrics
 import os
 
-resource = Resource.create({"service.name": os.environ.get("OTEL_SERVICE_NAME", "unknown")})
+resource = Resource.create(
+    {"service.name": os.environ.get("OTEL_SERVICE_NAME", "unknown")}
+)
 
 # Traces
 trace.set_tracer_provider(TracerProvider(resource=resource))
 trace.get_tracer_provider().add_span_processor(BatchSpanProcessor(OTLPSpanExporter()))
 
 # Metrics
-metrics.set_meter_provider(MeterProvider(
-    resource=resource,
-    metric_readers=[PeriodicExportingMetricReader(OTLPMetricExporter())],
-))
+metrics.set_meter_provider(
+    MeterProvider(
+        resource=resource,
+        metric_readers=[PeriodicExportingMetricReader(OTLPMetricExporter())],
+    )
+)
 ```
 
 Or more simply, run with the auto-instrumentation wrapper:

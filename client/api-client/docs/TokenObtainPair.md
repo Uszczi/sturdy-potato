@@ -8,8 +8,6 @@ Name | Type
 ------------ | -------------
 `username` | string
 `password` | string
-`access` | string
-`refresh` | string
 
 ## Example
 
@@ -20,8 +18,6 @@ import type { TokenObtainPair } from ''
 const example = {
   "username": null,
   "password": null,
-  "access": null,
-  "refresh": null,
 } satisfies TokenObtainPair
 
 console.log(example)

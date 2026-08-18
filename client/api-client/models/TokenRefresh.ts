@@ -24,12 +24,6 @@ export interface TokenRefresh {
      * @type {string}
      * @memberof TokenRefresh
      */
-    readonly access: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof TokenRefresh
-     */
     refresh: string;
 }
 
@@ -37,7 +31,6 @@ export interface TokenRefresh {
  * Check if a given object implements the TokenRefresh interface.
  */
 export function instanceOfTokenRefresh(value: object): value is TokenRefresh {
-    if (!('access' in value) || value['access'] === undefined) return false;
     if (!('refresh' in value) || value['refresh'] === undefined) return false;
     return true;
 }
@@ -52,7 +45,6 @@ export function TokenRefreshFromJSONTyped(json: any, ignoreDiscriminator: boolea
     }
     return {
         
-        'access': json['access'],
         'refresh': json['refresh'],
     };
 }
@@ -61,7 +53,7 @@ export function TokenRefreshToJSON(json: any): TokenRefresh {
     return TokenRefreshToJSONTyped(json, false);
 }
 
-export function TokenRefreshToJSONTyped(value?: Omit<TokenRefresh, 'access'> | null, ignoreDiscriminator: boolean = false): any {
+export function TokenRefreshToJSONTyped(value?: TokenRefresh | null, ignoreDiscriminator: boolean = false): any {
     if (value == null) {
         return value;
     }

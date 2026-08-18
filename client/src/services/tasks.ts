@@ -14,7 +14,7 @@ export function createTask(input: TodoCreateInput): Promise<TodoSchema> {
 /** Flip a task between open and completed. */
 export function toggleTask(task: TodoSchema): Promise<TodoSchema> {
   return api.apiTasksPartialUpdate({
-    id: String(task.id),
+    id: task.id,
     todoUpdateInput: { completed: !task.completed },
   });
 }
@@ -25,7 +25,7 @@ export function assignTaskProject(
   projectId: number | null,
 ): Promise<TodoSchema> {
   return api.apiTasksPartialUpdate({
-    id: String(taskId),
+    id: taskId,
     todoUpdateInput: { projectId },
   });
 }

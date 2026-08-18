@@ -4,20 +4,23 @@ All URIs are relative to *http://localhost*
 
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
-| [**apiProjectsCreate**](ApiApi.md#apiprojectscreate) | **POST** /api/projects/ |  |
-| [**apiProjectsDestroy**](ApiApi.md#apiprojectsdestroy) | **DELETE** /api/projects/{id}/ |  |
-| [**apiProjectsList**](ApiApi.md#apiprojectslist) | **GET** /api/projects/ |  |
-| [**apiProjectsPartialUpdate**](ApiApi.md#apiprojectspartialupdate) | **PATCH** /api/projects/{id}/ |  |
-| [**apiProjectsReorderCreate**](ApiApi.md#apiprojectsreordercreate) | **POST** /api/projects/reorder/ |  |
-| [**apiProjectsRetrieve**](ApiApi.md#apiprojectsretrieve) | **GET** /api/projects/{id}/ |  |
-| [**apiTasksCreate**](ApiApi.md#apitaskscreate) | **POST** /api/tasks/ |  |
-| [**apiTasksDestroy**](ApiApi.md#apitasksdestroy) | **DELETE** /api/tasks/{id}/ |  |
-| [**apiTasksList**](ApiApi.md#apitaskslist) | **GET** /api/tasks/ |  |
-| [**apiTasksPartialUpdate**](ApiApi.md#apitaskspartialupdate) | **PATCH** /api/tasks/{id}/ |  |
-| [**apiTasksReorderCreate**](ApiApi.md#apitasksreordercreate) | **POST** /api/tasks/reorder/ |  |
-| [**apiTasksRetrieve**](ApiApi.md#apitasksretrieve) | **GET** /api/tasks/{id}/ |  |
-| [**apiTokenCreate**](ApiApi.md#apitokencreate) | **POST** /api/token/ |  |
-| [**apiTokenRefreshCreate**](ApiApi.md#apitokenrefreshcreate) | **POST** /api/token/refresh/ |  |
+| [**apiProjectsCreate**](ApiApi.md#apiprojectscreate) | **POST** /api/projects/ | Create Project |
+| [**apiProjectsDestroy**](ApiApi.md#apiprojectsdestroy) | **DELETE** /api/projects/{id}/ | Delete Project |
+| [**apiProjectsList**](ApiApi.md#apiprojectslist) | **GET** /api/projects/ | List Projects |
+| [**apiProjectsPartialUpdate**](ApiApi.md#apiprojectspartialupdate) | **PATCH** /api/projects/{id}/ | Update Project |
+| [**apiProjectsReorderCreate**](ApiApi.md#apiprojectsreordercreate) | **POST** /api/projects/reorder/ | Reorder Projects |
+| [**apiProjectsRetrieve**](ApiApi.md#apiprojectsretrieve) | **GET** /api/projects/{id}/ | Retrieve Project |
+| [**apiTasksCountRetrieve**](ApiApi.md#apitaskscountretrieve) | **GET** /api/tasks/count/ | Count Tasks |
+| [**apiTasksCreate**](ApiApi.md#apitaskscreate) | **POST** /api/tasks/ | Create Task |
+| [**apiTasksDestroy**](ApiApi.md#apitasksdestroy) | **DELETE** /api/tasks/{id}/ | Delete Task |
+| [**apiTasksList**](ApiApi.md#apitaskslist) | **GET** /api/tasks/ | List Tasks |
+| [**apiTasksOpenList**](ApiApi.md#apitasksopenlist) | **GET** /api/tasks/open/ | Open Tasks |
+| [**apiTasksPartialUpdate**](ApiApi.md#apitaskspartialupdate) | **PATCH** /api/tasks/{id}/ | Update Task |
+| [**apiTasksReorderCreate**](ApiApi.md#apitasksreordercreate) | **POST** /api/tasks/reorder/ | Reorder Tasks |
+| [**apiTasksRetrieve**](ApiApi.md#apitasksretrieve) | **GET** /api/tasks/{id}/ | Retrieve Task |
+| [**apiTasksViewList**](ApiApi.md#apitasksviewlist) | **GET** /api/tasks/view/ | View Tasks |
+| [**apiTokenCreate**](ApiApi.md#apitokencreate) | **POST** /api/token/ | Obtain Token |
+| [**apiTokenRefreshCreate**](ApiApi.md#apitokenrefreshcreate) | **POST** /api/token/refresh/ | Refresh Token |
 
 
 
@@ -25,9 +28,7 @@ All URIs are relative to *http://localhost*
 
 > ProjectSchema apiProjectsCreate(projectCreateInput)
 
-
-
-This is the magic.  Overrides &#x60;.as_view()&#x60; so that it takes an &#x60;actions&#x60; keyword that performs the binding of HTTP methods to actions on the Resource.  For example, to create a concrete view binding the \&#39;GET\&#39; and \&#39;POST\&#39; methods to the \&#39;alist\&#39; and \&#39;acreate\&#39; actions...  view &#x3D; MyViewSet.as_view({\&#39;get\&#39;: \&#39;alist\&#39;, \&#39;post\&#39;: \&#39;acreate\&#39;})
+Create Project
 
 ### Example
 
@@ -41,15 +42,13 @@ import type { ApiProjectsCreateRequest } from '';
 async function example() {
   console.log("🚀 Testing  SDK...");
   const config = new Configuration({ 
-    // To configure API key authorization: cookieAuth
-    apiKey: "YOUR API KEY",
-    // Configure HTTP bearer authorization: jwtAuth
+    // Configure HTTP bearer authorization: HTTPBearer
     accessToken: "YOUR BEARER TOKEN",
   });
   const api = new ApiApi(config);
 
   const body = {
-    // ProjectCreateInput (optional)
+    // ProjectCreateInput
     projectCreateInput: ...,
   } satisfies ApiProjectsCreateRequest;
 
@@ -70,7 +69,7 @@ example().catch(console.error);
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **projectCreateInput** | [ProjectCreateInput](ProjectCreateInput.md) |  | [Optional] |
+| **projectCreateInput** | [ProjectCreateInput](ProjectCreateInput.md) |  | |
 
 ### Return type
 
@@ -78,18 +77,19 @@ example().catch(console.error);
 
 ### Authorization
 
-[cookieAuth](../README.md#cookieAuth), [jwtAuth](../README.md#jwtAuth)
+[HTTPBearer](../README.md#HTTPBearer)
 
 ### HTTP request headers
 
-- **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
+- **Content-Type**: `application/json`
 - **Accept**: `application/json`
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-| **201** |  |  -  |
+| **201** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
@@ -98,9 +98,7 @@ example().catch(console.error);
 
 > apiProjectsDestroy(id)
 
-
-
-This is the magic.  Overrides &#x60;.as_view()&#x60; so that it takes an &#x60;actions&#x60; keyword that performs the binding of HTTP methods to actions on the Resource.  For example, to create a concrete view binding the \&#39;GET\&#39; and \&#39;POST\&#39; methods to the \&#39;alist\&#39; and \&#39;acreate\&#39; actions...  view &#x3D; MyViewSet.as_view({\&#39;get\&#39;: \&#39;alist\&#39;, \&#39;post\&#39;: \&#39;acreate\&#39;})
+Delete Project
 
 ### Example
 
@@ -114,16 +112,14 @@ import type { ApiProjectsDestroyRequest } from '';
 async function example() {
   console.log("🚀 Testing  SDK...");
   const config = new Configuration({ 
-    // To configure API key authorization: cookieAuth
-    apiKey: "YOUR API KEY",
-    // Configure HTTP bearer authorization: jwtAuth
+    // Configure HTTP bearer authorization: HTTPBearer
     accessToken: "YOUR BEARER TOKEN",
   });
   const api = new ApiApi(config);
 
   const body = {
-    // string
-    id: id_example,
+    // number
+    id: 56,
   } satisfies ApiProjectsDestroyRequest;
 
   try {
@@ -143,7 +139,7 @@ example().catch(console.error);
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **id** | `string` |  | [Defaults to `undefined`] |
+| **id** | `number` |  | [Defaults to `undefined`] |
 
 ### Return type
 
@@ -151,18 +147,19 @@ example().catch(console.error);
 
 ### Authorization
 
-[cookieAuth](../README.md#cookieAuth), [jwtAuth](../README.md#jwtAuth)
+[HTTPBearer](../README.md#HTTPBearer)
 
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: Not defined
+- **Accept**: `application/json`
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-| **204** | No response body |  -  |
+| **204** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
@@ -171,9 +168,7 @@ example().catch(console.error);
 
 > Array&lt;ProjectSchema&gt; apiProjectsList()
 
-
-
-This is the magic.  Overrides &#x60;.as_view()&#x60; so that it takes an &#x60;actions&#x60; keyword that performs the binding of HTTP methods to actions on the Resource.  For example, to create a concrete view binding the \&#39;GET\&#39; and \&#39;POST\&#39; methods to the \&#39;alist\&#39; and \&#39;acreate\&#39; actions...  view &#x3D; MyViewSet.as_view({\&#39;get\&#39;: \&#39;alist\&#39;, \&#39;post\&#39;: \&#39;acreate\&#39;})
+List Projects
 
 ### Example
 
@@ -187,9 +182,7 @@ import type { ApiProjectsListRequest } from '';
 async function example() {
   console.log("🚀 Testing  SDK...");
   const config = new Configuration({ 
-    // To configure API key authorization: cookieAuth
-    apiKey: "YOUR API KEY",
-    // Configure HTTP bearer authorization: jwtAuth
+    // Configure HTTP bearer authorization: HTTPBearer
     accessToken: "YOUR BEARER TOKEN",
   });
   const api = new ApiApi(config);
@@ -216,7 +209,7 @@ This endpoint does not need any parameter.
 
 ### Authorization
 
-[cookieAuth](../README.md#cookieAuth), [jwtAuth](../README.md#jwtAuth)
+[HTTPBearer](../README.md#HTTPBearer)
 
 ### HTTP request headers
 
@@ -227,7 +220,7 @@ This endpoint does not need any parameter.
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-| **200** |  |  -  |
+| **200** | Successful Response |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
@@ -236,9 +229,7 @@ This endpoint does not need any parameter.
 
 > ProjectSchema apiProjectsPartialUpdate(id, projectUpdateInput)
 
-
-
-This is the magic.  Overrides &#x60;.as_view()&#x60; so that it takes an &#x60;actions&#x60; keyword that performs the binding of HTTP methods to actions on the Resource.  For example, to create a concrete view binding the \&#39;GET\&#39; and \&#39;POST\&#39; methods to the \&#39;alist\&#39; and \&#39;acreate\&#39; actions...  view &#x3D; MyViewSet.as_view({\&#39;get\&#39;: \&#39;alist\&#39;, \&#39;post\&#39;: \&#39;acreate\&#39;})
+Update Project
 
 ### Example
 
@@ -252,17 +243,15 @@ import type { ApiProjectsPartialUpdateRequest } from '';
 async function example() {
   console.log("🚀 Testing  SDK...");
   const config = new Configuration({ 
-    // To configure API key authorization: cookieAuth
-    apiKey: "YOUR API KEY",
-    // Configure HTTP bearer authorization: jwtAuth
+    // Configure HTTP bearer authorization: HTTPBearer
     accessToken: "YOUR BEARER TOKEN",
   });
   const api = new ApiApi(config);
 
   const body = {
-    // string
-    id: id_example,
-    // ProjectUpdateInput (optional)
+    // number
+    id: 56,
+    // ProjectUpdateInput
     projectUpdateInput: ...,
   } satisfies ApiProjectsPartialUpdateRequest;
 
@@ -283,8 +272,8 @@ example().catch(console.error);
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **id** | `string` |  | [Defaults to `undefined`] |
-| **projectUpdateInput** | [ProjectUpdateInput](ProjectUpdateInput.md) |  | [Optional] |
+| **id** | `number` |  | [Defaults to `undefined`] |
+| **projectUpdateInput** | [ProjectUpdateInput](ProjectUpdateInput.md) |  | |
 
 ### Return type
 
@@ -292,29 +281,28 @@ example().catch(console.error);
 
 ### Authorization
 
-[cookieAuth](../README.md#cookieAuth), [jwtAuth](../README.md#jwtAuth)
+[HTTPBearer](../README.md#HTTPBearer)
 
 ### HTTP request headers
 
-- **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
+- **Content-Type**: `application/json`
 - **Accept**: `application/json`
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-| **200** |  |  -  |
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 
 ## apiProjectsReorderCreate
 
-> apiProjectsReorderCreate()
+> apiProjectsReorderCreate(reorderInput)
 
-
-
-This is the magic.  Overrides &#x60;.as_view()&#x60; so that it takes an &#x60;actions&#x60; keyword that performs the binding of HTTP methods to actions on the Resource.  For example, to create a concrete view binding the \&#39;GET\&#39; and \&#39;POST\&#39; methods to the \&#39;alist\&#39; and \&#39;acreate\&#39; actions...  view &#x3D; MyViewSet.as_view({\&#39;get\&#39;: \&#39;alist\&#39;, \&#39;post\&#39;: \&#39;acreate\&#39;})
+Reorder Projects
 
 ### Example
 
@@ -328,15 +316,18 @@ import type { ApiProjectsReorderCreateRequest } from '';
 async function example() {
   console.log("🚀 Testing  SDK...");
   const config = new Configuration({ 
-    // To configure API key authorization: cookieAuth
-    apiKey: "YOUR API KEY",
-    // Configure HTTP bearer authorization: jwtAuth
+    // Configure HTTP bearer authorization: HTTPBearer
     accessToken: "YOUR BEARER TOKEN",
   });
   const api = new ApiApi(config);
 
+  const body = {
+    // ReorderInput
+    reorderInput: ...,
+  } satisfies ApiProjectsReorderCreateRequest;
+
   try {
-    const data = await api.apiProjectsReorderCreate();
+    const data = await api.apiProjectsReorderCreate(body);
     console.log(data);
   } catch (error) {
     console.error(error);
@@ -349,7 +340,10 @@ example().catch(console.error);
 
 ### Parameters
 
-This endpoint does not need any parameter.
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **reorderInput** | [ReorderInput](ReorderInput.md) |  | |
 
 ### Return type
 
@@ -357,18 +351,19 @@ This endpoint does not need any parameter.
 
 ### Authorization
 
-[cookieAuth](../README.md#cookieAuth), [jwtAuth](../README.md#jwtAuth)
+[HTTPBearer](../README.md#HTTPBearer)
 
 ### HTTP request headers
 
-- **Content-Type**: Not defined
-- **Accept**: Not defined
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-| **200** | No response body |  -  |
+| **204** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
@@ -377,9 +372,7 @@ This endpoint does not need any parameter.
 
 > ProjectSchema apiProjectsRetrieve(id)
 
-
-
-This is the magic.  Overrides &#x60;.as_view()&#x60; so that it takes an &#x60;actions&#x60; keyword that performs the binding of HTTP methods to actions on the Resource.  For example, to create a concrete view binding the \&#39;GET\&#39; and \&#39;POST\&#39; methods to the \&#39;alist\&#39; and \&#39;acreate\&#39; actions...  view &#x3D; MyViewSet.as_view({\&#39;get\&#39;: \&#39;alist\&#39;, \&#39;post\&#39;: \&#39;acreate\&#39;})
+Retrieve Project
 
 ### Example
 
@@ -393,16 +386,14 @@ import type { ApiProjectsRetrieveRequest } from '';
 async function example() {
   console.log("🚀 Testing  SDK...");
   const config = new Configuration({ 
-    // To configure API key authorization: cookieAuth
-    apiKey: "YOUR API KEY",
-    // Configure HTTP bearer authorization: jwtAuth
+    // Configure HTTP bearer authorization: HTTPBearer
     accessToken: "YOUR BEARER TOKEN",
   });
   const api = new ApiApi(config);
 
   const body = {
-    // string
-    id: id_example,
+    // number
+    id: 56,
   } satisfies ApiProjectsRetrieveRequest;
 
   try {
@@ -422,7 +413,7 @@ example().catch(console.error);
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **id** | `string` |  | [Defaults to `undefined`] |
+| **id** | `number` |  | [Defaults to `undefined`] |
 
 ### Return type
 
@@ -430,7 +421,7 @@ example().catch(console.error);
 
 ### Authorization
 
-[cookieAuth](../README.md#cookieAuth), [jwtAuth](../README.md#jwtAuth)
+[HTTPBearer](../README.md#HTTPBearer)
 
 ### HTTP request headers
 
@@ -441,7 +432,78 @@ example().catch(console.error);
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-| **200** |  |  -  |
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## apiTasksCountRetrieve
+
+> TaskCountSchema apiTasksCountRetrieve(completed)
+
+Count Tasks
+
+### Example
+
+```ts
+import {
+  Configuration,
+  ApiApi,
+} from '';
+import type { ApiTasksCountRetrieveRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({ 
+    // Configure HTTP bearer authorization: HTTPBearer
+    accessToken: "YOUR BEARER TOKEN",
+  });
+  const api = new ApiApi(config);
+
+  const body = {
+    // boolean (optional)
+    completed: true,
+  } satisfies ApiTasksCountRetrieveRequest;
+
+  try {
+    const data = await api.apiTasksCountRetrieve(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **completed** | `boolean` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**TaskCountSchema**](TaskCountSchema.md)
+
+### Authorization
+
+[HTTPBearer](../README.md#HTTPBearer)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
@@ -450,9 +512,7 @@ example().catch(console.error);
 
 > TodoSchema apiTasksCreate(todoCreateInput)
 
-
-
-This is the magic.  Overrides &#x60;.as_view()&#x60; so that it takes an &#x60;actions&#x60; keyword that performs the binding of HTTP methods to actions on the Resource.  For example, to create a concrete view binding the \&#39;GET\&#39; and \&#39;POST\&#39; methods to the \&#39;alist\&#39; and \&#39;acreate\&#39; actions...  view &#x3D; MyViewSet.as_view({\&#39;get\&#39;: \&#39;alist\&#39;, \&#39;post\&#39;: \&#39;acreate\&#39;})
+Create Task
 
 ### Example
 
@@ -466,15 +526,13 @@ import type { ApiTasksCreateRequest } from '';
 async function example() {
   console.log("🚀 Testing  SDK...");
   const config = new Configuration({ 
-    // To configure API key authorization: cookieAuth
-    apiKey: "YOUR API KEY",
-    // Configure HTTP bearer authorization: jwtAuth
+    // Configure HTTP bearer authorization: HTTPBearer
     accessToken: "YOUR BEARER TOKEN",
   });
   const api = new ApiApi(config);
 
   const body = {
-    // TodoCreateInput (optional)
+    // TodoCreateInput
     todoCreateInput: ...,
   } satisfies ApiTasksCreateRequest;
 
@@ -495,7 +553,7 @@ example().catch(console.error);
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **todoCreateInput** | [TodoCreateInput](TodoCreateInput.md) |  | [Optional] |
+| **todoCreateInput** | [TodoCreateInput](TodoCreateInput.md) |  | |
 
 ### Return type
 
@@ -503,18 +561,19 @@ example().catch(console.error);
 
 ### Authorization
 
-[cookieAuth](../README.md#cookieAuth), [jwtAuth](../README.md#jwtAuth)
+[HTTPBearer](../README.md#HTTPBearer)
 
 ### HTTP request headers
 
-- **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
+- **Content-Type**: `application/json`
 - **Accept**: `application/json`
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-| **201** |  |  -  |
+| **201** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
@@ -523,9 +582,7 @@ example().catch(console.error);
 
 > apiTasksDestroy(id)
 
-
-
-This is the magic.  Overrides &#x60;.as_view()&#x60; so that it takes an &#x60;actions&#x60; keyword that performs the binding of HTTP methods to actions on the Resource.  For example, to create a concrete view binding the \&#39;GET\&#39; and \&#39;POST\&#39; methods to the \&#39;alist\&#39; and \&#39;acreate\&#39; actions...  view &#x3D; MyViewSet.as_view({\&#39;get\&#39;: \&#39;alist\&#39;, \&#39;post\&#39;: \&#39;acreate\&#39;})
+Delete Task
 
 ### Example
 
@@ -539,16 +596,14 @@ import type { ApiTasksDestroyRequest } from '';
 async function example() {
   console.log("🚀 Testing  SDK...");
   const config = new Configuration({ 
-    // To configure API key authorization: cookieAuth
-    apiKey: "YOUR API KEY",
-    // Configure HTTP bearer authorization: jwtAuth
+    // Configure HTTP bearer authorization: HTTPBearer
     accessToken: "YOUR BEARER TOKEN",
   });
   const api = new ApiApi(config);
 
   const body = {
-    // string
-    id: id_example,
+    // number
+    id: 56,
   } satisfies ApiTasksDestroyRequest;
 
   try {
@@ -568,7 +623,7 @@ example().catch(console.error);
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **id** | `string` |  | [Defaults to `undefined`] |
+| **id** | `number` |  | [Defaults to `undefined`] |
 
 ### Return type
 
@@ -576,18 +631,19 @@ example().catch(console.error);
 
 ### Authorization
 
-[cookieAuth](../README.md#cookieAuth), [jwtAuth](../README.md#jwtAuth)
+[HTTPBearer](../README.md#HTTPBearer)
 
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: Not defined
+- **Accept**: `application/json`
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-| **204** | No response body |  -  |
+| **204** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
@@ -596,9 +652,7 @@ example().catch(console.error);
 
 > Array&lt;TodoSchema&gt; apiTasksList()
 
-
-
-This is the magic.  Overrides &#x60;.as_view()&#x60; so that it takes an &#x60;actions&#x60; keyword that performs the binding of HTTP methods to actions on the Resource.  For example, to create a concrete view binding the \&#39;GET\&#39; and \&#39;POST\&#39; methods to the \&#39;alist\&#39; and \&#39;acreate\&#39; actions...  view &#x3D; MyViewSet.as_view({\&#39;get\&#39;: \&#39;alist\&#39;, \&#39;post\&#39;: \&#39;acreate\&#39;})
+List Tasks
 
 ### Example
 
@@ -612,9 +666,7 @@ import type { ApiTasksListRequest } from '';
 async function example() {
   console.log("🚀 Testing  SDK...");
   const config = new Configuration({ 
-    // To configure API key authorization: cookieAuth
-    apiKey: "YOUR API KEY",
-    // Configure HTTP bearer authorization: jwtAuth
+    // Configure HTTP bearer authorization: HTTPBearer
     accessToken: "YOUR BEARER TOKEN",
   });
   const api = new ApiApi(config);
@@ -641,7 +693,7 @@ This endpoint does not need any parameter.
 
 ### Authorization
 
-[cookieAuth](../README.md#cookieAuth), [jwtAuth](../README.md#jwtAuth)
+[HTTPBearer](../README.md#HTTPBearer)
 
 ### HTTP request headers
 
@@ -652,7 +704,77 @@ This endpoint does not need any parameter.
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-| **200** |  |  -  |
+| **200** | Successful Response |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## apiTasksOpenList
+
+> Array&lt;TodoSchema&gt; apiTasksOpenList(limit)
+
+Open Tasks
+
+### Example
+
+```ts
+import {
+  Configuration,
+  ApiApi,
+} from '';
+import type { ApiTasksOpenListRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({ 
+    // Configure HTTP bearer authorization: HTTPBearer
+    accessToken: "YOUR BEARER TOKEN",
+  });
+  const api = new ApiApi(config);
+
+  const body = {
+    // number (optional)
+    limit: 56,
+  } satisfies ApiTasksOpenListRequest;
+
+  try {
+    const data = await api.apiTasksOpenList(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **limit** | `number` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**Array&lt;TodoSchema&gt;**](TodoSchema.md)
+
+### Authorization
+
+[HTTPBearer](../README.md#HTTPBearer)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
@@ -661,9 +783,7 @@ This endpoint does not need any parameter.
 
 > TodoSchema apiTasksPartialUpdate(id, todoUpdateInput)
 
-
-
-This is the magic.  Overrides &#x60;.as_view()&#x60; so that it takes an &#x60;actions&#x60; keyword that performs the binding of HTTP methods to actions on the Resource.  For example, to create a concrete view binding the \&#39;GET\&#39; and \&#39;POST\&#39; methods to the \&#39;alist\&#39; and \&#39;acreate\&#39; actions...  view &#x3D; MyViewSet.as_view({\&#39;get\&#39;: \&#39;alist\&#39;, \&#39;post\&#39;: \&#39;acreate\&#39;})
+Update Task
 
 ### Example
 
@@ -677,17 +797,15 @@ import type { ApiTasksPartialUpdateRequest } from '';
 async function example() {
   console.log("🚀 Testing  SDK...");
   const config = new Configuration({ 
-    // To configure API key authorization: cookieAuth
-    apiKey: "YOUR API KEY",
-    // Configure HTTP bearer authorization: jwtAuth
+    // Configure HTTP bearer authorization: HTTPBearer
     accessToken: "YOUR BEARER TOKEN",
   });
   const api = new ApiApi(config);
 
   const body = {
-    // string
-    id: id_example,
-    // TodoUpdateInput (optional)
+    // number
+    id: 56,
+    // TodoUpdateInput
     todoUpdateInput: ...,
   } satisfies ApiTasksPartialUpdateRequest;
 
@@ -708,8 +826,8 @@ example().catch(console.error);
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **id** | `string` |  | [Defaults to `undefined`] |
-| **todoUpdateInput** | [TodoUpdateInput](TodoUpdateInput.md) |  | [Optional] |
+| **id** | `number` |  | [Defaults to `undefined`] |
+| **todoUpdateInput** | [TodoUpdateInput](TodoUpdateInput.md) |  | |
 
 ### Return type
 
@@ -717,29 +835,28 @@ example().catch(console.error);
 
 ### Authorization
 
-[cookieAuth](../README.md#cookieAuth), [jwtAuth](../README.md#jwtAuth)
+[HTTPBearer](../README.md#HTTPBearer)
 
 ### HTTP request headers
 
-- **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
+- **Content-Type**: `application/json`
 - **Accept**: `application/json`
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-| **200** |  |  -  |
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 
 ## apiTasksReorderCreate
 
-> apiTasksReorderCreate()
+> apiTasksReorderCreate(reorderInput)
 
-
-
-This is the magic.  Overrides &#x60;.as_view()&#x60; so that it takes an &#x60;actions&#x60; keyword that performs the binding of HTTP methods to actions on the Resource.  For example, to create a concrete view binding the \&#39;GET\&#39; and \&#39;POST\&#39; methods to the \&#39;alist\&#39; and \&#39;acreate\&#39; actions...  view &#x3D; MyViewSet.as_view({\&#39;get\&#39;: \&#39;alist\&#39;, \&#39;post\&#39;: \&#39;acreate\&#39;})
+Reorder Tasks
 
 ### Example
 
@@ -753,15 +870,18 @@ import type { ApiTasksReorderCreateRequest } from '';
 async function example() {
   console.log("🚀 Testing  SDK...");
   const config = new Configuration({ 
-    // To configure API key authorization: cookieAuth
-    apiKey: "YOUR API KEY",
-    // Configure HTTP bearer authorization: jwtAuth
+    // Configure HTTP bearer authorization: HTTPBearer
     accessToken: "YOUR BEARER TOKEN",
   });
   const api = new ApiApi(config);
 
+  const body = {
+    // ReorderInput
+    reorderInput: ...,
+  } satisfies ApiTasksReorderCreateRequest;
+
   try {
-    const data = await api.apiTasksReorderCreate();
+    const data = await api.apiTasksReorderCreate(body);
     console.log(data);
   } catch (error) {
     console.error(error);
@@ -774,7 +894,10 @@ example().catch(console.error);
 
 ### Parameters
 
-This endpoint does not need any parameter.
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **reorderInput** | [ReorderInput](ReorderInput.md) |  | |
 
 ### Return type
 
@@ -782,18 +905,19 @@ This endpoint does not need any parameter.
 
 ### Authorization
 
-[cookieAuth](../README.md#cookieAuth), [jwtAuth](../README.md#jwtAuth)
+[HTTPBearer](../README.md#HTTPBearer)
 
 ### HTTP request headers
 
-- **Content-Type**: Not defined
-- **Accept**: Not defined
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-| **200** | No response body |  -  |
+| **204** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
@@ -802,9 +926,7 @@ This endpoint does not need any parameter.
 
 > TodoSchema apiTasksRetrieve(id)
 
-
-
-This is the magic.  Overrides &#x60;.as_view()&#x60; so that it takes an &#x60;actions&#x60; keyword that performs the binding of HTTP methods to actions on the Resource.  For example, to create a concrete view binding the \&#39;GET\&#39; and \&#39;POST\&#39; methods to the \&#39;alist\&#39; and \&#39;acreate\&#39; actions...  view &#x3D; MyViewSet.as_view({\&#39;get\&#39;: \&#39;alist\&#39;, \&#39;post\&#39;: \&#39;acreate\&#39;})
+Retrieve Task
 
 ### Example
 
@@ -818,16 +940,14 @@ import type { ApiTasksRetrieveRequest } from '';
 async function example() {
   console.log("🚀 Testing  SDK...");
   const config = new Configuration({ 
-    // To configure API key authorization: cookieAuth
-    apiKey: "YOUR API KEY",
-    // Configure HTTP bearer authorization: jwtAuth
+    // Configure HTTP bearer authorization: HTTPBearer
     accessToken: "YOUR BEARER TOKEN",
   });
   const api = new ApiApi(config);
 
   const body = {
-    // string
-    id: id_example,
+    // number
+    id: 56,
   } satisfies ApiTasksRetrieveRequest;
 
   try {
@@ -847,7 +967,7 @@ example().catch(console.error);
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **id** | `string` |  | [Defaults to `undefined`] |
+| **id** | `number` |  | [Defaults to `undefined`] |
 
 ### Return type
 
@@ -855,7 +975,7 @@ example().catch(console.error);
 
 ### Authorization
 
-[cookieAuth](../README.md#cookieAuth), [jwtAuth](../README.md#jwtAuth)
+[HTTPBearer](../README.md#HTTPBearer)
 
 ### HTTP request headers
 
@@ -866,18 +986,90 @@ example().catch(console.error);
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-| **200** |  |  -  |
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## apiTasksViewList
+
+> Array&lt;TodoSchema&gt; apiTasksViewList(view, project)
+
+View Tasks
+
+### Example
+
+```ts
+import {
+  Configuration,
+  ApiApi,
+} from '';
+import type { ApiTasksViewListRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({ 
+    // Configure HTTP bearer authorization: HTTPBearer
+    accessToken: "YOUR BEARER TOKEN",
+  });
+  const api = new ApiApi(config);
+
+  const body = {
+    // string (optional)
+    view: view_example,
+    // number (optional)
+    project: 56,
+  } satisfies ApiTasksViewListRequest;
+
+  try {
+    const data = await api.apiTasksViewList(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **view** | `string` |  | [Optional] [Defaults to `&#39;inbox&#39;`] |
+| **project** | `number` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**Array&lt;TodoSchema&gt;**](TodoSchema.md)
+
+### Authorization
+
+[HTTPBearer](../README.md#HTTPBearer)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 
 ## apiTokenCreate
 
-> TokenObtainPair apiTokenCreate(tokenObtainPair)
+> TokenPair apiTokenCreate(tokenObtainPair)
 
-
-
-Takes a set of user credentials and returns an access and refresh JSON web token pair to prove the authentication of those credentials.
+Obtain Token
 
 ### Example
 
@@ -918,7 +1110,7 @@ example().catch(console.error);
 
 ### Return type
 
-[**TokenObtainPair**](TokenObtainPair.md)
+[**TokenPair**](TokenPair.md)
 
 ### Authorization
 
@@ -926,25 +1118,24 @@ No authorization required
 
 ### HTTP request headers
 
-- **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
+- **Content-Type**: `application/json`
 - **Accept**: `application/json`
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-| **200** |  |  -  |
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 
 ## apiTokenRefreshCreate
 
-> TokenRefresh apiTokenRefreshCreate(tokenRefresh)
+> AccessToken apiTokenRefreshCreate(tokenRefresh)
 
-
-
-Takes a refresh type JSON web token and returns an access type JSON web token if the refresh token is valid.
+Refresh Token
 
 ### Example
 
@@ -985,7 +1176,7 @@ example().catch(console.error);
 
 ### Return type
 
-[**TokenRefresh**](TokenRefresh.md)
+[**AccessToken**](AccessToken.md)
 
 ### Authorization
 
@@ -993,14 +1184,15 @@ No authorization required
 
 ### HTTP request headers
 
-- **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
+- **Content-Type**: `application/json`
 - **Accept**: `application/json`
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-| **200** |  |  -  |
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 

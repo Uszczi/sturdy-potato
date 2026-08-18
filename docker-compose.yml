@@ -6,11 +6,9 @@ services:
     command:
       - sh
       - -c
-      - python manage.py migrate && exec python manage.py runserver --insecure 0.0.0.0:8000
+      - alembic upgrade head && python -m seed && exec uvicorn main:app --host 0.0.0.0 --port 8000
     environment:
-      DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1
-      DJANGO_DEBUG: "0"
-      DJANGO_DB_PATH: /app/data/db.sqlite3
+      DATABASE_URL: sqlite+aiosqlite:////app/data/db.sqlite3
     ports:
       - "${PORT:-8000}:8000"
     volumes:

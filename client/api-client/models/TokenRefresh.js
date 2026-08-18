@@ -15,8 +15,6 @@
  * Check if a given object implements the TokenRefresh interface.
  */
 export function instanceOfTokenRefresh(value) {
-    if (!('access' in value) || value['access'] === undefined)
-        return false;
     if (!('refresh' in value) || value['refresh'] === undefined)
         return false;
     return true;
@@ -29,7 +27,6 @@ export function TokenRefreshFromJSONTyped(json, ignoreDiscriminator) {
         return json;
     }
     return {
-        'access': json['access'],
         'refresh': json['refresh'],
     };
 }

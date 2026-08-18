@@ -31,18 +31,6 @@ export interface TokenObtainPair {
      * @memberof TokenObtainPair
      */
     password: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof TokenObtainPair
-     */
-    readonly access: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof TokenObtainPair
-     */
-    readonly refresh: string;
 }
 
 /**
@@ -51,8 +39,6 @@ export interface TokenObtainPair {
 export function instanceOfTokenObtainPair(value: object): value is TokenObtainPair {
     if (!('username' in value) || value['username'] === undefined) return false;
     if (!('password' in value) || value['password'] === undefined) return false;
-    if (!('access' in value) || value['access'] === undefined) return false;
-    if (!('refresh' in value) || value['refresh'] === undefined) return false;
     return true;
 }
 
@@ -68,8 +54,6 @@ export function TokenObtainPairFromJSONTyped(json: any, ignoreDiscriminator: boo
         
         'username': json['username'],
         'password': json['password'],
-        'access': json['access'],
-        'refresh': json['refresh'],
     };
 }
 
@@ -77,7 +61,7 @@ export function TokenObtainPairToJSON(json: any): TokenObtainPair {
     return TokenObtainPairToJSONTyped(json, false);
 }
 
-export function TokenObtainPairToJSONTyped(value?: Omit<TokenObtainPair, 'access'|'refresh'> | null, ignoreDiscriminator: boolean = false): any {
+export function TokenObtainPairToJSONTyped(value?: TokenObtainPair | null, ignoreDiscriminator: boolean = false): any {
     if (value == null) {
         return value;
     }

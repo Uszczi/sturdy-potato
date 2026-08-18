@@ -8,7 +8,7 @@ export function listProjects(): Promise<ProjectSchema[]> {
 
 /** A single project by id (used by the project detail page). */
 export function getProject(id: number): Promise<ProjectSchema> {
-  return api.apiProjectsRetrieve({ id: String(id) });
+  return api.apiProjectsRetrieve({ id });
 }
 
 /** Create a project and return it. */
