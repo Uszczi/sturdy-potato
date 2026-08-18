@@ -10,4 +10,14 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
+  // zustand lists `react` as an *optional* peer dependency. Vite 8 (rolldown)
+  // otherwise stubs that import out, so zustand fails to find React at runtime.
+  // Pre-bundling zustand resolves its `react` import against the real package,
+  // and deduping keeps a single React instance across the app and the dep.
+  optimizeDeps: {
+    include: ['zustand'],
+  },
+  resolve: {
+    dedupe: ['react', 'react-dom'],
+  },
 })

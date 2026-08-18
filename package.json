@@ -10,8 +10,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "vite build",
     "dev": "vite",
-    "format": "prettier --write templates assets e2e tests vite.config.mjs playwright.config.ts package.json aspire.config.json docker-compose.yml",
-    "format:check": "prettier --check templates assets e2e tests vite.config.mjs playwright.config.ts package.json aspire.config.json docker-compose.yml",
+    "format": "prettier --write templates assets tests vite.config.mjs package.json aspire.config.json docker-compose.yml",
+    "format:check": "prettier --check templates assets tests vite.config.mjs package.json aspire.config.json docker-compose.yml",
     "aspire:start": "npm --prefix aspire-apphost run aspire:start",
     "aspire:build": "npm --prefix aspire-apphost run aspire:build",
     "aspire:dev": "npm --prefix aspire-apphost run aspire:dev"
@@ -27,7 +27,6 @@
   },
   "homepage": "https://github.com/Uszczi/sturdy-potato#readme",
   "devDependencies": {
-    "@playwright/test": "^1.62.1",
     "@tailwindcss/vite": "^4.3.3",
     "prettier": "^3.9.6",
     "prettier-plugin-jinja-template": "^2.2.0",
@@ -40,6 +39,7 @@
     "htmx.org": "^2.0.10",
     "idiomorph": "^0.7.4",
     "sortablejs": "^1.15.7",
-    "tailwindcss": "^4.3.3"
+    "tailwindcss": "^4.3.3",
+    "zustand": "^5.0.15"
   }
 }

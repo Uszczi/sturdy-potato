@@ -4,14 +4,16 @@ test.describe("overview", () => {
   test("shows the workspace summary and seeded projects", async ({ page }) => {
     await page.goto("/");
 
-    // The summary cards rendered by web/main.html.
+    // The summary cards on the overview page (_app.index.tsx).
     const summary = page.getByLabel("Workspace summary");
     await expect(
       summary.getByText("Open tasks", { exact: true }),
     ).toBeVisible();
     await expect(summary.getByText("Completed", { exact: true })).toBeVisible();
+    await expect(summary.getByText("Projects", { exact: true })).toBeVisible();
 
-    // Seeded projects appear in the navigation and the projects panel.
+    // A seeded project appears once the store loads it from the API. The link
+    // shows up in both the sidebar and the overview's projects panel.
     await expect(
       page.getByRole("link", { name: /Getting started/ }).first(),
     ).toBeVisible();
@@ -25,7 +27,7 @@ test.describe("overview", () => {
       .first()
       .click();
 
-    await expect(page).toHaveURL(/\/tasks\/$/);
+    await expect(page).toHaveURL(/\/tasks$/);
     await expect(
       page.getByRole("heading", { name: "Inbox", exact: true }),
     ).toBeVisible();

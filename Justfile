@@ -36,31 +36,35 @@ lint-check:
 test:
 	uv run pytest -n auto --cov=potato --cov-report=html:skip-covered --cov-fail-under=100 -v tests/
 
+# The e2e suite lives with the React SPA it drives (web/sturdy-potato). Each
+# recipe runs Playwright from there; it boots the SPA (Vite preview) and a
+# freshly-seeded Django API server itself.
+
 # Install the browsers Playwright needs to run the e2e suite.
 e2e-install:
-	npx playwright install chromium
+	cd web/sturdy-potato && npx playwright install chromium
 
-# Run the Playwright e2e suite headless (boots its own seeded Django server).
+# Run the Playwright e2e suite headless.
 e2e *args:
-	npx playwright test {{args}}
+	cd web/sturdy-potato && npx playwright test {{args}}
 
 # Run the Playwright e2e suite in a visible browser window.
 # Add `-- --slowmo 500` to slow the actions down enough to watch.
 e2e-headed *args:
-	npx playwright test --headed {{args}}
+	cd web/sturdy-potato && npx playwright test --headed {{args}}
 
 # Interactive UI mode: pick tests, watch them run, and time-travel through
 # each step. The window stays open until you close it. Best for debugging.
 e2e-ui *args:
-	npx playwright test --ui {{args}}
+	cd web/sturdy-potato && npx playwright test --ui {{args}}
 
 # Step through a test with the Playwright Inspector (pauses on each action).
 e2e-debug *args:
-	npx playwright test --debug {{args}}
+	cd web/sturdy-potato && npx playwright test --debug {{args}}
 
 # Open the last Playwright HTML report.
 e2e-report:
-	npx playwright show-report
+	cd web/sturdy-potato && npx playwright show-report
 
 prod-up:
 	docker compose -f deployment/prod/docker-compose.yml up --build
