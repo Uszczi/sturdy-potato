@@ -37,7 +37,8 @@ async def _ensure_project(
 
 @router.get("/", operation_id="api_tasks_list")
 async def list_tasks(user_id: CurrentUserId, session: SessionDep) -> list[TodoSchema]:
-    return await repository.list_for_user(session, user_id)
+    # FastAPI serializes the ORM rows via the response model; no manual parse.
+    return await repository.list_for_user(session, user_id)  # type: ignore[return-value]
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED, operation_id="api_tasks_create")
@@ -46,7 +47,7 @@ async def create_task(
 ) -> TodoSchema:
     data = body.model_dump()
     await _ensure_project(session, user_id, data["project_id"])
-    return await repository.create_for_user(session, user_id, data)
+    return await repository.create_for_user(session, user_id, data)  # type: ignore[return-value]
 
 
 @router.get("/view/", operation_id="api_tasks_view_list")
@@ -57,7 +58,7 @@ async def view_tasks(
     project: Annotated[int | None, Query()] = None,
 ) -> list[TodoSchema]:
     await _ensure_project(session, user_id, project)
-    return await repository.list_for_view(
+    return await repository.list_for_view(  # type: ignore[return-value]
         session, user_id, view=view, project_id=project
     )
 
@@ -68,7 +69,7 @@ async def open_tasks(
     session: SessionDep,
     limit: Annotated[int | None, Query(ge=0)] = None,
 ) -> list[TodoSchema]:
-    return await repository.list_open_for_user(session, user_id, limit=limit)
+    return await repository.list_open_for_user(session, user_id, limit=limit)  # type: ignore[return-value]
 
 
 @router.get("/count/", operation_id="api_tasks_count_retrieve")
@@ -99,7 +100,7 @@ async def reorder_tasks(
 async def retrieve_task(
     id: int, user_id: CurrentUserId, session: SessionDep
 ) -> TodoSchema:
-    return await _get_task_or_404(session, user_id, id)
+    return await _get_task_or_404(session, user_id, id)  # type: ignore[return-value]
 
 
 @router.patch("/{id}/", operation_id="api_tasks_partial_update")
@@ -110,7 +111,7 @@ async def update_task(
     data = body.model_dump(exclude_unset=True)
     if "project_id" in data:
         await _ensure_project(session, user_id, data["project_id"])
-    return await repository.update(session, task, data)
+    return await repository.update(session, task, data)  # type: ignore[return-value]
 
 
 @router.delete(

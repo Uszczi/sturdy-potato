@@ -2,16 +2,17 @@
 
 A FastAPI backend for a React todo SPA. The server is organized as:
 
-- `server/main.py` builds the FastAPI app and wires the routers.
-- `server/routes/` owns the HTTP layer (`/api/tasks/`, `/api/projects/`, `/api/token/`).
-- `server/repositories/` holds the async SQLAlchemy data access, one class per aggregate.
-- `server/models.py` defines the SQLModel tables (`User`, `Project`, `Todo`).
-- `server/schemas/` contains the Pydantic request/response models.
-- `server/auth.py` handles password hashing (argon2) and JWT issue/verify.
-- `server/seed.py` seeds the demo user and example data.
+- `server/src/main.py` builds the FastAPI app and wires the routers.
+- `server/src/api/routes/` owns the HTTP layer (`/api/tasks/`, `/api/projects/`, `/api/token/`).
+- `server/src/repositories/` holds the async SQLAlchemy data access, one class per aggregate.
+- `server/src/models.py` defines the SQLModel tables (`User`, `Project`, `Todo`).
+- `server/src/schemas/` contains the Pydantic request/response models.
+- `server/src/auth.py` handles password hashing (argon2) and JWT issue/verify.
+- `server/src/seed.py` seeds the demo user and example data.
 
 Projects belong to one user, and tasks may be assigned to one of that user's projects.
-Schema changes are versioned with Alembic (`server/alembic/`, config in `alembic.ini`).
+Schema changes are versioned with Alembic (`server/src/infrastructure/alembic/`).
+Python tooling (`pyproject.toml`, `uv.lock`, `Dockerfile`) lives under `server/`.
 
 ## Development
 
@@ -46,7 +47,7 @@ just test
 Run the application with Docker Compose:
 
 ```bash
-docker compose up --build
+cd server && docker compose up --build
 ```
 
 The API is available at `http://localhost:8000`. SQLite data is stored in the

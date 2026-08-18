@@ -1,32 +1,35 @@
 run:
 	cd server && \
-	uv run fastapi dev main.py
+	uv run fastapi dev src/main.py
 
 migrate:
-	uv run alembic -c ./server/infrastructure/alembic/alembic.ini upgrade head
+	cd server && \
+	uv run alembic -c src/infrastructure/alembic/alembic.ini upgrade head
 
 makemigrations message:
-	uv run alembic revision --autogenerate -m "{{message}}"
+	cd server && \
+	uv run alembic -c src/infrastructure/alembic/alembic.ini revision --autogenerate -m "{{message}}"
 
 seed:
 	cd server && \
-	uv run python -m seed
+	uv run python src/seed.py
 
 generate-api-client:
 	openapi-generator-cli generate -i http://localhost:8000/openapi.json -g typescript-fetch -o ./client/api-client
 
 lint:
-	uv run ruff check . --fix
-	uv run ruff format .
-	uv run mypy .
+	cd server && uv run ruff check . --fix
+	cd server && uv run ruff format .
+	cd server && uv run mypy .
 
 lint-check:
-	uv run ruff check .
-	uv run ruff format . --check
-	uv run mypy .
+	cd server && uv run ruff check .
+	cd server && uv run ruff format . --check
+	cd server && uv run mypy .
 
 test:
-	uv run pytest --cov=server --cov-report=html:skip-covered --cov-fail-under=100 -v tests/
+	cd server && \
+	uv run pytest --cov=src --cov-report=html:skip-covered --cov-fail-under=100 -v tests/
 
 e2e-install:
 	cd client && npx playwright install chromium

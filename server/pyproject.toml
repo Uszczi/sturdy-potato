@@ -33,18 +33,18 @@ dev = [
 entrypoint = "main:app"
 
 [tool.pytest.ini_options]
-pythonpath = ["server"]
+pythonpath = ["src"]
 asyncio_mode = "auto"
 
 [tool.coverage.run]
-omit = ["server/infrastructure/alembic/*"]
+omit = ["src/infrastructure/alembic/*"]
 concurrency = ["thread", "greenlet"]
 
 [tool.coverage.report]
 exclude_also = ["if __name__ == .__main__.:"]
 
 [tool.ruff]
-exclude = ["server/infrastructure/alembic/**"]
+exclude = ["src/infrastructure/alembic/**"]
 
 [tool.ruff.lint.isort]
 known-first-party = [
@@ -60,7 +60,8 @@ known-first-party = [
 ]
 
 [tool.mypy]
-mypy_path = ["server"]
+mypy_path = ["src"]
+explicit_package_bases = true
 strict = true
 plugins = ["pydantic.mypy"]
-exclude = ["server/infrastructure/alembic/"]
+exclude = ["src/infrastructure/alembic/"]

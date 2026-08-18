@@ -3,7 +3,7 @@ from pathlib import Path
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-# Repository root (server/config.py -> server -> repo root).
+# Server project root (src/config.py -> src -> server/).
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
@@ -12,7 +12,7 @@ class Settings(BaseSettings):
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
-    # SQLAlchemy async URL. Defaults to the SQLite file at the repo root.
+    # SQLAlchemy async URL. Defaults to the SQLite file in the server/ dir.
     database_url: str = f"sqlite+aiosqlite:///{BASE_DIR / 'db.sqlite3'}"
 
     # Signing key for the JWT access/refresh tokens. Override in production.

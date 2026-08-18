@@ -7,7 +7,7 @@ WORKDIR /app
 ENV UV_COMPILE_BYTECODE=1 \
     UV_LINK_MODE=copy
 
-COPY pyproject.toml uv.lock ./
+COPY server/pyproject.toml server/uv.lock ./
 RUN uv sync --frozen --no-dev --no-install-project
 
 
@@ -18,11 +18,10 @@ WORKDIR /app
 ENV PATH="/app/.venv/bin:$PATH" \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    PYTHONPATH=/app/server
+    PYTHONPATH=/app/src
 
 COPY --from=python-dependencies /app/.venv /app/.venv
-COPY server ./server
-COPY alembic.ini ./
+COPY server/src ./src
 
 RUN mkdir -p /app/data
 
