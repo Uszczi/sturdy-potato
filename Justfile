@@ -28,33 +28,22 @@ lint-check:
 test:
 	uv run pytest --cov=server --cov-report=html:skip-covered --cov-fail-under=100 -v tests/
 
-# The e2e suite lives with the React SPA it drives (client). Each
-# recipe runs Playwright from there; it boots the SPA (Vite preview) and a
-# freshly-seeded FastAPI server itself.
-
-# Install the browsers Playwright needs to run the e2e suite.
 e2e-install:
 	cd client && npx playwright install chromium
 
-# Run the Playwright e2e suite headless.
 e2e *args:
 	cd client && npx playwright test {{args}}
 
-# Run the Playwright e2e suite in a visible browser window.
 # Add `-- --slowmo 500` to slow the actions down enough to watch.
 e2e-headed *args:
 	cd client && npx playwright test --headed {{args}}
 
-# Interactive UI mode: pick tests, watch them run, and time-travel through
-# each step. The window stays open until you close it. Best for debugging.
 e2e-ui *args:
 	cd client && npx playwright test --ui {{args}}
 
-# Step through a test with the Playwright Inspector (pauses on each action).
 e2e-debug *args:
 	cd client && npx playwright test --debug {{args}}
 
-# Open the last Playwright HTML report.
 e2e-report:
 	cd client && npx playwright show-report
 

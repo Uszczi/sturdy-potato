@@ -16,7 +16,7 @@ from schemas.auth import (
     TokenRefresh,
 )
 
-router = APIRouter(prefix="/api/token", tags=["api"])
+router = APIRouter(prefix="/token", tags=["api"])
 
 _invalid_credentials = HTTPException(
     status_code=status.HTTP_401_UNAUTHORIZED,

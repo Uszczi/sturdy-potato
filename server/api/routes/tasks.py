@@ -14,7 +14,7 @@ from schemas.todo import (
     TodoUpdateInput,
 )
 
-router = APIRouter(prefix="/api/tasks", tags=["api"])
+router = APIRouter(prefix="/tasks", tags=["tasks"])
 
 repository = TodoRepository()
 

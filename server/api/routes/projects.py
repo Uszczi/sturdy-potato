@@ -6,7 +6,7 @@ from repositories import ProjectRepository
 from schemas.order import ReorderInput
 from schemas.project import ProjectCreateInput, ProjectSchema, ProjectUpdateInput
 
-router = APIRouter(prefix="/api/projects", tags=["api"])
+router = APIRouter(prefix="/projects", tags=["projects"])
 
 repository = ProjectRepository()
 
