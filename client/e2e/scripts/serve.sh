@@ -11,8 +11,8 @@ set -e
 HOST="${E2E_API_HOST:-127.0.0.1}"
 PORT="${E2E_API_PORT:-8000}"
 
-# This script lives at <repo>/web/sturdy-potato/e2e/scripts/serve.sh.
-ROOT="$(cd "$(dirname "$0")/../../../.." && pwd)"
+# This script lives at <repo>/client/e2e/scripts/serve.sh.
+ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
 
 export DJANGO_DB_PATH="${DJANGO_DB_PATH:-$ROOT/e2e-db.sqlite3}"
 export SEEDDB_DEMO_PASSWORD="${SEEDDB_DEMO_PASSWORD:-demo-password-123}"
@@ -24,7 +24,7 @@ export DJANGO_CORS_ALLOWED_ORIGINS="${DJANGO_CORS_ALLOWED_ORIGINS:-http://127.0.
 # Start from a clean database so every run is deterministic.
 rm -f "$DJANGO_DB_PATH"
 
-cd "$ROOT/potato"
+cd "$ROOT/server"
 uv run python manage.py migrate --noinput
 uv run python manage.py seeddb
 exec uv run python manage.py runserver "$HOST:$PORT" --noreload

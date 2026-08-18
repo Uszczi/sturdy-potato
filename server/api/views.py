@@ -5,6 +5,7 @@ from dependency_injector.wiring import Provide, inject
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.decorators import action
+from rest_framework.exceptions import NotFound
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -47,6 +48,60 @@ class TodoViewSet(viewsets.ViewSet):
         user = get_authenticated_user(request)
         tasks = await repository.list_for_user(user)
         return Response([dump_task(task) for task in tasks])
+
+    @action(detail=False, methods=["get"])
+    @pydantic_response(TodoSchema)
+    @inject
+    async def view(
+        self,
+        request: Request,
+        repository: Annotated[TodoRepository, Provide[Container.todo_repository]],
+    ) -> Response:
+        user = get_authenticated_user(request)
+        view_name = request.query_params.get("view", "inbox")
+        project_id = request.query_params.get("project")
+        project = None
+        if project_id is not None:
+            project = await repository.get_project_for_user(user, int(project_id))
+            if project is None:
+                raise NotFound("Project not found.")
+        tasks = await repository.list_for_view(user, view=view_name, project=project)
+        return Response([dump_task(task) for task in tasks])
+
+    @action(detail=False, methods=["get"])
+    @pydantic_response(TodoSchema)
+    @inject
+    async def open(
+        self,
+        request: Request,
+        repository: Annotated[TodoRepository, Provide[Container.todo_repository]],
+    ) -> Response:
+        user = get_authenticated_user(request)
+        limit_param = request.query_params.get("limit")
+        limit = int(limit_param) if limit_param is not None else None
+        tasks = await repository.list_open_for_user(user, limit=limit)
+        return Response([dump_task(task) for task in tasks])
+
+    @action(detail=False, methods=["get"])
+    @extend_schema(
+        responses={
+            status.HTTP_200_OK: {
+                "type": "object",
+                "properties": {"count": {"type": "integer"}},
+            }
+        }
+    )
+    @inject
+    async def count(
+        self,
+        request: Request,
+        repository: Annotated[TodoRepository, Provide[Container.todo_repository]],
+    ) -> Response:
+        user = get_authenticated_user(request)
+        completed_param = request.query_params.get("completed")
+        completed = completed_param == "true" if completed_param is not None else None
+        total = await repository.count_for_user(user, completed=completed)
+        return Response({"count": total})
 
     @action(detail=False, methods=["post"], url_path="reorder")
     @extend_schema(responses={status.HTTP_204_NO_CONTENT: None})

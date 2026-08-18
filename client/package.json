@@ -15,7 +15,8 @@
     "@tanstack/react-router": "^1.170.29",
     "daisyui": "^5.7.17",
     "react": "^19.2.8",
-    "react-dom": "^19.2.8"
+    "react-dom": "^19.2.8",
+    "zustand": "^5.0.15"
   },
   "devDependencies": {
     "@playwright/test": "^1.62.1",
