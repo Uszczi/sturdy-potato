@@ -2,9 +2,7 @@ from collections.abc import Callable, Mapping
 from functools import wraps
 from typing import Any, cast, get_type_hints
 
-from django.http import QueryDict
-from drf_spectacular.types import OpenApiTypes
-from drf_spectacular.utils import OpenApiRequest, OpenApiResponse, extend_schema
+from drf_spectacular.utils import OpenApiRequest, extend_schema
 from pydantic import BaseModel
 from pydantic import ValidationError as PydanticValidationError
 from rest_framework import status
@@ -23,16 +21,9 @@ def _format_validation_errors(
 
 
 def _get_request_data(request: Request) -> dict[str, object] | None:
-    data: dict[str, object]
-    if isinstance(request.data, QueryDict):
-        data = {key: value for key, value in request.data.items()}
-    elif isinstance(request.data, Mapping):
-        data = cast(dict[str, object], dict(request.data))
-    else:
+    if not isinstance(request.data, Mapping):
         return None
-
-    data.pop("csrfmiddlewaretoken", None)
-    return data
+    return cast(dict[str, object], dict(request.data))
 
 
 def pydantic_body[**P, R](view: Callable[P, R]) -> Callable[P, R]:
@@ -103,20 +94,3 @@ def pydantic_response[**P, R](
         return cast(Callable[P, R], annotated_view)
 
     return decorator
-
-
-def html_response[**P, R](view: Callable[P, R]) -> Callable[P, R]:
-    """Declare a function-based view response as HTML in OpenAPI."""
-
-    annotated_view = cast(
-        Any,
-        extend_schema(
-            responses={
-                (status.HTTP_200_OK, "text/html"): OpenApiResponse(
-                    response=OpenApiTypes.STR,
-                )
-            }
-        )(view),
-    )
-    annotated_view.schema = annotated_view.kwargs["schema"]()
-    return cast(Callable[P, R], annotated_view)

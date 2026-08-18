@@ -7,4 +7,4 @@ class ConfigConfig(AppConfig):
     def ready(self) -> None:
         from .containers import container
 
-        container.wire(modules=["api.views", "web.views", "web.home_views"])
+        container.wire(modules=["api.views"])

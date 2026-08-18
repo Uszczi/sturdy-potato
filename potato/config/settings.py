@@ -81,7 +81,6 @@ INSTALLED_APPS = [
     "config.apps.ConfigConfig",
     "infrastructure.apps.InfrastructureConfig",
     "api.apps.ApiConfig",
-    "web.apps.WebConfig",
     "serializers.apps.SerializersConfig",
 ]
 
