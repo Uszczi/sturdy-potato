@@ -50,7 +50,6 @@ known-first-party = [
     "main",
     "models",
     "repositories",
-    "routes",
     "schemas",
     "seed",
 ]

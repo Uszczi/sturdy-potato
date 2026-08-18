@@ -3,7 +3,7 @@ run:
 	uv run uvicorn main:app --reload
 
 migrate:
-	uv run alembic upgrade head
+	uv run alembic -c ./server/infrastructure/alembic/alembic.ini upgrade head
 
 makemigrations message:
 	uv run alembic revision --autogenerate -m "{{message}}"
