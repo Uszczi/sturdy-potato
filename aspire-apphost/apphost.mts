@@ -7,6 +7,7 @@ const builder = await createBuilder();
 
 const server = await builder.addUvicornApp("server", "../server/src", "main:app");
 await server.withUv();
+await server.withoutHttpsCertificate();
 await server.withHttpEndpoint({ port: 8000, targetPort: 8000, isProxied: false });
 await server.withExternalHttpEndpoints();
 
