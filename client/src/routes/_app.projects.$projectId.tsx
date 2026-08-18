@@ -14,10 +14,6 @@ function ProjectDetail() {
   const project = useAppStore((state) =>
     state.projects.find((candidate) => candidate.id === id),
   );
-  // Select the stable `tasks` array reference and derive the filtered list in
-  // render. Filtering inside the selector would return a new array on every
-  // call, which Zustand v5 (useSyncExternalStore) treats as a changed snapshot
-  // and loops on ("getSnapshot should be cached").
   const allTasks = useAppStore((state) => state.tasks);
   const tasks = useMemo(
     () => allTasks.filter((task) => task.projectId === id),
