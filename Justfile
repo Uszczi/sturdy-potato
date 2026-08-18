@@ -14,6 +14,13 @@ seed:
 	cd server && \
 	uv run python src/seed.py
 
+clean:
+	find . -type d -name __pycache__ -prune -exec rm -rf {} +
+	find . -type d -name .pytest_cache -prune -exec rm -rf {} +
+	find . -type d -name .mypy_cache -prune -exec rm -rf {} +
+	find . -type d -name .ruff_cache -prune -exec rm -rf {} +
+	rm -rf server/htmlcov server/.coverage
+
 generate-api-client:
 	openapi-generator-cli generate -i http://localhost:8000/openapi.json -g typescript-fetch -o ./client/api-client
 
