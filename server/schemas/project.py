@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict, Field, field_serializer, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class ProjectCreateInput(BaseModel):
@@ -39,7 +39,3 @@ class ProjectSchema(BaseModel):
     task_count: int = 0
     created_at: datetime
     updated_at: datetime
-
-    @field_serializer("created_at", "updated_at")
-    def serialize_datetime(self, value: datetime) -> str:
-        return value.isoformat()

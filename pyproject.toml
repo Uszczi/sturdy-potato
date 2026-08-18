@@ -7,7 +7,8 @@ requires-python = ">=3.13"
 dependencies = [
     "aiosqlite>=0.20.0",
     "alembic>=1.14.0",
-    "fastapi>=0.115.0",
+    "asyncer>=0.0.8",
+    "fastapi[standard]>=0.115.0",
     "pwdlib[argon2]>=0.2.1",
     "pydantic>=2.13.4",
     "pydantic-settings>=2.7.0",
@@ -28,22 +29,26 @@ dev = [
     "ruff>=0.16.3",
 ]
 
+[tool.fastapi]
+entrypoint = "main:app"
+
 [tool.pytest.ini_options]
 pythonpath = ["server"]
 asyncio_mode = "auto"
 
 [tool.coverage.run]
-omit = ["server/alembic/*"]
+omit = ["server/infrastructure/alembic/*"]
 concurrency = ["thread", "greenlet"]
 
 [tool.coverage.report]
 exclude_also = ["if __name__ == .__main__.:"]
 
 [tool.ruff]
-exclude = ["server/alembic/**"]
+exclude = ["server/infrastructure/alembic/**"]
 
 [tool.ruff.lint.isort]
 known-first-party = [
+    "api",
     "auth",
     "config",
     "db",
@@ -58,4 +63,4 @@ known-first-party = [
 mypy_path = ["server"]
 strict = true
 plugins = ["pydantic.mypy"]
-exclude = ["server/alembic/"]
+exclude = ["server/infrastructure/alembic/"]

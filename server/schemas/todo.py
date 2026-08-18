@@ -1,6 +1,6 @@
 from datetime import date, datetime
 
-from pydantic import BaseModel, ConfigDict, Field, field_serializer, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class TodoCreateInput(BaseModel):
@@ -72,7 +72,3 @@ class TodoSchema(BaseModel):
     due_date: date | None
     created_at: datetime
     updated_at: datetime
-
-    @field_serializer("created_at", "updated_at")
-    def serialize_datetime(self, value: datetime) -> str:
-        return value.isoformat()

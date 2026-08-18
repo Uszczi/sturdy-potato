@@ -1,6 +1,6 @@
 run:
 	cd server && \
-	uv run uvicorn main:app --reload
+	uv run fastapi dev main.py
 
 migrate:
 	uv run alembic -c ./server/infrastructure/alembic/alembic.ini upgrade head

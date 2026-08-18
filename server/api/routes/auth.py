@@ -1,3 +1,4 @@
+from asyncer import asyncify
 from fastapi import APIRouter, HTTPException, status
 from sqlmodel import select
 
@@ -30,7 +31,7 @@ async def obtain_token(body: TokenObtainPair, session: SessionDep) -> TokenPair:
     if (
         user is None
         or not user.is_active
-        or not verify_password(body.password, user.hashed_password)
+        or not await asyncify(verify_password)(body.password, user.hashed_password)
     ):
         raise _invalid_credentials
     assert user.id is not None

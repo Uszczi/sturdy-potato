@@ -1,4 +1,4 @@
-from typing import Annotated
+from typing import Annotated, Literal
 
 from fastapi import APIRouter, HTTPException, Query, status
 
@@ -37,8 +37,7 @@ async def _ensure_project(
 
 @router.get("/", operation_id="api_tasks_list")
 async def list_tasks(user_id: CurrentUserId, session: SessionDep) -> list[TodoSchema]:
-    tasks = await repository.list_for_user(session, user_id)
-    return [TodoSchema.model_validate(task) for task in tasks]
+    return await repository.list_for_user(session, user_id)
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED, operation_id="api_tasks_create")
@@ -47,22 +46,20 @@ async def create_task(
 ) -> TodoSchema:
     data = body.model_dump()
     await _ensure_project(session, user_id, data["project_id"])
-    task = await repository.create_for_user(session, user_id, data)
-    return TodoSchema.model_validate(task)
+    return await repository.create_for_user(session, user_id, data)
 
 
 @router.get("/view/", operation_id="api_tasks_view_list")
 async def view_tasks(
     user_id: CurrentUserId,
     session: SessionDep,
-    view: str = "inbox",
-    project: int | None = None,
+    view: Annotated[Literal["inbox", "today", "upcoming", "all"], Query()] = "inbox",
+    project: Annotated[int | None, Query()] = None,
 ) -> list[TodoSchema]:
     await _ensure_project(session, user_id, project)
-    tasks = await repository.list_for_view(
+    return await repository.list_for_view(
         session, user_id, view=view, project_id=project
     )
-    return [TodoSchema.model_validate(task) for task in tasks]
 
 
 @router.get("/open/", operation_id="api_tasks_open_list")
@@ -71,8 +68,7 @@ async def open_tasks(
     session: SessionDep,
     limit: Annotated[int | None, Query(ge=0)] = None,
 ) -> list[TodoSchema]:
-    tasks = await repository.list_open_for_user(session, user_id, limit=limit)
-    return [TodoSchema.model_validate(task) for task in tasks]
+    return await repository.list_open_for_user(session, user_id, limit=limit)
 
 
 @router.get("/count/", operation_id="api_tasks_count_retrieve")
@@ -103,8 +99,7 @@ async def reorder_tasks(
 async def retrieve_task(
     id: int, user_id: CurrentUserId, session: SessionDep
 ) -> TodoSchema:
-    task = await _get_task_or_404(session, user_id, id)
-    return TodoSchema.model_validate(task)
+    return await _get_task_or_404(session, user_id, id)
 
 
 @router.patch("/{id}/", operation_id="api_tasks_partial_update")
@@ -115,8 +110,7 @@ async def update_task(
     data = body.model_dump(exclude_unset=True)
     if "project_id" in data:
         await _ensure_project(session, user_id, data["project_id"])
-    task = await repository.update(session, task, data)
-    return TodoSchema.model_validate(task)
+    return await repository.update(session, task, data)
 
 
 @router.delete(
