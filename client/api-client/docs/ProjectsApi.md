@@ -4,17 +4,20 @@ All URIs are relative to *http://localhost*
 
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
-| [**projectsCreateCreate**](ProjectsApi.md#projectscreatecreate) | **POST** /projects/create/ |  |
-| [**projectsRetrieve**](ProjectsApi.md#projectsretrieve) | **GET** /projects/ |  |
-| [**projectsRetrieve2**](ProjectsApi.md#projectsretrieve2) | **GET** /projects/{id}/ |  |
+| [**apiProjectsCreate**](ProjectsApi.md#apiprojectscreate) | **POST** /api/projects/ | Create Project |
+| [**apiProjectsDestroy**](ProjectsApi.md#apiprojectsdestroy) | **DELETE** /api/projects/{id}/ | Delete Project |
+| [**apiProjectsList**](ProjectsApi.md#apiprojectslist) | **GET** /api/projects/ | List Projects |
+| [**apiProjectsPartialUpdate**](ProjectsApi.md#apiprojectspartialupdate) | **PATCH** /api/projects/{id}/ | Update Project |
+| [**apiProjectsReorderCreate**](ProjectsApi.md#apiprojectsreordercreate) | **POST** /api/projects/reorder/ | Reorder Projects |
+| [**apiProjectsRetrieve**](ProjectsApi.md#apiprojectsretrieve) | **GET** /api/projects/{id}/ | Retrieve Project |
 
 
 
-## projectsCreateCreate
+## apiProjectsCreate
 
-> string projectsCreateCreate(projectCreateInput)
+> ProjectSchema apiProjectsCreate(projectCreateInput)
 
-
+Create Project
 
 ### Example
 
@@ -23,25 +26,23 @@ import {
   Configuration,
   ProjectsApi,
 } from '';
-import type { ProjectsCreateCreateRequest } from '';
+import type { ApiProjectsCreateRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
   const config = new Configuration({ 
-    // To configure API key authorization: cookieAuth
-    apiKey: "YOUR API KEY",
-    // Configure HTTP bearer authorization: jwtAuth
+    // Configure HTTP bearer authorization: HTTPBearer
     accessToken: "YOUR BEARER TOKEN",
   });
   const api = new ProjectsApi(config);
 
   const body = {
-    // ProjectCreateInput (optional)
+    // ProjectCreateInput
     projectCreateInput: ...,
-  } satisfies ProjectsCreateCreateRequest;
+  } satisfies ApiProjectsCreateRequest;
 
   try {
-    const data = await api.projectsCreateCreate(body);
+    const data = await api.apiProjectsCreate(body);
     console.log(data);
   } catch (error) {
     console.error(error);
@@ -57,35 +58,36 @@ example().catch(console.error);
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **projectCreateInput** | [ProjectCreateInput](ProjectCreateInput.md) |  | [Optional] |
+| **projectCreateInput** | [ProjectCreateInput](ProjectCreateInput.md) |  | |
 
 ### Return type
 
-**string**
+[**ProjectSchema**](ProjectSchema.md)
 
 ### Authorization
 
-[cookieAuth](../README.md#cookieAuth), [jwtAuth](../README.md#jwtAuth)
+[HTTPBearer](../README.md#HTTPBearer)
 
 ### HTTP request headers
 
-- **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
-- **Accept**: `text/html`
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-| **200** |  |  -  |
+| **201** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 
-## projectsRetrieve
+## apiProjectsDestroy
 
-> string projectsRetrieve()
+> apiProjectsDestroy(id)
 
-
+Delete Project
 
 ### Example
 
@@ -94,77 +96,12 @@ import {
   Configuration,
   ProjectsApi,
 } from '';
-import type { ProjectsRetrieveRequest } from '';
+import type { ApiProjectsDestroyRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
   const config = new Configuration({ 
-    // To configure API key authorization: cookieAuth
-    apiKey: "YOUR API KEY",
-    // Configure HTTP bearer authorization: jwtAuth
-    accessToken: "YOUR BEARER TOKEN",
-  });
-  const api = new ProjectsApi(config);
-
-  try {
-    const data = await api.projectsRetrieve();
-    console.log(data);
-  } catch (error) {
-    console.error(error);
-  }
-}
-
-// Run the test
-example().catch(console.error);
-```
-
-### Parameters
-
-This endpoint does not need any parameter.
-
-### Return type
-
-**string**
-
-### Authorization
-
-[cookieAuth](../README.md#cookieAuth), [jwtAuth](../README.md#jwtAuth)
-
-### HTTP request headers
-
-- **Content-Type**: Not defined
-- **Accept**: `text/html`
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** |  |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
-
-## projectsRetrieve2
-
-> string projectsRetrieve2(id)
-
-
-
-### Example
-
-```ts
-import {
-  Configuration,
-  ProjectsApi,
-} from '';
-import type { ProjectsRetrieve2Request } from '';
-
-async function example() {
-  console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
-    // To configure API key authorization: cookieAuth
-    apiKey: "YOUR API KEY",
-    // Configure HTTP bearer authorization: jwtAuth
+    // Configure HTTP bearer authorization: HTTPBearer
     accessToken: "YOUR BEARER TOKEN",
   });
   const api = new ProjectsApi(config);
@@ -172,10 +109,10 @@ async function example() {
   const body = {
     // number
     id: 56,
-  } satisfies ProjectsRetrieve2Request;
+  } satisfies ApiProjectsDestroyRequest;
 
   try {
-    const data = await api.projectsRetrieve2(body);
+    const data = await api.apiProjectsDestroy(body);
     console.log(data);
   } catch (error) {
     console.error(error);
@@ -195,22 +132,297 @@ example().catch(console.error);
 
 ### Return type
 
-**string**
+`void` (Empty response body)
 
 ### Authorization
 
-[cookieAuth](../README.md#cookieAuth), [jwtAuth](../README.md#jwtAuth)
+[HTTPBearer](../README.md#HTTPBearer)
 
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: `text/html`
+- **Accept**: `application/json`
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-| **200** |  |  -  |
+| **204** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## apiProjectsList
+
+> Array&lt;ProjectSchema&gt; apiProjectsList()
+
+List Projects
+
+### Example
+
+```ts
+import {
+  Configuration,
+  ProjectsApi,
+} from '';
+import type { ApiProjectsListRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({ 
+    // Configure HTTP bearer authorization: HTTPBearer
+    accessToken: "YOUR BEARER TOKEN",
+  });
+  const api = new ProjectsApi(config);
+
+  try {
+    const data = await api.apiProjectsList();
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+This endpoint does not need any parameter.
+
+### Return type
+
+[**Array&lt;ProjectSchema&gt;**](ProjectSchema.md)
+
+### Authorization
+
+[HTTPBearer](../README.md#HTTPBearer)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## apiProjectsPartialUpdate
+
+> ProjectSchema apiProjectsPartialUpdate(id, projectUpdateInput)
+
+Update Project
+
+### Example
+
+```ts
+import {
+  Configuration,
+  ProjectsApi,
+} from '';
+import type { ApiProjectsPartialUpdateRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({ 
+    // Configure HTTP bearer authorization: HTTPBearer
+    accessToken: "YOUR BEARER TOKEN",
+  });
+  const api = new ProjectsApi(config);
+
+  const body = {
+    // number
+    id: 56,
+    // ProjectUpdateInput
+    projectUpdateInput: ...,
+  } satisfies ApiProjectsPartialUpdateRequest;
+
+  try {
+    const data = await api.apiProjectsPartialUpdate(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **id** | `number` |  | [Defaults to `undefined`] |
+| **projectUpdateInput** | [ProjectUpdateInput](ProjectUpdateInput.md) |  | |
+
+### Return type
+
+[**ProjectSchema**](ProjectSchema.md)
+
+### Authorization
+
+[HTTPBearer](../README.md#HTTPBearer)
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## apiProjectsReorderCreate
+
+> apiProjectsReorderCreate(reorderInput)
+
+Reorder Projects
+
+### Example
+
+```ts
+import {
+  Configuration,
+  ProjectsApi,
+} from '';
+import type { ApiProjectsReorderCreateRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({ 
+    // Configure HTTP bearer authorization: HTTPBearer
+    accessToken: "YOUR BEARER TOKEN",
+  });
+  const api = new ProjectsApi(config);
+
+  const body = {
+    // ReorderInput
+    reorderInput: ...,
+  } satisfies ApiProjectsReorderCreateRequest;
+
+  try {
+    const data = await api.apiProjectsReorderCreate(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **reorderInput** | [ReorderInput](ReorderInput.md) |  | |
+
+### Return type
+
+`void` (Empty response body)
+
+### Authorization
+
+[HTTPBearer](../README.md#HTTPBearer)
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **204** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## apiProjectsRetrieve
+
+> ProjectSchema apiProjectsRetrieve(id)
+
+Retrieve Project
+
+### Example
+
+```ts
+import {
+  Configuration,
+  ProjectsApi,
+} from '';
+import type { ApiProjectsRetrieveRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({ 
+    // Configure HTTP bearer authorization: HTTPBearer
+    accessToken: "YOUR BEARER TOKEN",
+  });
+  const api = new ProjectsApi(config);
+
+  const body = {
+    // number
+    id: 56,
+  } satisfies ApiProjectsRetrieveRequest;
+
+  try {
+    const data = await api.apiProjectsRetrieve(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **id** | `number` |  | [Defaults to `undefined`] |
+
+### Return type
+
+[**ProjectSchema**](ProjectSchema.md)
+
+### Authorization
+
+[HTTPBearer](../README.md#HTTPBearer)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 

@@ -4,18 +4,23 @@ All URIs are relative to *http://localhost*
 
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
-| [**tasksCreateCreate**](TasksApi.md#taskscreatecreate) | **POST** /tasks/create/ |  |
-| [**tasksProjectCreate**](TasksApi.md#tasksprojectcreate) | **POST** /tasks/{id}/project/ |  |
-| [**tasksRetrieve**](TasksApi.md#tasksretrieve) | **GET** /tasks/ |  |
-| [**tasksToggleCreate**](TasksApi.md#taskstogglecreate) | **POST** /tasks/{id}/toggle/ |  |
+| [**apiTasksCountRetrieve**](TasksApi.md#apitaskscountretrieve) | **GET** /api/tasks/count/ | Count Tasks |
+| [**apiTasksCreate**](TasksApi.md#apitaskscreate) | **POST** /api/tasks/ | Create Task |
+| [**apiTasksDestroy**](TasksApi.md#apitasksdestroy) | **DELETE** /api/tasks/{id}/ | Delete Task |
+| [**apiTasksList**](TasksApi.md#apitaskslist) | **GET** /api/tasks/ | List Tasks |
+| [**apiTasksOpenList**](TasksApi.md#apitasksopenlist) | **GET** /api/tasks/open/ | Open Tasks |
+| [**apiTasksPartialUpdate**](TasksApi.md#apitaskspartialupdate) | **PATCH** /api/tasks/{id}/ | Update Task |
+| [**apiTasksReorderCreate**](TasksApi.md#apitasksreordercreate) | **POST** /api/tasks/reorder/ | Reorder Tasks |
+| [**apiTasksRetrieve**](TasksApi.md#apitasksretrieve) | **GET** /api/tasks/{id}/ | Retrieve Task |
+| [**apiTasksViewList**](TasksApi.md#apitasksviewlist) | **GET** /api/tasks/view/ | View Tasks |
 
 
 
-## tasksCreateCreate
+## apiTasksCountRetrieve
 
-> string tasksCreateCreate(todoCreateInput)
+> TaskCountSchema apiTasksCountRetrieve(completed)
 
-
+Count Tasks
 
 ### Example
 
@@ -24,25 +29,23 @@ import {
   Configuration,
   TasksApi,
 } from '';
-import type { TasksCreateCreateRequest } from '';
+import type { ApiTasksCountRetrieveRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
   const config = new Configuration({ 
-    // To configure API key authorization: cookieAuth
-    apiKey: "YOUR API KEY",
-    // Configure HTTP bearer authorization: jwtAuth
+    // Configure HTTP bearer authorization: HTTPBearer
     accessToken: "YOUR BEARER TOKEN",
   });
   const api = new TasksApi(config);
 
   const body = {
-    // TodoCreateInput (optional)
-    todoCreateInput: ...,
-  } satisfies TasksCreateCreateRequest;
+    // boolean (optional)
+    completed: true,
+  } satisfies ApiTasksCountRetrieveRequest;
 
   try {
-    const data = await api.tasksCreateCreate(body);
+    const data = await api.apiTasksCountRetrieve(body);
     console.log(data);
   } catch (error) {
     console.error(error);
@@ -58,35 +61,36 @@ example().catch(console.error);
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **todoCreateInput** | [TodoCreateInput](TodoCreateInput.md) |  | [Optional] |
+| **completed** | `boolean` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
-**string**
+[**TaskCountSchema**](TaskCountSchema.md)
 
 ### Authorization
 
-[cookieAuth](../README.md#cookieAuth), [jwtAuth](../README.md#jwtAuth)
+[HTTPBearer](../README.md#HTTPBearer)
 
 ### HTTP request headers
 
-- **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
-- **Accept**: `text/html`
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-| **200** |  |  -  |
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 
-## tasksProjectCreate
+## apiTasksCreate
 
-> string tasksProjectCreate(id, todoProjectInput)
+> TodoSchema apiTasksCreate(todoCreateInput)
 
-
+Create Task
 
 ### Example
 
@@ -95,14 +99,82 @@ import {
   Configuration,
   TasksApi,
 } from '';
-import type { TasksProjectCreateRequest } from '';
+import type { ApiTasksCreateRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
   const config = new Configuration({ 
-    // To configure API key authorization: cookieAuth
-    apiKey: "YOUR API KEY",
-    // Configure HTTP bearer authorization: jwtAuth
+    // Configure HTTP bearer authorization: HTTPBearer
+    accessToken: "YOUR BEARER TOKEN",
+  });
+  const api = new TasksApi(config);
+
+  const body = {
+    // TodoCreateInput
+    todoCreateInput: ...,
+  } satisfies ApiTasksCreateRequest;
+
+  try {
+    const data = await api.apiTasksCreate(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **todoCreateInput** | [TodoCreateInput](TodoCreateInput.md) |  | |
+
+### Return type
+
+[**TodoSchema**](TodoSchema.md)
+
+### Authorization
+
+[HTTPBearer](../README.md#HTTPBearer)
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **201** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## apiTasksDestroy
+
+> apiTasksDestroy(id)
+
+Delete Task
+
+### Example
+
+```ts
+import {
+  Configuration,
+  TasksApi,
+} from '';
+import type { ApiTasksDestroyRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({ 
+    // Configure HTTP bearer authorization: HTTPBearer
     accessToken: "YOUR BEARER TOKEN",
   });
   const api = new TasksApi(config);
@@ -110,12 +182,10 @@ async function example() {
   const body = {
     // number
     id: 56,
-    // TodoProjectInput (optional)
-    todoProjectInput: ...,
-  } satisfies TasksProjectCreateRequest;
+  } satisfies ApiTasksDestroyRequest;
 
   try {
-    const data = await api.tasksProjectCreate(body);
+    const data = await api.apiTasksDestroy(body);
     console.log(data);
   } catch (error) {
     console.error(error);
@@ -132,35 +202,35 @@ example().catch(console.error);
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **id** | `number` |  | [Defaults to `undefined`] |
-| **todoProjectInput** | [TodoProjectInput](TodoProjectInput.md) |  | [Optional] |
 
 ### Return type
 
-**string**
+`void` (Empty response body)
 
 ### Authorization
 
-[cookieAuth](../README.md#cookieAuth), [jwtAuth](../README.md#jwtAuth)
+[HTTPBearer](../README.md#HTTPBearer)
 
 ### HTTP request headers
 
-- **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
-- **Accept**: `text/html`
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-| **200** |  |  -  |
+| **204** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 
-## tasksRetrieve
+## apiTasksList
 
-> string tasksRetrieve()
+> Array&lt;TodoSchema&gt; apiTasksList()
 
-
+List Tasks
 
 ### Example
 
@@ -169,20 +239,18 @@ import {
   Configuration,
   TasksApi,
 } from '';
-import type { TasksRetrieveRequest } from '';
+import type { ApiTasksListRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
   const config = new Configuration({ 
-    // To configure API key authorization: cookieAuth
-    apiKey: "YOUR API KEY",
-    // Configure HTTP bearer authorization: jwtAuth
+    // Configure HTTP bearer authorization: HTTPBearer
     accessToken: "YOUR BEARER TOKEN",
   });
   const api = new TasksApi(config);
 
   try {
-    const data = await api.tasksRetrieve();
+    const data = await api.apiTasksList();
     console.log(data);
   } catch (error) {
     console.error(error);
@@ -199,31 +267,31 @@ This endpoint does not need any parameter.
 
 ### Return type
 
-**string**
+[**Array&lt;TodoSchema&gt;**](TodoSchema.md)
 
 ### Authorization
 
-[cookieAuth](../README.md#cookieAuth), [jwtAuth](../README.md#jwtAuth)
+[HTTPBearer](../README.md#HTTPBearer)
 
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: `text/html`
+- **Accept**: `application/json`
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-| **200** |  |  -  |
+| **200** | Successful Response |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 
-## tasksToggleCreate
+## apiTasksOpenList
 
-> string tasksToggleCreate(id)
+> Array&lt;TodoSchema&gt; apiTasksOpenList(limit)
 
-
+Open Tasks
 
 ### Example
 
@@ -232,14 +300,82 @@ import {
   Configuration,
   TasksApi,
 } from '';
-import type { TasksToggleCreateRequest } from '';
+import type { ApiTasksOpenListRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
   const config = new Configuration({ 
-    // To configure API key authorization: cookieAuth
-    apiKey: "YOUR API KEY",
-    // Configure HTTP bearer authorization: jwtAuth
+    // Configure HTTP bearer authorization: HTTPBearer
+    accessToken: "YOUR BEARER TOKEN",
+  });
+  const api = new TasksApi(config);
+
+  const body = {
+    // number (optional)
+    limit: 56,
+  } satisfies ApiTasksOpenListRequest;
+
+  try {
+    const data = await api.apiTasksOpenList(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **limit** | `number` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**Array&lt;TodoSchema&gt;**](TodoSchema.md)
+
+### Authorization
+
+[HTTPBearer](../README.md#HTTPBearer)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## apiTasksPartialUpdate
+
+> TodoSchema apiTasksPartialUpdate(id, todoUpdateInput)
+
+Update Task
+
+### Example
+
+```ts
+import {
+  Configuration,
+  TasksApi,
+} from '';
+import type { ApiTasksPartialUpdateRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({ 
+    // Configure HTTP bearer authorization: HTTPBearer
     accessToken: "YOUR BEARER TOKEN",
   });
   const api = new TasksApi(config);
@@ -247,10 +383,153 @@ async function example() {
   const body = {
     // number
     id: 56,
-  } satisfies TasksToggleCreateRequest;
+    // TodoUpdateInput
+    todoUpdateInput: ...,
+  } satisfies ApiTasksPartialUpdateRequest;
 
   try {
-    const data = await api.tasksToggleCreate(body);
+    const data = await api.apiTasksPartialUpdate(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **id** | `number` |  | [Defaults to `undefined`] |
+| **todoUpdateInput** | [TodoUpdateInput](TodoUpdateInput.md) |  | |
+
+### Return type
+
+[**TodoSchema**](TodoSchema.md)
+
+### Authorization
+
+[HTTPBearer](../README.md#HTTPBearer)
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## apiTasksReorderCreate
+
+> apiTasksReorderCreate(reorderInput)
+
+Reorder Tasks
+
+### Example
+
+```ts
+import {
+  Configuration,
+  TasksApi,
+} from '';
+import type { ApiTasksReorderCreateRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({ 
+    // Configure HTTP bearer authorization: HTTPBearer
+    accessToken: "YOUR BEARER TOKEN",
+  });
+  const api = new TasksApi(config);
+
+  const body = {
+    // ReorderInput
+    reorderInput: ...,
+  } satisfies ApiTasksReorderCreateRequest;
+
+  try {
+    const data = await api.apiTasksReorderCreate(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **reorderInput** | [ReorderInput](ReorderInput.md) |  | |
+
+### Return type
+
+`void` (Empty response body)
+
+### Authorization
+
+[HTTPBearer](../README.md#HTTPBearer)
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **204** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## apiTasksRetrieve
+
+> TodoSchema apiTasksRetrieve(id)
+
+Retrieve Task
+
+### Example
+
+```ts
+import {
+  Configuration,
+  TasksApi,
+} from '';
+import type { ApiTasksRetrieveRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({ 
+    // Configure HTTP bearer authorization: HTTPBearer
+    accessToken: "YOUR BEARER TOKEN",
+  });
+  const api = new TasksApi(config);
+
+  const body = {
+    // number
+    id: 56,
+  } satisfies ApiTasksRetrieveRequest;
+
+  try {
+    const data = await api.apiTasksRetrieve(body);
     console.log(data);
   } catch (error) {
     console.error(error);
@@ -270,22 +549,96 @@ example().catch(console.error);
 
 ### Return type
 
-**string**
+[**TodoSchema**](TodoSchema.md)
 
 ### Authorization
 
-[cookieAuth](../README.md#cookieAuth), [jwtAuth](../README.md#jwtAuth)
+[HTTPBearer](../README.md#HTTPBearer)
 
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: `text/html`
+- **Accept**: `application/json`
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-| **200** |  |  -  |
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## apiTasksViewList
+
+> Array&lt;TodoSchema&gt; apiTasksViewList(view, project)
+
+View Tasks
+
+### Example
+
+```ts
+import {
+  Configuration,
+  TasksApi,
+} from '';
+import type { ApiTasksViewListRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({ 
+    // Configure HTTP bearer authorization: HTTPBearer
+    accessToken: "YOUR BEARER TOKEN",
+  });
+  const api = new TasksApi(config);
+
+  const body = {
+    // string (optional)
+    view: view_example,
+    // number (optional)
+    project: 56,
+  } satisfies ApiTasksViewListRequest;
+
+  try {
+    const data = await api.apiTasksViewList(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **view** | `string` |  | [Optional] [Defaults to `&#39;inbox&#39;`] |
+| **project** | `number` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**Array&lt;TodoSchema&gt;**](TodoSchema.md)
+
+### Authorization
+
+[HTTPBearer](../README.md#HTTPBearer)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 

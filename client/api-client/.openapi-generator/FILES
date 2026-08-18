@@ -1,4 +1,6 @@
 apis/ApiApi.ts
+apis/ProjectsApi.ts
+apis/TasksApi.ts
 apis/index.ts
 docs/AccessToken.md
 docs/ApiApi.md
@@ -7,8 +9,10 @@ docs/LocationInner.md
 docs/ProjectCreateInput.md
 docs/ProjectSchema.md
 docs/ProjectUpdateInput.md
+docs/ProjectsApi.md
 docs/ReorderInput.md
 docs/TaskCountSchema.md
+docs/TasksApi.md
 docs/TodoCreateInput.md
 docs/TodoSchema.md
 docs/TodoUpdateInput.md

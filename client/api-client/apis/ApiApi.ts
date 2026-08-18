@@ -138,7 +138,15 @@ export interface ApiTokenCreateRequest {
     tokenObtainPair: TokenObtainPair;
 }
 
+export interface ApiTokenCreate0Request {
+    tokenObtainPair: TokenObtainPair;
+}
+
 export interface ApiTokenRefreshCreateRequest {
+    tokenRefresh: TokenRefresh;
+}
+
+export interface ApiTokenRefreshCreate0Request {
     tokenRefresh: TokenRefresh;
 }
 
@@ -990,6 +998,53 @@ export class ApiApi extends runtime.BaseAPI {
     }
 
     /**
+     * Creates request options for apiTokenCreate_1 without sending the request
+     */
+    async apiTokenCreate_1RequestOpts(requestParameters: ApiTokenCreate0Request): Promise<runtime.RequestOpts> {
+        if (requestParameters['tokenObtainPair'] == null) {
+            throw new runtime.RequiredError(
+                'tokenObtainPair',
+                'Required parameter "tokenObtainPair" was null or undefined when calling apiTokenCreate_1().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+
+        let urlPath = `/api/token/`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: TokenObtainPairToJSON(requestParameters['tokenObtainPair']),
+        };
+    }
+
+    /**
+     * Obtain Token
+     */
+    async apiTokenCreate_1Raw(requestParameters: ApiTokenCreate0Request, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TokenPair>> {
+        const requestOptions = await this.apiTokenCreate_1RequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => TokenPairFromJSON(jsonValue));
+    }
+
+    /**
+     * Obtain Token
+     */
+    async apiTokenCreate_1(requestParameters: ApiTokenCreate0Request, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TokenPair> {
+        const response = await this.apiTokenCreate_1Raw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Creates request options for apiTokenRefreshCreate without sending the request
      */
     async apiTokenRefreshCreateRequestOpts(requestParameters: ApiTokenRefreshCreateRequest): Promise<runtime.RequestOpts> {
@@ -1033,6 +1088,53 @@ export class ApiApi extends runtime.BaseAPI {
      */
     async apiTokenRefreshCreate(requestParameters: ApiTokenRefreshCreateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AccessToken> {
         const response = await this.apiTokenRefreshCreateRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for apiTokenRefreshCreate_2 without sending the request
+     */
+    async apiTokenRefreshCreate_2RequestOpts(requestParameters: ApiTokenRefreshCreate0Request): Promise<runtime.RequestOpts> {
+        if (requestParameters['tokenRefresh'] == null) {
+            throw new runtime.RequiredError(
+                'tokenRefresh',
+                'Required parameter "tokenRefresh" was null or undefined when calling apiTokenRefreshCreate_2().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+
+        let urlPath = `/api/token/refresh/`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: TokenRefreshToJSON(requestParameters['tokenRefresh']),
+        };
+    }
+
+    /**
+     * Refresh Token
+     */
+    async apiTokenRefreshCreate_2Raw(requestParameters: ApiTokenRefreshCreate0Request, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AccessToken>> {
+        const requestOptions = await this.apiTokenRefreshCreate_2RequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => AccessTokenFromJSON(jsonValue));
+    }
+
+    /**
+     * Refresh Token
+     */
+    async apiTokenRefreshCreate_2(requestParameters: ApiTokenRefreshCreate0Request, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AccessToken> {
+        const response = await this.apiTokenRefreshCreate_2Raw(requestParameters, initOverrides);
         return await response.value();
     }
 

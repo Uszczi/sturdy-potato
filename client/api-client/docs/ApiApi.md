@@ -20,7 +20,9 @@ All URIs are relative to *http://localhost*
 | [**apiTasksRetrieve**](ApiApi.md#apitasksretrieve) | **GET** /api/tasks/{id}/ | Retrieve Task |
 | [**apiTasksViewList**](ApiApi.md#apitasksviewlist) | **GET** /api/tasks/view/ | View Tasks |
 | [**apiTokenCreate**](ApiApi.md#apitokencreate) | **POST** /api/token/ | Obtain Token |
+| [**apiTokenCreate_0**](ApiApi.md#apitokencreate_0) | **POST** /api/token/ | Obtain Token |
 | [**apiTokenRefreshCreate**](ApiApi.md#apitokenrefreshcreate) | **POST** /api/token/refresh/ | Refresh Token |
+| [**apiTokenRefreshCreate_0**](ApiApi.md#apitokenrefreshcreate_0) | **POST** /api/token/refresh/ | Refresh Token |
 
 
 
@@ -1131,6 +1133,72 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 
+## apiTokenCreate_0
+
+> TokenPair apiTokenCreate_0(tokenObtainPair)
+
+Obtain Token
+
+### Example
+
+```ts
+import {
+  Configuration,
+  ApiApi,
+} from '';
+import type { ApiTokenCreate0Request } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new ApiApi();
+
+  const body = {
+    // TokenObtainPair
+    tokenObtainPair: ...,
+  } satisfies ApiTokenCreate0Request;
+
+  try {
+    const data = await api.apiTokenCreate_0(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **tokenObtainPair** | [TokenObtainPair](TokenObtainPair.md) |  | |
+
+### Return type
+
+[**TokenPair**](TokenPair.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
 ## apiTokenRefreshCreate
 
 > AccessToken apiTokenRefreshCreate(tokenRefresh)
@@ -1157,6 +1225,72 @@ async function example() {
 
   try {
     const data = await api.apiTokenRefreshCreate(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **tokenRefresh** | [TokenRefresh](TokenRefresh.md) |  | |
+
+### Return type
+
+[**AccessToken**](AccessToken.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## apiTokenRefreshCreate_0
+
+> AccessToken apiTokenRefreshCreate_0(tokenRefresh)
+
+Refresh Token
+
+### Example
+
+```ts
+import {
+  Configuration,
+  ApiApi,
+} from '';
+import type { ApiTokenRefreshCreate0Request } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new ApiApi();
+
+  const body = {
+    // TokenRefresh
+    tokenRefresh: ...,
+  } satisfies ApiTokenRefreshCreate0Request;
+
+  try {
+    const data = await api.apiTokenRefreshCreate_0(body);
     console.log(data);
   } catch (error) {
     console.error(error);

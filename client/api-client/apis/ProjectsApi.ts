@@ -14,16 +14,49 @@
 
 import * as runtime from '../runtime';
 import {
+    type HTTPValidationError,
+    HTTPValidationErrorFromJSON,
+    HTTPValidationErrorToJSON,
+} from '../models/HTTPValidationError';
+import {
     type ProjectCreateInput,
     ProjectCreateInputFromJSON,
     ProjectCreateInputToJSON,
 } from '../models/ProjectCreateInput';
+import {
+    type ProjectSchema,
+    ProjectSchemaFromJSON,
+    ProjectSchemaToJSON,
+} from '../models/ProjectSchema';
+import {
+    type ProjectUpdateInput,
+    ProjectUpdateInputFromJSON,
+    ProjectUpdateInputToJSON,
+} from '../models/ProjectUpdateInput';
+import {
+    type ReorderInput,
+    ReorderInputFromJSON,
+    ReorderInputToJSON,
+} from '../models/ReorderInput';
 
-export interface ProjectsCreateCreateRequest {
-    projectCreateInput?: ProjectCreateInput;
+export interface ApiProjectsCreateRequest {
+    projectCreateInput: ProjectCreateInput;
 }
 
-export interface ProjectsRetrieve2Request {
+export interface ApiProjectsDestroyRequest {
+    id: number;
+}
+
+export interface ApiProjectsPartialUpdateRequest {
+    id: number;
+    projectUpdateInput: ProjectUpdateInput;
+}
+
+export interface ApiProjectsReorderCreateRequest {
+    reorderInput: ReorderInput;
+}
+
+export interface ApiProjectsRetrieveRequest {
     id: number;
 }
 
@@ -33,9 +66,16 @@ export interface ProjectsRetrieve2Request {
 export class ProjectsApi extends runtime.BaseAPI {
 
     /**
-     * Creates request options for projectsCreateCreate without sending the request
+     * Creates request options for apiProjectsCreate without sending the request
      */
-    async projectsCreateCreateRequestOpts(requestParameters: ProjectsCreateCreateRequest): Promise<runtime.RequestOpts> {
+    async apiProjectsCreateRequestOpts(requestParameters: ApiProjectsCreateRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['projectCreateInput'] == null) {
+            throw new runtime.RequiredError(
+                'projectCreateInput',
+                'Required parameter "projectCreateInput" was null or undefined when calling apiProjectsCreate().'
+            );
+        }
+
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -44,14 +84,14 @@ export class ProjectsApi extends runtime.BaseAPI {
 
         if (this.configuration && this.configuration.accessToken) {
             const token = this.configuration.accessToken;
-            const tokenString = await token("jwtAuth", []);
+            const tokenString = await token("HTTPBearer", []);
 
             if (tokenString) {
                 headerParameters["Authorization"] = `Bearer ${tokenString}`;
             }
         }
 
-        let urlPath = `/projects/create/`;
+        let urlPath = `/api/projects/`;
 
         return {
             path: urlPath,
@@ -63,43 +103,93 @@ export class ProjectsApi extends runtime.BaseAPI {
     }
 
     /**
+     * Create Project
      */
-    async projectsCreateCreateRaw(requestParameters: ProjectsCreateCreateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<string>> {
-        const requestOptions = await this.projectsCreateCreateRequestOpts(requestParameters);
+    async apiProjectsCreateRaw(requestParameters: ApiProjectsCreateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ProjectSchema>> {
+        const requestOptions = await this.apiProjectsCreateRequestOpts(requestParameters);
         const response = await this.request(requestOptions, initOverrides);
 
-        if (this.isJsonMime(response.headers.get('content-type'))) {
-            return new runtime.JSONApiResponse<string>(response);
-        } else {
-            return new runtime.TextApiResponse(response) as any;
-        }
+        return new runtime.JSONApiResponse(response, (jsonValue) => ProjectSchemaFromJSON(jsonValue));
     }
 
     /**
+     * Create Project
      */
-    async projectsCreateCreate(requestParameters: ProjectsCreateCreateRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<string> {
-        const response = await this.projectsCreateCreateRaw(requestParameters, initOverrides);
+    async apiProjectsCreate(requestParameters: ApiProjectsCreateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ProjectSchema> {
+        const response = await this.apiProjectsCreateRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
     /**
-     * Creates request options for projectsRetrieve without sending the request
+     * Creates request options for apiProjectsDestroy without sending the request
      */
-    async projectsRetrieveRequestOpts(): Promise<runtime.RequestOpts> {
+    async apiProjectsDestroyRequestOpts(requestParameters: ApiProjectsDestroyRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['id'] == null) {
+            throw new runtime.RequiredError(
+                'id',
+                'Required parameter "id" was null or undefined when calling apiProjectsDestroy().'
+            );
+        }
+
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
 
         if (this.configuration && this.configuration.accessToken) {
             const token = this.configuration.accessToken;
-            const tokenString = await token("jwtAuth", []);
+            const tokenString = await token("HTTPBearer", []);
 
             if (tokenString) {
                 headerParameters["Authorization"] = `Bearer ${tokenString}`;
             }
         }
 
-        let urlPath = `/projects/`;
+        let urlPath = `/api/projects/{id}/`;
+        urlPath = urlPath.replace('{id}', encodeURIComponent(String(requestParameters['id'])));
+
+        return {
+            path: urlPath,
+            method: 'DELETE',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * Delete Project
+     */
+    async apiProjectsDestroyRaw(requestParameters: ApiProjectsDestroyRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        const requestOptions = await this.apiProjectsDestroyRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * Delete Project
+     */
+    async apiProjectsDestroy(requestParameters: ApiProjectsDestroyRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.apiProjectsDestroyRaw(requestParameters, initOverrides);
+    }
+
+    /**
+     * Creates request options for apiProjectsList without sending the request
+     */
+    async apiProjectsListRequestOpts(): Promise<runtime.RequestOpts> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("HTTPBearer", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/projects/`;
 
         return {
             path: urlPath,
@@ -110,33 +200,148 @@ export class ProjectsApi extends runtime.BaseAPI {
     }
 
     /**
+     * List Projects
      */
-    async projectsRetrieveRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<string>> {
-        const requestOptions = await this.projectsRetrieveRequestOpts();
+    async apiProjectsListRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ProjectSchema>>> {
+        const requestOptions = await this.apiProjectsListRequestOpts();
         const response = await this.request(requestOptions, initOverrides);
 
-        if (this.isJsonMime(response.headers.get('content-type'))) {
-            return new runtime.JSONApiResponse<string>(response);
-        } else {
-            return new runtime.TextApiResponse(response) as any;
-        }
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ProjectSchemaFromJSON));
     }
 
     /**
+     * List Projects
      */
-    async projectsRetrieve(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<string> {
-        const response = await this.projectsRetrieveRaw(initOverrides);
+    async apiProjectsList(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ProjectSchema>> {
+        const response = await this.apiProjectsListRaw(initOverrides);
         return await response.value();
     }
 
     /**
-     * Creates request options for projectsRetrieve2 without sending the request
+     * Creates request options for apiProjectsPartialUpdate without sending the request
      */
-    async projectsRetrieve2RequestOpts(requestParameters: ProjectsRetrieve2Request): Promise<runtime.RequestOpts> {
+    async apiProjectsPartialUpdateRequestOpts(requestParameters: ApiProjectsPartialUpdateRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['id'] == null) {
             throw new runtime.RequiredError(
                 'id',
-                'Required parameter "id" was null or undefined when calling projectsRetrieve2().'
+                'Required parameter "id" was null or undefined when calling apiProjectsPartialUpdate().'
+            );
+        }
+
+        if (requestParameters['projectUpdateInput'] == null) {
+            throw new runtime.RequiredError(
+                'projectUpdateInput',
+                'Required parameter "projectUpdateInput" was null or undefined when calling apiProjectsPartialUpdate().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("HTTPBearer", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/projects/{id}/`;
+        urlPath = urlPath.replace('{id}', encodeURIComponent(String(requestParameters['id'])));
+
+        return {
+            path: urlPath,
+            method: 'PATCH',
+            headers: headerParameters,
+            query: queryParameters,
+            body: ProjectUpdateInputToJSON(requestParameters['projectUpdateInput']),
+        };
+    }
+
+    /**
+     * Update Project
+     */
+    async apiProjectsPartialUpdateRaw(requestParameters: ApiProjectsPartialUpdateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ProjectSchema>> {
+        const requestOptions = await this.apiProjectsPartialUpdateRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => ProjectSchemaFromJSON(jsonValue));
+    }
+
+    /**
+     * Update Project
+     */
+    async apiProjectsPartialUpdate(requestParameters: ApiProjectsPartialUpdateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ProjectSchema> {
+        const response = await this.apiProjectsPartialUpdateRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for apiProjectsReorderCreate without sending the request
+     */
+    async apiProjectsReorderCreateRequestOpts(requestParameters: ApiProjectsReorderCreateRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['reorderInput'] == null) {
+            throw new runtime.RequiredError(
+                'reorderInput',
+                'Required parameter "reorderInput" was null or undefined when calling apiProjectsReorderCreate().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("HTTPBearer", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/projects/reorder/`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: ReorderInputToJSON(requestParameters['reorderInput']),
+        };
+    }
+
+    /**
+     * Reorder Projects
+     */
+    async apiProjectsReorderCreateRaw(requestParameters: ApiProjectsReorderCreateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        const requestOptions = await this.apiProjectsReorderCreateRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * Reorder Projects
+     */
+    async apiProjectsReorderCreate(requestParameters: ApiProjectsReorderCreateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.apiProjectsReorderCreateRaw(requestParameters, initOverrides);
+    }
+
+    /**
+     * Creates request options for apiProjectsRetrieve without sending the request
+     */
+    async apiProjectsRetrieveRequestOpts(requestParameters: ApiProjectsRetrieveRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['id'] == null) {
+            throw new runtime.RequiredError(
+                'id',
+                'Required parameter "id" was null or undefined when calling apiProjectsRetrieve().'
             );
         }
 
@@ -146,14 +351,14 @@ export class ProjectsApi extends runtime.BaseAPI {
 
         if (this.configuration && this.configuration.accessToken) {
             const token = this.configuration.accessToken;
-            const tokenString = await token("jwtAuth", []);
+            const tokenString = await token("HTTPBearer", []);
 
             if (tokenString) {
                 headerParameters["Authorization"] = `Bearer ${tokenString}`;
             }
         }
 
-        let urlPath = `/projects/{id}/`;
+        let urlPath = `/api/projects/{id}/`;
         urlPath = urlPath.replace('{id}', encodeURIComponent(String(requestParameters['id'])));
 
         return {
@@ -165,22 +370,20 @@ export class ProjectsApi extends runtime.BaseAPI {
     }
 
     /**
+     * Retrieve Project
      */
-    async projectsRetrieve2Raw(requestParameters: ProjectsRetrieve2Request, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<string>> {
-        const requestOptions = await this.projectsRetrieve2RequestOpts(requestParameters);
+    async apiProjectsRetrieveRaw(requestParameters: ApiProjectsRetrieveRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ProjectSchema>> {
+        const requestOptions = await this.apiProjectsRetrieveRequestOpts(requestParameters);
         const response = await this.request(requestOptions, initOverrides);
 
-        if (this.isJsonMime(response.headers.get('content-type'))) {
-            return new runtime.JSONApiResponse<string>(response);
-        } else {
-            return new runtime.TextApiResponse(response) as any;
-        }
+        return new runtime.JSONApiResponse(response, (jsonValue) => ProjectSchemaFromJSON(jsonValue));
     }
 
     /**
+     * Retrieve Project
      */
-    async projectsRetrieve2(requestParameters: ProjectsRetrieve2Request, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<string> {
-        const response = await this.projectsRetrieve2Raw(requestParameters, initOverrides);
+    async apiProjectsRetrieve(requestParameters: ApiProjectsRetrieveRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ProjectSchema> {
+        const response = await this.apiProjectsRetrieveRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

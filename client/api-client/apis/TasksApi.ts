@@ -14,27 +14,68 @@
 
 import * as runtime from '../runtime';
 import {
+    type HTTPValidationError,
+    HTTPValidationErrorFromJSON,
+    HTTPValidationErrorToJSON,
+} from '../models/HTTPValidationError';
+import {
+    type ReorderInput,
+    ReorderInputFromJSON,
+    ReorderInputToJSON,
+} from '../models/ReorderInput';
+import {
+    type TaskCountSchema,
+    TaskCountSchemaFromJSON,
+    TaskCountSchemaToJSON,
+} from '../models/TaskCountSchema';
+import {
     type TodoCreateInput,
     TodoCreateInputFromJSON,
     TodoCreateInputToJSON,
 } from '../models/TodoCreateInput';
 import {
-    type TodoProjectInput,
-    TodoProjectInputFromJSON,
-    TodoProjectInputToJSON,
-} from '../models/TodoProjectInput';
+    type TodoSchema,
+    TodoSchemaFromJSON,
+    TodoSchemaToJSON,
+} from '../models/TodoSchema';
+import {
+    type TodoUpdateInput,
+    TodoUpdateInputFromJSON,
+    TodoUpdateInputToJSON,
+} from '../models/TodoUpdateInput';
 
-export interface TasksCreateCreateRequest {
-    todoCreateInput?: TodoCreateInput;
+export interface ApiTasksCountRetrieveRequest {
+    completed?: boolean | null;
 }
 
-export interface TasksProjectCreateRequest {
-    id: number;
-    todoProjectInput?: TodoProjectInput;
+export interface ApiTasksCreateRequest {
+    todoCreateInput: TodoCreateInput;
 }
 
-export interface TasksToggleCreateRequest {
+export interface ApiTasksDestroyRequest {
     id: number;
+}
+
+export interface ApiTasksOpenListRequest {
+    limit?: number | null;
+}
+
+export interface ApiTasksPartialUpdateRequest {
+    id: number;
+    todoUpdateInput: TodoUpdateInput;
+}
+
+export interface ApiTasksReorderCreateRequest {
+    reorderInput: ReorderInput;
+}
+
+export interface ApiTasksRetrieveRequest {
+    id: number;
+}
+
+export interface ApiTasksViewListRequest {
+    view?: string;
+    project?: number | null;
 }
 
 /**
@@ -43,9 +84,65 @@ export interface TasksToggleCreateRequest {
 export class TasksApi extends runtime.BaseAPI {
 
     /**
-     * Creates request options for tasksCreateCreate without sending the request
+     * Creates request options for apiTasksCountRetrieve without sending the request
      */
-    async tasksCreateCreateRequestOpts(requestParameters: TasksCreateCreateRequest): Promise<runtime.RequestOpts> {
+    async apiTasksCountRetrieveRequestOpts(requestParameters: ApiTasksCountRetrieveRequest): Promise<runtime.RequestOpts> {
+        const queryParameters: any = {};
+
+        if (requestParameters['completed'] != null) {
+            queryParameters['completed'] = requestParameters['completed'];
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("HTTPBearer", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/tasks/count/`;
+
+        return {
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * Count Tasks
+     */
+    async apiTasksCountRetrieveRaw(requestParameters: ApiTasksCountRetrieveRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TaskCountSchema>> {
+        const requestOptions = await this.apiTasksCountRetrieveRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => TaskCountSchemaFromJSON(jsonValue));
+    }
+
+    /**
+     * Count Tasks
+     */
+    async apiTasksCountRetrieve(requestParameters: ApiTasksCountRetrieveRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TaskCountSchema> {
+        const response = await this.apiTasksCountRetrieveRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for apiTasksCreate without sending the request
+     */
+    async apiTasksCreateRequestOpts(requestParameters: ApiTasksCreateRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['todoCreateInput'] == null) {
+            throw new runtime.RequiredError(
+                'todoCreateInput',
+                'Required parameter "todoCreateInput" was null or undefined when calling apiTasksCreate().'
+            );
+        }
+
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -54,14 +151,14 @@ export class TasksApi extends runtime.BaseAPI {
 
         if (this.configuration && this.configuration.accessToken) {
             const token = this.configuration.accessToken;
-            const tokenString = await token("jwtAuth", []);
+            const tokenString = await token("HTTPBearer", []);
 
             if (tokenString) {
                 headerParameters["Authorization"] = `Bearer ${tokenString}`;
             }
         }
 
-        let urlPath = `/tasks/create/`;
+        let urlPath = `/api/tasks/`;
 
         return {
             path: urlPath,
@@ -73,33 +170,184 @@ export class TasksApi extends runtime.BaseAPI {
     }
 
     /**
+     * Create Task
      */
-    async tasksCreateCreateRaw(requestParameters: TasksCreateCreateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<string>> {
-        const requestOptions = await this.tasksCreateCreateRequestOpts(requestParameters);
+    async apiTasksCreateRaw(requestParameters: ApiTasksCreateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TodoSchema>> {
+        const requestOptions = await this.apiTasksCreateRequestOpts(requestParameters);
         const response = await this.request(requestOptions, initOverrides);
 
-        if (this.isJsonMime(response.headers.get('content-type'))) {
-            return new runtime.JSONApiResponse<string>(response);
-        } else {
-            return new runtime.TextApiResponse(response) as any;
-        }
+        return new runtime.JSONApiResponse(response, (jsonValue) => TodoSchemaFromJSON(jsonValue));
     }
 
     /**
+     * Create Task
      */
-    async tasksCreateCreate(requestParameters: TasksCreateCreateRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<string> {
-        const response = await this.tasksCreateCreateRaw(requestParameters, initOverrides);
+    async apiTasksCreate(requestParameters: ApiTasksCreateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TodoSchema> {
+        const response = await this.apiTasksCreateRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
     /**
-     * Creates request options for tasksProjectCreate without sending the request
+     * Creates request options for apiTasksDestroy without sending the request
      */
-    async tasksProjectCreateRequestOpts(requestParameters: TasksProjectCreateRequest): Promise<runtime.RequestOpts> {
+    async apiTasksDestroyRequestOpts(requestParameters: ApiTasksDestroyRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['id'] == null) {
             throw new runtime.RequiredError(
                 'id',
-                'Required parameter "id" was null or undefined when calling tasksProjectCreate().'
+                'Required parameter "id" was null or undefined when calling apiTasksDestroy().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("HTTPBearer", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/tasks/{id}/`;
+        urlPath = urlPath.replace('{id}', encodeURIComponent(String(requestParameters['id'])));
+
+        return {
+            path: urlPath,
+            method: 'DELETE',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * Delete Task
+     */
+    async apiTasksDestroyRaw(requestParameters: ApiTasksDestroyRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        const requestOptions = await this.apiTasksDestroyRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * Delete Task
+     */
+    async apiTasksDestroy(requestParameters: ApiTasksDestroyRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.apiTasksDestroyRaw(requestParameters, initOverrides);
+    }
+
+    /**
+     * Creates request options for apiTasksList without sending the request
+     */
+    async apiTasksListRequestOpts(): Promise<runtime.RequestOpts> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("HTTPBearer", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/tasks/`;
+
+        return {
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * List Tasks
+     */
+    async apiTasksListRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<TodoSchema>>> {
+        const requestOptions = await this.apiTasksListRequestOpts();
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(TodoSchemaFromJSON));
+    }
+
+    /**
+     * List Tasks
+     */
+    async apiTasksList(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<TodoSchema>> {
+        const response = await this.apiTasksListRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for apiTasksOpenList without sending the request
+     */
+    async apiTasksOpenListRequestOpts(requestParameters: ApiTasksOpenListRequest): Promise<runtime.RequestOpts> {
+        const queryParameters: any = {};
+
+        if (requestParameters['limit'] != null) {
+            queryParameters['limit'] = requestParameters['limit'];
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("HTTPBearer", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/tasks/open/`;
+
+        return {
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * Open Tasks
+     */
+    async apiTasksOpenListRaw(requestParameters: ApiTasksOpenListRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<TodoSchema>>> {
+        const requestOptions = await this.apiTasksOpenListRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(TodoSchemaFromJSON));
+    }
+
+    /**
+     * Open Tasks
+     */
+    async apiTasksOpenList(requestParameters: ApiTasksOpenListRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<TodoSchema>> {
+        const response = await this.apiTasksOpenListRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for apiTasksPartialUpdate without sending the request
+     */
+    async apiTasksPartialUpdateRequestOpts(requestParameters: ApiTasksPartialUpdateRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['id'] == null) {
+            throw new runtime.RequiredError(
+                'id',
+                'Required parameter "id" was null or undefined when calling apiTasksPartialUpdate().'
+            );
+        }
+
+        if (requestParameters['todoUpdateInput'] == null) {
+            throw new runtime.RequiredError(
+                'todoUpdateInput',
+                'Required parameter "todoUpdateInput" was null or undefined when calling apiTasksPartialUpdate().'
             );
         }
 
@@ -111,63 +359,123 @@ export class TasksApi extends runtime.BaseAPI {
 
         if (this.configuration && this.configuration.accessToken) {
             const token = this.configuration.accessToken;
-            const tokenString = await token("jwtAuth", []);
+            const tokenString = await token("HTTPBearer", []);
 
             if (tokenString) {
                 headerParameters["Authorization"] = `Bearer ${tokenString}`;
             }
         }
 
-        let urlPath = `/tasks/{id}/project/`;
+        let urlPath = `/api/tasks/{id}/`;
         urlPath = urlPath.replace('{id}', encodeURIComponent(String(requestParameters['id'])));
+
+        return {
+            path: urlPath,
+            method: 'PATCH',
+            headers: headerParameters,
+            query: queryParameters,
+            body: TodoUpdateInputToJSON(requestParameters['todoUpdateInput']),
+        };
+    }
+
+    /**
+     * Update Task
+     */
+    async apiTasksPartialUpdateRaw(requestParameters: ApiTasksPartialUpdateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TodoSchema>> {
+        const requestOptions = await this.apiTasksPartialUpdateRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => TodoSchemaFromJSON(jsonValue));
+    }
+
+    /**
+     * Update Task
+     */
+    async apiTasksPartialUpdate(requestParameters: ApiTasksPartialUpdateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TodoSchema> {
+        const response = await this.apiTasksPartialUpdateRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for apiTasksReorderCreate without sending the request
+     */
+    async apiTasksReorderCreateRequestOpts(requestParameters: ApiTasksReorderCreateRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['reorderInput'] == null) {
+            throw new runtime.RequiredError(
+                'reorderInput',
+                'Required parameter "reorderInput" was null or undefined when calling apiTasksReorderCreate().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("HTTPBearer", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/tasks/reorder/`;
 
         return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: TodoProjectInputToJSON(requestParameters['todoProjectInput']),
+            body: ReorderInputToJSON(requestParameters['reorderInput']),
         };
     }
 
     /**
+     * Reorder Tasks
      */
-    async tasksProjectCreateRaw(requestParameters: TasksProjectCreateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<string>> {
-        const requestOptions = await this.tasksProjectCreateRequestOpts(requestParameters);
+    async apiTasksReorderCreateRaw(requestParameters: ApiTasksReorderCreateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        const requestOptions = await this.apiTasksReorderCreateRequestOpts(requestParameters);
         const response = await this.request(requestOptions, initOverrides);
 
-        if (this.isJsonMime(response.headers.get('content-type'))) {
-            return new runtime.JSONApiResponse<string>(response);
-        } else {
-            return new runtime.TextApiResponse(response) as any;
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * Reorder Tasks
+     */
+    async apiTasksReorderCreate(requestParameters: ApiTasksReorderCreateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.apiTasksReorderCreateRaw(requestParameters, initOverrides);
+    }
+
+    /**
+     * Creates request options for apiTasksRetrieve without sending the request
+     */
+    async apiTasksRetrieveRequestOpts(requestParameters: ApiTasksRetrieveRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['id'] == null) {
+            throw new runtime.RequiredError(
+                'id',
+                'Required parameter "id" was null or undefined when calling apiTasksRetrieve().'
+            );
         }
-    }
 
-    /**
-     */
-    async tasksProjectCreate(requestParameters: TasksProjectCreateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<string> {
-        const response = await this.tasksProjectCreateRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     * Creates request options for tasksRetrieve without sending the request
-     */
-    async tasksRetrieveRequestOpts(): Promise<runtime.RequestOpts> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
 
         if (this.configuration && this.configuration.accessToken) {
             const token = this.configuration.accessToken;
-            const tokenString = await token("jwtAuth", []);
+            const tokenString = await token("HTTPBearer", []);
 
             if (tokenString) {
                 headerParameters["Authorization"] = `Bearer ${tokenString}`;
             }
         }
 
-        let urlPath = `/tasks/`;
+        let urlPath = `/api/tasks/{id}/`;
+        urlPath = urlPath.replace('{id}', encodeURIComponent(String(requestParameters['id'])));
 
         return {
             path: urlPath,
@@ -178,77 +486,73 @@ export class TasksApi extends runtime.BaseAPI {
     }
 
     /**
+     * Retrieve Task
      */
-    async tasksRetrieveRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<string>> {
-        const requestOptions = await this.tasksRetrieveRequestOpts();
+    async apiTasksRetrieveRaw(requestParameters: ApiTasksRetrieveRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TodoSchema>> {
+        const requestOptions = await this.apiTasksRetrieveRequestOpts(requestParameters);
         const response = await this.request(requestOptions, initOverrides);
 
-        if (this.isJsonMime(response.headers.get('content-type'))) {
-            return new runtime.JSONApiResponse<string>(response);
-        } else {
-            return new runtime.TextApiResponse(response) as any;
-        }
+        return new runtime.JSONApiResponse(response, (jsonValue) => TodoSchemaFromJSON(jsonValue));
     }
 
     /**
+     * Retrieve Task
      */
-    async tasksRetrieve(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<string> {
-        const response = await this.tasksRetrieveRaw(initOverrides);
+    async apiTasksRetrieve(requestParameters: ApiTasksRetrieveRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TodoSchema> {
+        const response = await this.apiTasksRetrieveRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
     /**
-     * Creates request options for tasksToggleCreate without sending the request
+     * Creates request options for apiTasksViewList without sending the request
      */
-    async tasksToggleCreateRequestOpts(requestParameters: TasksToggleCreateRequest): Promise<runtime.RequestOpts> {
-        if (requestParameters['id'] == null) {
-            throw new runtime.RequiredError(
-                'id',
-                'Required parameter "id" was null or undefined when calling tasksToggleCreate().'
-            );
+    async apiTasksViewListRequestOpts(requestParameters: ApiTasksViewListRequest): Promise<runtime.RequestOpts> {
+        const queryParameters: any = {};
+
+        if (requestParameters['view'] != null) {
+            queryParameters['view'] = requestParameters['view'];
         }
 
-        const queryParameters: any = {};
+        if (requestParameters['project'] != null) {
+            queryParameters['project'] = requestParameters['project'];
+        }
 
         const headerParameters: runtime.HTTPHeaders = {};
 
         if (this.configuration && this.configuration.accessToken) {
             const token = this.configuration.accessToken;
-            const tokenString = await token("jwtAuth", []);
+            const tokenString = await token("HTTPBearer", []);
 
             if (tokenString) {
                 headerParameters["Authorization"] = `Bearer ${tokenString}`;
             }
         }
 
-        let urlPath = `/tasks/{id}/toggle/`;
-        urlPath = urlPath.replace('{id}', encodeURIComponent(String(requestParameters['id'])));
+        let urlPath = `/api/tasks/view/`;
 
         return {
             path: urlPath,
-            method: 'POST',
+            method: 'GET',
             headers: headerParameters,
             query: queryParameters,
         };
     }
 
     /**
+     * View Tasks
      */
-    async tasksToggleCreateRaw(requestParameters: TasksToggleCreateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<string>> {
-        const requestOptions = await this.tasksToggleCreateRequestOpts(requestParameters);
+    async apiTasksViewListRaw(requestParameters: ApiTasksViewListRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<TodoSchema>>> {
+        const requestOptions = await this.apiTasksViewListRequestOpts(requestParameters);
         const response = await this.request(requestOptions, initOverrides);
 
-        if (this.isJsonMime(response.headers.get('content-type'))) {
-            return new runtime.JSONApiResponse<string>(response);
-        } else {
-            return new runtime.TextApiResponse(response) as any;
-        }
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(TodoSchemaFromJSON));
     }
 
     /**
+     * View Tasks
      */
-    async tasksToggleCreate(requestParameters: TasksToggleCreateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<string> {
-        const response = await this.tasksToggleCreateRaw(requestParameters, initOverrides);
+    async apiTasksViewList(requestParameters: ApiTasksViewListRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<TodoSchema>> {
+        const response = await this.apiTasksViewListRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
