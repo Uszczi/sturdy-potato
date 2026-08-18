@@ -12,7 +12,7 @@ def test_manage_py_runs_check_command(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(sys, "argv", ["manage.py", "check"])
 
     runpy.run_path(
-        str(Path(__file__).parents[2] / "potato" / "manage.py"),
+        str(Path(__file__).parents[2] / "server" / "manage.py"),
         run_name="__main__",
     )
 

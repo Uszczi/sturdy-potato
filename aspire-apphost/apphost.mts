@@ -5,7 +5,7 @@ import { createBuilder } from "./.aspire/modules/aspire.mjs";
 
 const builder = await createBuilder();
 
-const django = await builder.addPythonApp("django", "..", "potato/manage.py");
+const django = await builder.addPythonApp("django", "..", "server/manage.py");
 await django.withUv();
 await django.withArgs(["runserver", "0.0.0.0:8001"]);
 await django.withHttpEndpoint({ targetPort: 8001 });

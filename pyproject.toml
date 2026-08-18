@@ -38,10 +38,10 @@ dev = [
 
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "config.settings"
-pythonpath = ["potato"]
+pythonpath = ["server"]
 
 [tool.coverage.run]
-omit = ["potato/world/*"]
+omit = ["server/world/*"]
 
 [tool.ruff]
 exclude = ["**/migrations/**"]
@@ -50,7 +50,7 @@ exclude = ["**/migrations/**"]
 known-first-party = ["api", "config", "infrastructure", "serializers", "todo", "web"]
 
 [tool.mypy]
-mypy_path = ["potato"]
+mypy_path = ["server"]
 plugins = ["mypy_django_plugin.main"]
 strict = true
 

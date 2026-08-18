@@ -6,7 +6,7 @@ services:
     command:
       - sh
       - -c
-      - python manage.py migrate --noinput && exec uvicorn potato.asgi:application --host 0.0.0.0 --port 8000 --workers 3
+      - python manage.py migrate --noinput && exec uvicorn config.asgi:application --host 0.0.0.0 --port 8000 --workers 3
     environment:
       DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:?DJANGO_ALLOWED_HOSTS must be set}
       DJANGO_CSRF_TRUSTED_ORIGINS: ${DJANGO_CSRF_TRUSTED_ORIGINS:-}

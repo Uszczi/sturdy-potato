@@ -44,15 +44,15 @@ RUN apt-get update \
 
 COPY --from=python-dependencies /app/.venv /app/.venv
 COPY --from=frontend /app/static /app/static
-COPY potato ./potato
+COPY server ./server
 COPY templates ./templates
 
 RUN mkdir -p /app/staticfiles /app/data \
-    && python potato/manage.py collectstatic --noinput \
-    && python potato/manage.py check
+    && python server/manage.py collectstatic --noinput \
+    && python server/manage.py check
 
-WORKDIR /app/potato
+WORKDIR /app/server
 
 EXPOSE 8000
 
-CMD ["uvicorn", "potato.asgi:application", "--host", "0.0.0.0", "--port", "8000", "--workers", "3"]
+CMD ["uvicorn", "config.asgi:application", "--host", "0.0.0.0", "--port", "8000", "--workers", "3"]

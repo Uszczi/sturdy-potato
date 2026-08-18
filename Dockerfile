@@ -43,14 +43,14 @@ RUN apt-get update \
 
 COPY --from=python-dependencies /app/.venv /app/.venv
 COPY --from=frontend /app/static /app/static
-COPY potato ./potato
+COPY server ./server
 COPY templates ./templates
 
 RUN mkdir -p /app/staticfiles /app/data \
-    && python potato/manage.py collectstatic --noinput \
-    && python potato/manage.py check
+    && python server/manage.py collectstatic --noinput \
+    && python server/manage.py check
 
-WORKDIR /app/potato
+WORKDIR /app/server
 
 EXPOSE 8000
 
