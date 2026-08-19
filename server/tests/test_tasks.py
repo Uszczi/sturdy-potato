@@ -4,7 +4,7 @@ from freezegun import freeze_time
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from models import utcnow
+from infrastructure.models import utcnow
 from tests.factories import auth_headers, create_project, create_task, create_user
 
 

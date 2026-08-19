@@ -7,8 +7,8 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pwdlib import PasswordHash
 
 from config import settings
-from db import SessionDep
-from models import User
+from infrastructure.db import SessionDep
+from infrastructure.models import User
 
 _password_hash = PasswordHash.recommended()
 

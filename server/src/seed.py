@@ -5,8 +5,8 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from sqlmodel import select
 
 from auth import hash_password
-from db import async_session_maker
-from models import Project, Todo, User
+from infrastructure.db import async_session_maker
+from infrastructure.models import Project, Todo, User
 
 DEMO_USERNAME = os.environ.get("SEEDDB_DEMO_USERNAME", "demo")
 DEMO_PASSWORD = os.environ.get("SEEDDB_DEMO_PASSWORD", "demo-password-123")

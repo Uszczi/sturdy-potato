@@ -51,10 +51,8 @@ known-first-party = [
     "api",
     "auth",
     "config",
-    "db",
+    "infrastructure",
     "main",
-    "models",
-    "repositories",
     "schemas",
     "seed",
 ]

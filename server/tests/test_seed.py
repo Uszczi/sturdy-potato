@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from sqlmodel import select
 
 import seed as seed_module
-from models import Project, Todo, User
+from infrastructure.models import Project, Todo, User
 
 _EXPECTED_TODOS = sum(len(todos) for _, todos in seed_module.SEEDED_PROJECTS)
 

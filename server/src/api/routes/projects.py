@@ -1,8 +1,8 @@
 from fastapi import APIRouter, HTTPException, status
 
 from auth import CurrentUserId
-from db import SessionDep
-from repositories import ProjectRepository
+from infrastructure.db import SessionDep
+from infrastructure.repositories import ProjectRepository
 from schemas.order import ReorderInput
 from schemas.project import ProjectCreateInput, ProjectSchema, ProjectUpdateInput
 

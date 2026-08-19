@@ -8,8 +8,8 @@ from auth import (
     user_id_from_refresh,
     verify_password,
 )
-from db import SessionDep
-from models import User
+from infrastructure.db import SessionDep
+from infrastructure.models import User
 from schemas.auth import (
     AccessToken,
     TokenObtainPair,

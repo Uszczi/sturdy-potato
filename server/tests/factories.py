@@ -4,7 +4,7 @@ from itertools import count
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from auth import create_access_token, hash_password
-from models import Project, Todo, User
+from infrastructure.models import Project, Todo, User
 
 _user_counter = count(1)
 _project_counter = count(1)

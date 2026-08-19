@@ -12,8 +12,8 @@ from sqlalchemy.ext.asyncio import (
 from sqlalchemy.pool import StaticPool
 from sqlmodel import SQLModel
 
-import db as db_module
-import models  # noqa: F401  (registers tables on SQLModel.metadata)
+import infrastructure.db as db_module
+import infrastructure.models  # noqa: F401  (registers tables on SQLModel.metadata)
 from main import app
 
 

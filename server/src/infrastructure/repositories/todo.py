@@ -6,7 +6,7 @@ from sqlalchemy import func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import col, select
 
-from models import Project, Todo
+from infrastructure.models import Project, Todo
 
 
 def _today() -> date:

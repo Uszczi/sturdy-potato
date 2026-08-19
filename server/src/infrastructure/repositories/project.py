@@ -5,7 +5,7 @@ from sqlalchemy import func, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import col, select
 
-from models import Project, Todo
+from infrastructure.models import Project, Todo
 from schemas.project import ProjectSchema
 
 

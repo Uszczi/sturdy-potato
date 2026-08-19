@@ -3,9 +3,9 @@ from typing import Annotated, Literal
 from fastapi import APIRouter, HTTPException, Query, status
 
 from auth import CurrentUserId
-from db import SessionDep
-from models import Todo
-from repositories import TodoRepository
+from infrastructure.db import SessionDep
+from infrastructure.models import Todo
+from infrastructure.repositories import TodoRepository
 from schemas.order import ReorderInput
 from schemas.todo import (
     TaskCountSchema,
