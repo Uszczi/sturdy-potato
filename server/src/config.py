@@ -18,6 +18,10 @@ class Settings(BaseSettings):
 
     cors_origins: str = "http://localhost:5173,http://127.0.0.1:5173"
 
+    # Built SPA assets. Present in the production image; absent in local dev
+    # (Vite serves the client), where main.py skips mounting it.
+    frontend_dir: Path = BASE_DIR / "client-dist"
+
     @property
     def cors_allowed_origins(self) -> list[str]:
         return [

@@ -1,3 +1,15 @@
+FROM node:22-bookworm-slim AS client-build
+
+WORKDIR /build
+
+# Install deps first so this layer caches unless the lockfile changes.
+COPY client/package.json client/package-lock.json ./
+RUN npm ci
+
+COPY client/ ./
+RUN npm run build
+
+
 FROM python:3.13-slim-bookworm AS python-dependencies
 
 COPY --from=ghcr.io/astral-sh/uv:0.11.19 /uv /uvx /bin/
@@ -22,6 +34,9 @@ ENV PATH="/app/.venv/bin:$PATH" \
 
 COPY --from=python-dependencies /app/.venv /app/.venv
 COPY server/src ./src
+
+# Built SPA, served same-origin by FastAPI (see main.py / settings.frontend_dir).
+COPY --from=client-build /build/dist ./client-dist
 
 RUN mkdir -p /app/data
 

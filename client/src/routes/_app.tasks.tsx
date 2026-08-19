@@ -16,7 +16,9 @@ export const Route = createFileRoute("/_app/tasks")({
       search.view === "today" || search.view === "upcoming"
         ? search.view
         : undefined,
-    compose: search.compose === true || search.compose === "1",
+    // Only carry `compose` when it's on, so plain navigations (e.g. the Inbox
+    // link) keep a clean `/tasks` URL instead of `?compose=false`.
+    compose: search.compose === true || search.compose === "1" || undefined,
   }),
   component: Tasks,
 });

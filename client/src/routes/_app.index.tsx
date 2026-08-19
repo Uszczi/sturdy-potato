@@ -8,12 +8,12 @@ export const Route = createFileRoute("/_app/")({
   component: Overview,
 });
 
-/** Short "Aug 17" label for an ISO timestamp, in local time. */
-function shortDate(iso: string): string {
+/** Short "Aug 17" label for a timestamp, in local time. */
+function shortDate(date: Date): string {
   return new Intl.DateTimeFormat("en-US", {
     month: "short",
     day: "numeric",
-  }).format(new Date(iso));
+  }).format(date);
 }
 
 function Overview() {

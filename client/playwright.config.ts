@@ -49,11 +49,12 @@ export default defineConfig({
   ],
   webServer: [
     {
-      // Isolated, freshly-seeded Django API. serve.sh resolves the repo root
+      // Isolated, freshly-seeded FastAPI API. serve.sh resolves the repo root
       // from its own location, so it runs from the default cwd (this config's
-      // directory, web/sturdy-potato).
+      // directory, client/).
       command: "sh e2e/scripts/serve.sh",
-      url: `${API_URL}/admin/login/`,
+      // FastAPI always serves its schema once the app is up; used as readiness.
+      url: `${API_URL}/openapi.json`,
       reuseExistingServer: !process.env.CI,
       timeout: 120_000,
       stdout: "pipe",

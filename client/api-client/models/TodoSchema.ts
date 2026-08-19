@@ -57,16 +57,16 @@ export interface TodoSchema {
     dueDate: Date | null;
     /**
      * 
-     * @type {string}
+     * @type {Date}
      * @memberof TodoSchema
      */
-    createdAt: string;
+    createdAt: Date;
     /**
      * 
-     * @type {string}
+     * @type {Date}
      * @memberof TodoSchema
      */
-    updatedAt: string;
+    updatedAt: Date;
 }
 
 /**
@@ -100,8 +100,8 @@ export function TodoSchemaFromJSONTyped(json: any, ignoreDiscriminator: boolean)
         'completed': json['completed'],
         'projectId': json['project_id'],
         'dueDate': (json['due_date'] == null ? null : new Date(json['due_date'])),
-        'createdAt': json['created_at'],
-        'updatedAt': json['updated_at'],
+        'createdAt': (new Date(json['created_at'])),
+        'updatedAt': (new Date(json['updated_at'])),
     };
 }
 
@@ -122,8 +122,8 @@ export function TodoSchemaToJSONTyped(value?: TodoSchema | null, ignoreDiscrimin
         'completed': value['completed'],
         'project_id': value['projectId'],
         'due_date': value['dueDate'] == null ? value['dueDate'] : value['dueDate'].toISOString().substring(0,10),
-        'created_at': value['createdAt'],
-        'updated_at': value['updatedAt'],
+        'created_at': value['createdAt'].toISOString(),
+        'updated_at': value['updatedAt'].toISOString(),
     };
 }
 

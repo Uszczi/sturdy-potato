@@ -12,8 +12,8 @@ Name | Type
 `completed` | boolean
 `projectId` | number
 `dueDate` | Date
-`createdAt` | string
-`updatedAt` | string
+`createdAt` | Date
+`updatedAt` | Date
 
 ## Example
 

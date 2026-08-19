@@ -41,14 +41,14 @@ export function formatDueLong(date: Date): string {
 }
 
 /** A timestamp as e.g. "Aug 17, 2026, 3:04 PM" (local). */
-export function formatTimestamp(iso: string): string {
+export function formatTimestamp(date: Date): string {
   return new Intl.DateTimeFormat("en-US", {
     month: "short",
     day: "numeric",
     year: "numeric",
     hour: "numeric",
     minute: "2-digit",
-  }).format(new Date(iso));
+  }).format(date);
 }
 
 /** The long date shown in the overview header, e.g. "Monday, August 17". */

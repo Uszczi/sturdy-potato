@@ -1,3 +1,6 @@
+start:
+	aspire start
+
 run:
 	cd server && \
 	uv run fastapi dev src/main.py

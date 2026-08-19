@@ -24,8 +24,8 @@ export CORS_ORIGINS="${CORS_ORIGINS:-http://127.0.0.1:5173,http://localhost:5173
 # Start from a clean database so every run is deterministic.
 rm -f "$DB_FILE"
 
-cd "$ROOT"
-uv run alembic upgrade head
+# The uv project and all entrypoints live under server/ (src/ on the path).
 cd "$ROOT/server"
-uv run python -m seed
-exec uv run uvicorn main:app --host "$HOST" --port "$PORT"
+uv run alembic -c src/infrastructure/alembic/alembic.ini upgrade head
+uv run python src/seed.py
+exec uv run uvicorn main:app --app-dir src --host "$HOST" --port "$PORT"

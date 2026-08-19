@@ -74,7 +74,7 @@ export interface ApiTasksRetrieveRequest {
 }
 
 export interface ApiTasksViewListRequest {
-    view?: string;
+    view?: ApiTasksViewListViewEnum;
     project?: number | null;
 }
 
@@ -557,3 +557,14 @@ export class TasksApi extends runtime.BaseAPI {
     }
 
 }
+
+/**
+ * @export
+ */
+export const ApiTasksViewListViewEnum = {
+    Inbox: 'inbox',
+    Today: 'today',
+    Upcoming: 'upcoming',
+    All: 'all'
+} as const;
+export type ApiTasksViewListViewEnum = typeof ApiTasksViewListViewEnum[keyof typeof ApiTasksViewListViewEnum];

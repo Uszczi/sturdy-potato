@@ -39,16 +39,16 @@ export interface ProjectSchema {
     taskCount?: number;
     /**
      * 
-     * @type {string}
+     * @type {Date}
      * @memberof ProjectSchema
      */
-    createdAt: string;
+    createdAt: Date;
     /**
      * 
-     * @type {string}
+     * @type {Date}
      * @memberof ProjectSchema
      */
-    updatedAt: string;
+    updatedAt: Date;
 }
 
 /**
@@ -75,8 +75,8 @@ export function ProjectSchemaFromJSONTyped(json: any, ignoreDiscriminator: boole
         'id': json['id'],
         'name': json['name'],
         'taskCount': json['task_count'] == null ? undefined : json['task_count'],
-        'createdAt': json['created_at'],
-        'updatedAt': json['updated_at'],
+        'createdAt': (new Date(json['created_at'])),
+        'updatedAt': (new Date(json['updated_at'])),
     };
 }
 
@@ -94,8 +94,8 @@ export function ProjectSchemaToJSONTyped(value?: ProjectSchema | null, ignoreDis
         'id': value['id'],
         'name': value['name'],
         'task_count': value['taskCount'],
-        'created_at': value['createdAt'],
-        'updated_at': value['updatedAt'],
+        'created_at': value['createdAt'].toISOString(),
+        'updated_at': value['updatedAt'].toISOString(),
     };
 }
 

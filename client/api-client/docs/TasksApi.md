@@ -594,7 +594,7 @@ async function example() {
   const api = new TasksApi(config);
 
   const body = {
-    // string (optional)
+    // 'inbox' | 'today' | 'upcoming' | 'all' (optional)
     view: view_example,
     // number (optional)
     project: 56,
@@ -617,7 +617,7 @@ example().catch(console.error);
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **view** | `string` |  | [Optional] [Defaults to `&#39;inbox&#39;`] |
+| **view** | `inbox`, `today`, `upcoming`, `all` |  | [Optional] [Defaults to `&#39;inbox&#39;`] [Enum: inbox, today, upcoming, all] |
 | **project** | `number` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
