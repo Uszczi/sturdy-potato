@@ -68,6 +68,7 @@ class TodoSchema(BaseModel):
     title: str
     description: str
     completed: bool
+    position: int
     project_id: int | None
     due_date: date | None
     created_at: datetime

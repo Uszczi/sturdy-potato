@@ -4,8 +4,8 @@
 # The React SPA (served separately by Vite preview) is the app under test; this
 # only needs to answer its /api calls. Uses a dedicated SQLite database that is
 # wiped, migrated, and re-seeded on every start, so the suite always runs
-# against the known demo fixtures (see server/seed.py). Never points at the
-# developer's real db.sqlite3.
+# against the known demo fixtures (see server/src/cli/seed.py). Never points at
+# the developer's real db.sqlite3.
 set -e
 
 HOST="${E2E_API_HOST:-127.0.0.1}"
@@ -27,5 +27,5 @@ rm -f "$DB_FILE"
 # The uv project and all entrypoints live under server/ (src/ on the path).
 cd "$ROOT/server"
 uv run alembic -c src/infrastructure/alembic/alembic.ini upgrade head
-uv run python src/seed.py
+PYTHONPATH=src uv run python -m cli seed
 exec uv run uvicorn main:app --app-dir src --host "$HOST" --port "$PORT"

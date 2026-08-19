@@ -8,6 +8,7 @@ import {
   formatTimestamp,
 } from "../services/format";
 import MenuButton from "./MenuButton";
+import ProjectColorPicker from "./ProjectColorPicker";
 
 type TaskListViewProps = {
   /** Small uppercase label above the heading ("Tasks" or "Project"). */
@@ -33,6 +34,59 @@ function TaskListView({
   composeDefault = false,
 }: TaskListViewProps) {
   const [selected, setSelected] = useState<TodoSchema | null>(null);
+  const updateProject = useAppStore((state) => state.updateProject);
+  const reorderTasks = useAppStore((state) => state.reorderTasks);
+
+  // Local copy so a drag reorders rows live; it resyncs whenever the store
+  // hands us a fresh list (after the reorder persists, or any other change).
+  const [items, setItems] = useState(tasks);
+  const draggingId = useRef<number | null>(null);
+  const [activeId, setActiveId] = useState<number | null>(null);
+
+  useEffect(() => {
+    setItems(tasks);
+  }, [tasks]);
+
+  function handleDragStart(id: number) {
+    draggingId.current = id;
+    setActiveId(id);
+  }
+
+  function handleDragEnter(targetId: number) {
+    const sourceId = draggingId.current;
+    if (sourceId === null || sourceId === targetId) return;
+    setItems((current) => {
+      const from = current.findIndex((task) => task.id === sourceId);
+      const to = current.findIndex((task) => task.id === targetId);
+      // Only reorder among open tasks; completed rows keep their spot.
+      if (
+        from === -1 ||
+        to === -1 ||
+        current[from].completed ||
+        current[to].completed
+      ) {
+        return current;
+      }
+      const next = [...current];
+      const [moved] = next.splice(from, 1);
+      next.splice(to, 0, moved);
+      return next;
+    });
+  }
+
+  function handleDragEnd() {
+    const dropped = draggingId.current !== null;
+    draggingId.current = null;
+    setActiveId(null);
+    if (!dropped) return;
+    const openIds = items.filter((task) => !task.completed).map((task) => task.id);
+    const originalIds = tasks
+      .filter((task) => !task.completed)
+      .map((task) => task.id);
+    if (openIds.some((id, index) => id !== originalIds[index])) {
+      void reorderTasks(openIds);
+    }
+  }
 
   return (
     <div className="container mx-auto min-h-screen max-w-5xl px-4 py-6 sm:px-6 sm:py-10 lg:px-8">
@@ -40,10 +94,15 @@ function TaskListView({
         <div className="flex items-start gap-3">
           <MenuButton />
           {project && (
-            <span
-              className="mt-2 size-3 shrink-0 rounded-full bg-primary"
-              aria-hidden="true"
-            />
+            <span className="mt-1.5">
+              <ProjectColorPicker
+                value={project.color}
+                label={project.name}
+                onSelect={(color) =>
+                  void updateProject(project.id, { color })
+                }
+              />
+            </span>
           )}
           <div>
             <p className="text-xs font-bold tracking-[0.18em] text-base-content/45 uppercase">
@@ -91,11 +150,15 @@ function TaskListView({
               className="divide-y divide-base-300 border-y border-base-300"
               aria-label="Task list"
             >
-              {tasks.map((task) => (
+              {items.map((task) => (
                 <TaskRow
                   key={task.id}
                   task={task}
                   onOpen={() => setSelected(task)}
+                  dragging={activeId === task.id}
+                  onDragStart={() => handleDragStart(task.id)}
+                  onDragEnter={() => handleDragEnter(task.id)}
+                  onDragEnd={handleDragEnd}
                 />
               ))}
             </ul>
@@ -283,10 +346,26 @@ function TaskComposer({
 }
 
 /** A single task row with completion toggle and inline project assignment. */
-function TaskRow({ task, onOpen }: { task: TodoSchema; onOpen: () => void }) {
+function TaskRow({
+  task,
+  onOpen,
+  dragging,
+  onDragStart,
+  onDragEnter,
+  onDragEnd,
+}: {
+  task: TodoSchema;
+  onOpen: () => void;
+  dragging: boolean;
+  onDragStart: () => void;
+  onDragEnter: () => void;
+  onDragEnd: () => void;
+}) {
   const projects = useAppStore((state) => state.projects);
   const toggleTask = useAppStore((state) => state.toggleTask);
   const assignTaskProject = useAppStore((state) => state.assignTaskProject);
+  // Completed tasks are ordered by completion time, so only open rows drag.
+  const draggable = !task.completed;
 
   function activate(event: React.KeyboardEvent) {
     if (event.key === "Enter" || event.key === " ") {
@@ -298,15 +377,24 @@ function TaskRow({ task, onOpen }: { task: TodoSchema; onOpen: () => void }) {
   return (
     <li
       id={`task-${task.id}`}
-      className="group cursor-pointer transition-colors duration-200 hover:bg-base-200/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+      className={`group cursor-pointer transition-colors duration-200 hover:bg-base-200/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
+        dragging ? "opacity-50" : ""
+      }`}
       role="button"
       tabIndex={0}
+      draggable={draggable}
       onClick={onOpen}
       onKeyDown={activate}
+      onDragStart={onDragStart}
+      onDragEnter={onDragEnter}
+      onDragOver={(event) => event.preventDefault()}
+      onDragEnd={onDragEnd}
     >
       <div className="flex items-start gap-3 px-3 py-3 sm:px-4">
         <span
-          className="drag-handle mt-0.5 grid size-5 shrink-0 place-items-center rounded text-base-content/25"
+          className={`drag-handle mt-0.5 grid size-5 shrink-0 place-items-center rounded text-base-content/25 ${
+            draggable ? "cursor-grab active:cursor-grabbing" : ""
+          }`}
           aria-hidden="true"
         >
           <svg

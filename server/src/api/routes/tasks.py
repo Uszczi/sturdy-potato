@@ -1,11 +1,19 @@
 from typing import Annotated, Literal
 
-from fastapi import APIRouter, HTTPException, Query, status
+from fastapi import APIRouter, Query, status
 
-from api.dependencies import TodoRepositoryDep
+from api.dependencies import (
+    CountTasksDep,
+    CreateTaskDep,
+    DeleteTaskDep,
+    GetTaskDep,
+    ListOpenTasksDep,
+    ListTasksDep,
+    ReorderTasksDep,
+    UpdateTaskDep,
+    ViewTasksDep,
+)
 from auth import CurrentUserId
-from infrastructure.models import Todo
-from infrastructure.repositories import TodoRepository
 from schemas.order import ReorderInput
 from schemas.todo import (
     TaskCountSchema,
@@ -17,50 +25,29 @@ from schemas.todo import (
 router = APIRouter(prefix="/tasks", tags=["tasks"])
 
 
-async def _get_task_or_404(
-    repository: TodoRepository, user_id: int, task_id: int
-) -> Todo:
-    task = await repository.get_for_user(user_id, task_id)
-    if task is None:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, "Not found.")
-    return task
-
-
-async def _ensure_project(
-    repository: TodoRepository, user_id: int, project_id: int | None
-) -> None:
-    if project_id is not None:
-        project = await repository.get_project_for_user(user_id, project_id)
-        if project is None:
-            raise HTTPException(status.HTTP_404_NOT_FOUND, "Project not found.")
-
-
 @router.get("/", operation_id="api_tasks_list")
 async def list_tasks(
-    user_id: CurrentUserId, repository: TodoRepositoryDep
+    user_id: CurrentUserId, use_case: ListTasksDep
 ) -> list[TodoSchema]:
     # FastAPI serializes the ORM rows via the response model; no manual parse.
-    return await repository.list_for_user(user_id)  # type: ignore[return-value]
+    return await use_case.execute(user_id)  # type: ignore[return-value]
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED, operation_id="api_tasks_create")
 async def create_task(
-    body: TodoCreateInput, user_id: CurrentUserId, repository: TodoRepositoryDep
+    body: TodoCreateInput, user_id: CurrentUserId, use_case: CreateTaskDep
 ) -> TodoSchema:
-    data = body.model_dump()
-    await _ensure_project(repository, user_id, data["project_id"])
-    return await repository.create_for_user(user_id, data)  # type: ignore[return-value]
+    return await use_case.execute(user_id, body)  # type: ignore[return-value]
 
 
 @router.get("/view/", operation_id="api_tasks_view_list")
 async def view_tasks(
     user_id: CurrentUserId,
-    repository: TodoRepositoryDep,
+    use_case: ViewTasksDep,
     view: Annotated[Literal["inbox", "today", "upcoming", "all"], Query()] = "inbox",
     project: Annotated[int | None, Query()] = None,
 ) -> list[TodoSchema]:
-    await _ensure_project(repository, user_id, project)
-    return await repository.list_for_view(  # type: ignore[return-value]
+    return await use_case.execute(  # type: ignore[return-value]
         user_id, view=view, project_id=project
     )
 
@@ -68,19 +55,19 @@ async def view_tasks(
 @router.get("/open/", operation_id="api_tasks_open_list")
 async def open_tasks(
     user_id: CurrentUserId,
-    repository: TodoRepositoryDep,
+    use_case: ListOpenTasksDep,
     limit: Annotated[int | None, Query(ge=0)] = None,
 ) -> list[TodoSchema]:
-    return await repository.list_open_for_user(user_id, limit=limit)  # type: ignore[return-value]
+    return await use_case.execute(user_id, limit=limit)  # type: ignore[return-value]
 
 
 @router.get("/count/", operation_id="api_tasks_count_retrieve")
 async def count_tasks(
     user_id: CurrentUserId,
-    repository: TodoRepositoryDep,
+    use_case: CountTasksDep,
     completed: bool | None = None,
 ) -> TaskCountSchema:
-    total = await repository.count_for_user(user_id, completed=completed)
+    total = await use_case.execute(user_id, completed=completed)
     return TaskCountSchema(count=total)
 
 
@@ -90,19 +77,16 @@ async def count_tasks(
     operation_id="api_tasks_reorder_create",
 )
 async def reorder_tasks(
-    body: ReorderInput, user_id: CurrentUserId, repository: TodoRepositoryDep
+    body: ReorderInput, user_id: CurrentUserId, use_case: ReorderTasksDep
 ) -> None:
-    if not await repository.reorder_for_user(user_id, body.order):
-        raise HTTPException(
-            status.HTTP_400_BAD_REQUEST, "Order contains tasks outside this user."
-        )
+    await use_case.execute(user_id, body.order)
 
 
 @router.get("/{id}/", operation_id="api_tasks_retrieve")
 async def retrieve_task(
-    id: int, user_id: CurrentUserId, repository: TodoRepositoryDep
+    id: int, user_id: CurrentUserId, use_case: GetTaskDep
 ) -> TodoSchema:
-    return await _get_task_or_404(repository, user_id, id)  # type: ignore[return-value]
+    return await use_case.execute(user_id, id)  # type: ignore[return-value]
 
 
 @router.patch("/{id}/", operation_id="api_tasks_partial_update")
@@ -110,13 +94,9 @@ async def update_task(
     id: int,
     body: TodoUpdateInput,
     user_id: CurrentUserId,
-    repository: TodoRepositoryDep,
+    use_case: UpdateTaskDep,
 ) -> TodoSchema:
-    task = await _get_task_or_404(repository, user_id, id)
-    data = body.model_dump(exclude_unset=True)
-    if "project_id" in data:
-        await _ensure_project(repository, user_id, data["project_id"])
-    return await repository.update(task, data)  # type: ignore[return-value]
+    return await use_case.execute(user_id, id, body)  # type: ignore[return-value]
 
 
 @router.delete(
@@ -125,7 +105,6 @@ async def update_task(
     operation_id="api_tasks_destroy",
 )
 async def delete_task(
-    id: int, user_id: CurrentUserId, repository: TodoRepositoryDep
+    id: int, user_id: CurrentUserId, use_case: DeleteTaskDep
 ) -> None:
-    task = await _get_task_or_404(repository, user_id, id)
-    await repository.delete(task)
+    await use_case.execute(user_id, id)

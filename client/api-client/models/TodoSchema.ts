@@ -44,7 +44,13 @@ export interface TodoSchema {
      */
     completed: boolean;
     /**
-     * 
+     *
+     * @type {number}
+     * @memberof TodoSchema
+     */
+    position: number;
+    /**
+     *
      * @type {number}
      * @memberof TodoSchema
      */
@@ -77,6 +83,7 @@ export function instanceOfTodoSchema(value: object): value is TodoSchema {
     if (!('title' in value) || value['title'] === undefined) return false;
     if (!('description' in value) || value['description'] === undefined) return false;
     if (!('completed' in value) || value['completed'] === undefined) return false;
+    if (!('position' in value) || value['position'] === undefined) return false;
     if ((!('projectId' in (value as Record<string, any>)) && !('project_id' in (value as Record<string, any>))) || ((value as Record<string, any>)['projectId'] === undefined && (value as Record<string, any>)['project_id'] === undefined)) return false;
     if ((!('dueDate' in (value as Record<string, any>)) && !('due_date' in (value as Record<string, any>))) || ((value as Record<string, any>)['dueDate'] === undefined && (value as Record<string, any>)['due_date'] === undefined)) return false;
     if ((!('createdAt' in (value as Record<string, any>)) && !('created_at' in (value as Record<string, any>))) || ((value as Record<string, any>)['createdAt'] === undefined && (value as Record<string, any>)['created_at'] === undefined)) return false;
@@ -98,6 +105,7 @@ export function TodoSchemaFromJSONTyped(json: any, ignoreDiscriminator: boolean)
         'title': json['title'],
         'description': json['description'],
         'completed': json['completed'],
+        'position': json['position'],
         'projectId': json['project_id'],
         'dueDate': (json['due_date'] == null ? null : new Date(json['due_date'])),
         'createdAt': (new Date(json['created_at'])),
@@ -120,6 +128,7 @@ export function TodoSchemaToJSONTyped(value?: TodoSchema | null, ignoreDiscrimin
         'title': value['title'],
         'description': value['description'],
         'completed': value['completed'],
+        'position': value['position'],
         'project_id': value['projectId'],
         'due_date': value['dueDate'] == null ? value['dueDate'] : value['dueDate'].toISOString().substring(0,10),
         'created_at': value['createdAt'].toISOString(),

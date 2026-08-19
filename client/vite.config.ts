@@ -14,8 +14,11 @@ export default defineConfig({
     // Match `/api` as a path segment (regex key) so it doesn't also swallow
     // sibling paths like /api-client/index.ts — the generated client source
     // that Vite must serve itself in dev.
+    //
+    // The backend target is overridable (VITE_API_PROXY_TARGET) so the e2e
+    // suite can point a dev server at its isolated API on a non-default port.
     proxy: {
-      '^/api(?:/|$)': 'http://127.0.0.1:8000',
+      '^/api(?:/|$)': process.env.VITE_API_PROXY_TARGET ?? 'http://127.0.0.1:8000',
     },
   },
   plugins: [

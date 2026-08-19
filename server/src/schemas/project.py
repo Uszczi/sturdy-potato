@@ -1,12 +1,28 @@
+import re
 from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
+
+_HEX_COLOR = re.compile(r"^#[0-9a-fA-F]{6}$")
+
+
+def _normalize_color(value: object) -> object:
+    """Validate a ``#rrggbb`` hex string and lower-case it; pass None through."""
+    if value is None:
+        return None
+    if isinstance(value, str):
+        value = value.strip()
+        if not _HEX_COLOR.match(value):
+            raise ValueError("Color must be a '#rrggbb' hex string.")
+        return value.lower()
+    return value
 
 
 class ProjectCreateInput(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     name: str = Field(min_length=1, max_length=100)
+    color: str | None = Field(default=None, max_length=7)
 
     @field_validator("name", mode="before")
     @classmethod
@@ -15,11 +31,17 @@ class ProjectCreateInput(BaseModel):
             return value.strip()
         return value
 
+    @field_validator("color", mode="before")
+    @classmethod
+    def validate_color(cls, value: object) -> object:
+        return _normalize_color(value)
+
 
 class ProjectUpdateInput(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     name: str | None = Field(default=None, max_length=100)
+    color: str | None = Field(default=None, max_length=7)
 
     @field_validator("name", mode="before")
     @classmethod
@@ -30,12 +52,18 @@ class ProjectUpdateInput(BaseModel):
             return value.strip()
         return value
 
+    @field_validator("color", mode="before")
+    @classmethod
+    def validate_color(cls, value: object) -> object:
+        return _normalize_color(value)
+
 
 class ProjectSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
     name: str
+    color: str | None = None
     task_count: int = 0
     created_at: datetime
     updated_at: datetime

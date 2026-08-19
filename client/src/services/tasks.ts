@@ -19,6 +19,14 @@ export function toggleTask(task: TodoSchema): Promise<TodoSchema> {
   });
 }
 
+/**
+ * Persist a manual ordering. `orderedIds` is the new order of the moved tasks;
+ * the server reassigns their positions to the slots those tasks occupy.
+ */
+export function reorderTasks(orderedIds: number[]): Promise<void> {
+  return tasksApi.apiTasksReorderCreate({ reorderInput: { order: orderedIds } });
+}
+
 /** Move a task to a project, or to the inbox when `projectId` is null. */
 export function assignTaskProject(
   taskId: number,

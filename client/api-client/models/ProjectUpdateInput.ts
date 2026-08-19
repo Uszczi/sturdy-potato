@@ -25,6 +25,12 @@ export interface ProjectUpdateInput {
      * @memberof ProjectUpdateInput
      */
     name?: string | null;
+    /**
+     *
+     * @type {string}
+     * @memberof ProjectUpdateInput
+     */
+    color?: string | null;
 }
 
 /**
@@ -43,8 +49,9 @@ export function ProjectUpdateInputFromJSONTyped(json: any, ignoreDiscriminator: 
         return json;
     }
     return {
-        
+
         'name': json['name'] === undefined ? undefined : json['name'] === null ? null : json['name'],
+        'color': json['color'] === undefined ? undefined : json['color'] === null ? null : json['color'],
     };
 }
 
@@ -58,8 +65,9 @@ export function ProjectUpdateInputToJSONTyped(value?: ProjectUpdateInput | null,
     }
 
     return {
-        
+
         'name': value['name'],
+        'color': value['color'],
     };
 }
 

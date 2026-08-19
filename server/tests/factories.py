@@ -17,11 +17,13 @@ async def create_user(
     username: str | None = None,
     password: str = "password-123",
     is_active: bool = True,
+    is_staff: bool = False,
 ) -> User:
     user = User(
         username=username or f"user-{next(_user_counter)}",
         hashed_password=hash_password(password),
         is_active=is_active,
+        is_staff=is_staff,
     )
     session.add(user)
     await session.commit()
@@ -34,11 +36,13 @@ async def create_project(
     user: User,
     *,
     name: str | None = None,
+    color: str | None = None,
     position: int = 0,
 ) -> Project:
     project = Project(
         user_id=user.id,
         name=name or f"Project {next(_project_counter)}",
+        color=color,
         position=position,
     )
     session.add(project)

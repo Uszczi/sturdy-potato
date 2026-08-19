@@ -77,6 +77,68 @@ async def test_retrieve_missing_project_returns_404(
     assert response.status_code == 404
 
 
+async def test_create_project_with_color(
+    client: AsyncClient, session: AsyncSession
+) -> None:
+    user = await create_user(session)
+
+    response = await client.post(
+        "/api/projects/",
+        headers=auth_headers(user),
+        json={"name": "Roadmap", "color": "#6366F1"},
+    )
+
+    assert response.status_code == 201
+    # Hex colours are normalised to lower case.
+    assert response.json()["color"] == "#6366f1"
+
+
+async def test_create_project_rejects_invalid_color(
+    client: AsyncClient, session: AsyncSession
+) -> None:
+    user = await create_user(session)
+
+    response = await client.post(
+        "/api/projects/",
+        headers=auth_headers(user),
+        json={"name": "Roadmap", "color": "blue"},
+    )
+
+    assert response.status_code == 422
+
+
+async def test_update_project_color(
+    client: AsyncClient, session: AsyncSession
+) -> None:
+    user = await create_user(session)
+    project = await create_project(session, user, color="#f43f5e")
+
+    response = await client.patch(
+        f"/api/projects/{project.id}/",
+        headers=auth_headers(user),
+        json={"color": "#10b981"},
+    )
+
+    assert response.status_code == 200
+    assert response.json()["color"] == "#10b981"
+
+
+async def test_clear_project_color(
+    client: AsyncClient, session: AsyncSession
+) -> None:
+    user = await create_user(session)
+    project = await create_project(session, user, color="#f43f5e")
+
+    response = await client.patch(
+        f"/api/projects/{project.id}/",
+        headers=auth_headers(user),
+        json={"color": None},
+    )
+
+    assert response.status_code == 200
+    assert response.json()["color"] is None
+
+
 async def test_rename_project(client: AsyncClient, session: AsyncSession) -> None:
     user = await create_user(session)
     project = await create_project(session, user, name="Old")

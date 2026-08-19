@@ -8,11 +8,14 @@ dependencies = [
     "aiosqlite>=0.20.0",
     "alembic>=1.14.0",
     "asyncer>=0.0.8",
+    "click>=8.4.2",
     "fastapi[standard]>=0.115.0",
+    "itsdangerous>=2.2.0",
     "pwdlib[argon2]>=0.2.1",
     "pydantic>=2.13.4",
     "pydantic-settings>=2.7.0",
     "pyjwt>=2.10.0",
+    "sqladmin>=0.31.0",
     "sqlalchemy[asyncio]>=2.0.36",
     "sqlmodel>=0.0.22",
     "uvicorn[standard]>=0.34.0",
@@ -37,7 +40,7 @@ pythonpath = ["src"]
 asyncio_mode = "auto"
 
 [tool.coverage.run]
-omit = ["src/infrastructure/alembic/*"]
+omit = ["src/infrastructure/alembic/*", "src/cli/__main__.py"]
 concurrency = ["thread", "greenlet"]
 
 [tool.coverage.report]
@@ -50,11 +53,11 @@ exclude = ["src/infrastructure/alembic/**"]
 known-first-party = [
     "api",
     "auth",
+    "cli",
     "config",
     "infrastructure",
     "main",
     "schemas",
-    "seed",
 ]
 
 [tool.mypy]

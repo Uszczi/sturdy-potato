@@ -1,22 +1,26 @@
 import { defineConfig, devices } from "@playwright/test";
 
-// Playwright drives the React SPA (web/sturdy-potato) end-to-end. `just e2e`
-// runs headless, `just e2e-headed` opens a real browser window. Two servers are
-// booted: the Vite preview server that serves the built SPA (the app under
-// test) and an isolated, freshly-seeded Django instance that answers its API
-// calls (see e2e/scripts/serve.sh).
+// Playwright drives the React SPA end-to-end. `just e2e` runs headless,
+// `just e2e-headed` opens a real browser window. Two servers are booted: the
+// Vite dev server that serves the SPA (the app under test) and an isolated,
+// freshly-seeded FastAPI instance that answers its API calls (see
+// e2e/scripts/serve.sh).
+//
+// Ports deliberately differ from the app defaults (5173 / 8000) so the suite
+// can run alongside a developer's dev servers without colliding — CI forbids
+// reusing an existing server, so a stray dev server on the default ports would
+// otherwise be silently tested instead.
 
-// The SPA origin the browser loads. Must stay in Django's CORS allow-list
-// (DJANGO_CORS_ALLOWED_ORIGINS defaults to 127.0.0.1:5173) so the JWT login and
-// data calls to the API server are not blocked.
+// The SPA origin the browser loads.
 const WEB_HOST = process.env.E2E_WEB_HOST ?? "127.0.0.1";
-const WEB_PORT = process.env.E2E_WEB_PORT ?? "5173";
+const WEB_PORT = process.env.E2E_WEB_PORT ?? "5273";
 const BASE_URL = `http://${WEB_HOST}:${WEB_PORT}`;
 
-// The Django API server. src/api.ts hardcodes 127.0.0.1:8000, so the API must
-// come up there for the SPA to reach it from the browser.
+// The FastAPI server. The browser talks to it same-origin: the Vite dev server
+// proxies /api to this address (VITE_API_PROXY_TARGET below), so the SPA needs
+// no hard-coded API host.
 const API_HOST = process.env.E2E_API_HOST ?? "127.0.0.1";
-const API_PORT = process.env.E2E_API_PORT ?? "8000";
+const API_PORT = process.env.E2E_API_PORT ?? "8100";
 const API_URL = `http://${API_HOST}:${API_PORT}`;
 
 export default defineConfig({
@@ -76,6 +80,10 @@ export default defineConfig({
       timeout: 120_000,
       stdout: "pipe",
       stderr: "pipe",
+      env: {
+        // Point the dev server's /api proxy at the isolated e2e API port.
+        VITE_API_PROXY_TARGET: API_URL,
+      },
     },
   ],
 });

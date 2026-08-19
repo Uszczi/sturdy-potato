@@ -31,6 +31,7 @@ class User(SQLModel, table=True):
     username: str = Field(unique=True, index=True, max_length=150)
     hashed_password: str
     is_active: bool = True
+    is_staff: bool = False
 
 
 class Project(SQLModel, table=True):
@@ -44,6 +45,9 @@ class Project(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
     user_id: int = Field(foreign_key="users.id")
     name: str = Field(max_length=100)
+    # Optional accent colour as a "#rrggbb" hex string; null falls back to the
+    # theme's primary colour in the UI.
+    color: str | None = Field(default=None, max_length=7)
     position: int = 0
     created_at: datetime = _created_at_field()
     updated_at: datetime = _updated_at_field()

@@ -17,11 +17,11 @@ import { AUTH_FILE, DEMO_PASSWORD, DEMO_USER } from "./helpers";
 // run — which left the specs reusing a stale session against the freshly-seeded
 // server.
 //
-// The base URL is rebuilt from the same env vars as playwright.config.ts so the
-// login hits the Vite preview server booted for the run.
+// The base URL is rebuilt from the same env vars (and defaults) as
+// playwright.config.ts so the login hits the Vite dev server booted for the run.
 async function globalSetup() {
   const host = process.env.E2E_WEB_HOST ?? "127.0.0.1";
-  const port = process.env.E2E_WEB_PORT ?? "5173";
+  const port = process.env.E2E_WEB_PORT ?? "5273";
   const baseURL = `http://${host}:${port}`;
 
   await mkdir(dirname(AUTH_FILE), { recursive: true });

@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import UTC, datetime, timedelta
 
 from freezegun import freeze_time
 from httpx import AsyncClient
@@ -35,6 +35,55 @@ async def test_list_orders_by_position_then_newest(
 
     # Same position falls back to newest-created first.
     assert [task["title"] for task in response.json()] == ["Newer", "Older"]
+
+
+async def test_list_sinks_completed_below_open_ignoring_position(
+    client: AsyncClient, session: AsyncSession
+) -> None:
+    user = await create_user(session)
+    # The completed task has the lower position, yet must still sort last.
+    await create_task(session, user, title="Done", completed=True, position=0)
+    await create_task(session, user, title="Open", position=1)
+
+    response = await client.get("/api/tasks/", headers=auth_headers(user))
+
+    assert [task["title"] for task in response.json()] == ["Open", "Done"]
+
+
+async def test_completed_tasks_sort_most_recently_completed_first(
+    client: AsyncClient, session: AsyncSession
+) -> None:
+    user = await create_user(session)
+    earlier = await create_task(
+        session, user, title="Earlier", completed=True, position=0
+    )
+    later = await create_task(session, user, title="Later", completed=True, position=1)
+    # `later` was created last, but `earlier` was ticked most recently, so its
+    # newer updated_at should lead the completed group (top of closed).
+    earlier.updated_at = datetime(2024, 2, 1, tzinfo=UTC)
+    later.updated_at = datetime(2024, 1, 1, tzinfo=UTC)
+    session.add_all([earlier, later])
+    await session.commit()
+
+    response = await client.get("/api/tasks/", headers=auth_headers(user))
+    assert [task["title"] for task in response.json()] == ["Earlier", "Later"]
+
+
+async def test_reopening_a_task_returns_it_to_the_open_group(
+    client: AsyncClient, session: AsyncSession
+) -> None:
+    user = await create_user(session)
+    await create_task(session, user, title="Open", position=0)
+    done = await create_task(session, user, title="Reopened", completed=True, position=1)
+    headers = auth_headers(user)
+
+    await client.patch(
+        f"/api/tasks/{done.id}/", headers=headers, json={"completed": False}
+    )
+
+    response = await client.get("/api/tasks/", headers=headers)
+    # Back among the open tasks, ordered by its position.
+    assert [task["title"] for task in response.json()] == ["Open", "Reopened"]
 
 
 async def test_create_task(client: AsyncClient, session: AsyncSession) -> None:

@@ -1,6 +1,7 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { logout } from "../services/auth";
 import { useAppStore } from "../stores/app-store";
+import { ProjectDot } from "./ProjectColorPicker";
 
 const inactiveLink =
   "text-base-content/70 hover:bg-base-100 hover:text-base-content";
@@ -35,7 +36,7 @@ function Sidebar() {
       style={{ translate: open ? "0 0" : "-100% 0" }}
       aria-label="Primary navigation"
     >
-      <div className="flex items-center justify-between">
+      <div className="flex shrink-0 items-center justify-between">
         <Link
           to="/"
           onClick={onNavigate}
@@ -60,6 +61,7 @@ function Sidebar() {
         </button>
       </div>
 
+      <div className="-mx-1 min-h-0 flex-1 overflow-y-auto px-1">
       <Link
         to="/tasks"
         search={{ compose: true }}
@@ -139,7 +141,7 @@ function Sidebar() {
         </nav>
       </div>
 
-      <div className="mt-8 min-h-0 flex-1">
+      <div className="mt-8">
         <div className="flex items-center justify-between px-3">
           <p className="text-xs font-bold text-base-content/55">Projects</p>
           <Link
@@ -152,10 +154,7 @@ function Sidebar() {
             +
           </Link>
         </div>
-        <nav
-          className="mt-2 max-h-full space-y-0.5 overflow-y-auto"
-          onClick={onNavigate}
-        >
+        <nav className="mt-2 space-y-0.5" onClick={onNavigate}>
           {projects.length === 0 ? (
             <Link
               to="/projects"
@@ -173,10 +172,7 @@ function Sidebar() {
                   activeProjectId === project.id ? activeLink : inactiveLink
                 } flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-semibold transition-colors`}
               >
-                <span
-                  className="size-2.5 rounded-full bg-primary/70"
-                  aria-hidden="true"
-                />
+                <ProjectDot color={project.color} />
                 <span className="min-w-0 flex-1 truncate">{project.name}</span>
                 <span className="text-xs font-normal text-base-content/40">
                   {project.taskCount ?? 0}
@@ -186,8 +182,9 @@ function Sidebar() {
           )}
         </nav>
       </div>
+      </div>
 
-      <div className="mt-4 border-t border-base-300 pt-3">
+      <div className="mt-4 shrink-0 border-t border-base-300 pt-3">
         <button
           type="button"
           onClick={handleLogout}

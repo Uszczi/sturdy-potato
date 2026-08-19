@@ -2,7 +2,7 @@ from collections.abc import Mapping
 from datetime import UTC, date, datetime
 from typing import Any
 
-from sqlalchemy import func
+from sqlalchemy import case, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import col, select
 
@@ -13,17 +13,27 @@ def _today() -> date:
     return datetime.now(UTC).date()
 
 
+# Open tasks come first (completed False < True), open tasks keep their manual
+# position order, and completed tasks show most-recently-completed first so a
+# freshly ticked task lands at the top of the completed group.
+_OPEN_POSITION = case((col(Todo.completed).is_(False), col(Todo.position)))
+_COMPLETED_RECENCY = case((col(Todo.completed).is_(True), col(Todo.updated_at)))
+_LIST_ORDER = (
+    col(Todo.completed).asc(),
+    _OPEN_POSITION.asc(),
+    _COMPLETED_RECENCY.desc(),
+    col(Todo.created_at).desc(),
+    col(Todo.id).desc(),
+)
+
+
 class TodoRepository:
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
 
     async def list_for_user(self, user_id: int) -> list[Todo]:
         statement = (
-            select(Todo)
-            .where(col(Todo.user_id) == user_id)
-            .order_by(
-                col(Todo.position), col(Todo.created_at).desc(), col(Todo.id).desc()
-            )
+            select(Todo).where(col(Todo.user_id) == user_id).order_by(*_LIST_ORDER)
         )
         return list(await self._session.scalars(statement))
 
@@ -100,9 +110,7 @@ class TodoRepository:
         task: Todo | None = await self._session.scalar(statement)
         return task
 
-    async def create_for_user(
-        self, user_id: int, data: Mapping[str, Any]
-    ) -> Todo:
+    async def create_for_user(self, user_id: int, data: Mapping[str, Any]) -> Todo:
         task_data = dict(data)
         if "position" not in task_data:
             max_position: int | None = await self._session.scalar(
