@@ -29,15 +29,16 @@ router = APIRouter(prefix="/tasks", tags=["tasks"])
 async def list_tasks(
     user_id: CurrentUserId, use_case: ListTasksDep
 ) -> list[TodoSchema]:
-    # FastAPI serializes the ORM rows via the response model; no manual parse.
-    return await use_case.execute(user_id)  # type: ignore[return-value]
+    tasks = await use_case.execute(user_id)
+    return [TodoSchema.model_validate(task) for task in tasks]
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED, operation_id="api_tasks_create")
 async def create_task(
     body: TodoCreateInput, user_id: CurrentUserId, use_case: CreateTaskDep
 ) -> TodoSchema:
-    return await use_case.execute(user_id, body)  # type: ignore[return-value]
+    task = await use_case.execute(user_id, body.to_domain())
+    return TodoSchema.model_validate(task)
 
 
 @router.get("/view/", operation_id="api_tasks_view_list")
@@ -47,9 +48,8 @@ async def view_tasks(
     view: Annotated[Literal["inbox", "today", "upcoming", "all"], Query()] = "inbox",
     project: Annotated[int | None, Query()] = None,
 ) -> list[TodoSchema]:
-    return await use_case.execute(  # type: ignore[return-value]
-        user_id, view=view, project_id=project
-    )
+    tasks = await use_case.execute(user_id, view=view, project_id=project)
+    return [TodoSchema.model_validate(task) for task in tasks]
 
 
 @router.get("/open/", operation_id="api_tasks_open_list")
@@ -58,7 +58,8 @@ async def open_tasks(
     use_case: ListOpenTasksDep,
     limit: Annotated[int | None, Query(ge=0)] = None,
 ) -> list[TodoSchema]:
-    return await use_case.execute(user_id, limit=limit)  # type: ignore[return-value]
+    tasks = await use_case.execute(user_id, limit=limit)
+    return [TodoSchema.model_validate(task) for task in tasks]
 
 
 @router.get("/count/", operation_id="api_tasks_count_retrieve")
@@ -86,7 +87,8 @@ async def reorder_tasks(
 async def retrieve_task(
     id: int, user_id: CurrentUserId, use_case: GetTaskDep
 ) -> TodoSchema:
-    return await use_case.execute(user_id, id)  # type: ignore[return-value]
+    task = await use_case.execute(user_id, id)
+    return TodoSchema.model_validate(task)
 
 
 @router.patch("/{id}/", operation_id="api_tasks_partial_update")
@@ -96,7 +98,8 @@ async def update_task(
     user_id: CurrentUserId,
     use_case: UpdateTaskDep,
 ) -> TodoSchema:
-    return await use_case.execute(user_id, id, body)  # type: ignore[return-value]
+    task = await use_case.execute(user_id, id, body.to_domain())
+    return TodoSchema.model_validate(task)
 
 
 @router.delete(
@@ -104,7 +107,5 @@ async def update_task(
     status_code=status.HTTP_204_NO_CONTENT,
     operation_id="api_tasks_destroy",
 )
-async def delete_task(
-    id: int, user_id: CurrentUserId, use_case: DeleteTaskDep
-) -> None:
+async def delete_task(id: int, user_id: CurrentUserId, use_case: DeleteTaskDep) -> None:
     await use_case.execute(user_id, id)

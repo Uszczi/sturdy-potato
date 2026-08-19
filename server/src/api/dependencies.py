@@ -1,111 +1,142 @@
 """Central definitions for the FastAPI dependencies used across the API.
 
-This module is the composition root: it wires repositories to a session and use
-cases to their repositories. Use cases stay framework-agnostic; the ``Depends``
-plumbing lives here.
+This module is the composition root. A single Unit of Work owns the per-request
+session and transaction; each use case is built from the repositories it needs,
+declared explicitly at the call site. Use cases depend only on the repository
+ports, so nothing here leaks a framework concern into the use-case layer.
 """
 
-from collections.abc import Callable
+from collections.abc import AsyncGenerator, Callable
 from typing import Annotated
 
 from fastapi import Depends
 
 from auth import CurrentUser, CurrentUserId
 from infrastructure.db import SessionDep
-from infrastructure.repositories import (
-    ProjectRepository,
-    TodoRepository,
-    UserRepository,
-)
+from infrastructure.repositories import UserRepository
+from infrastructure.security import password_hasher, token_service
+from infrastructure.unit_of_work import UnitOfWork
+from use_cases import auth as auth_use_cases
 from use_cases import projects as project_use_cases
 from use_cases import tasks as task_use_cases
+
+
+async def get_unit_of_work(session: SessionDep) -> AsyncGenerator[UnitOfWork]:
+    # Commit once, after the endpoint returns successfully; roll back if it
+    # raised (including domain UseCaseErrors), so a request is all-or-nothing.
+    uow = UnitOfWork(session)
+    try:
+        yield uow
+        await uow.commit()
+    except Exception:
+        await uow.rollback()
+        raise
+
+
+UnitOfWorkDep = Annotated[UnitOfWork, Depends(get_unit_of_work)]
+
+
+def _use_case[T](build: Callable[[UnitOfWork], T]) -> Callable[..., T]:
+    """Turn a "build from the unit of work" function into a FastAPI provider.
+
+    Each use case names the repositories it needs in ``build``; there is no
+    baked-in assumption about how many repositories a use case takes.
+    """
+
+    def provider(uow: UnitOfWorkDep) -> T:
+        return build(uow)
+
+    return provider
 
 
 def get_user_repository(session: SessionDep) -> UserRepository:
     return UserRepository(session)
 
 
-def get_todo_repository(session: SessionDep) -> TodoRepository:
-    return TodoRepository(session)
-
-
-def get_project_repository(session: SessionDep) -> ProjectRepository:
-    return ProjectRepository(session)
-
-
 UserRepositoryDep = Annotated[UserRepository, Depends(get_user_repository)]
-TodoRepositoryDep = Annotated[TodoRepository, Depends(get_todo_repository)]
-ProjectRepositoryDep = Annotated[ProjectRepository, Depends(get_project_repository)]
 
 
-def _task_use_case[T](cls: Callable[[TodoRepository], T]) -> Callable[..., T]:
-    def provider(tasks: TodoRepositoryDep) -> T:
-        return cls(tasks)
+def provide_authenticate_user(
+    users: UserRepositoryDep,
+) -> auth_use_cases.AuthenticateUser:
+    return auth_use_cases.AuthenticateUser(users, password_hasher, token_service)
 
-    return provider
+
+def provide_refresh_access_token() -> auth_use_cases.RefreshAccessToken:
+    return auth_use_cases.RefreshAccessToken(token_service)
 
 
-def _project_use_case[T](cls: Callable[[ProjectRepository], T]) -> Callable[..., T]:
-    def provider(projects: ProjectRepositoryDep) -> T:
-        return cls(projects)
-
-    return provider
-
+AuthenticateUserDep = Annotated[
+    auth_use_cases.AuthenticateUser, Depends(provide_authenticate_user)
+]
+RefreshAccessTokenDep = Annotated[
+    auth_use_cases.RefreshAccessToken, Depends(provide_refresh_access_token)
+]
 
 ListTasksDep = Annotated[
-    task_use_cases.ListTasks, Depends(_task_use_case(task_use_cases.ListTasks))
+    task_use_cases.ListTasks,
+    Depends(_use_case(lambda uow: task_use_cases.ListTasks(uow.tasks))),
 ]
 ViewTasksDep = Annotated[
-    task_use_cases.ViewTasks, Depends(_task_use_case(task_use_cases.ViewTasks))
+    task_use_cases.ViewTasks,
+    Depends(_use_case(lambda uow: task_use_cases.ViewTasks(uow.tasks, uow.projects))),
 ]
 ListOpenTasksDep = Annotated[
-    task_use_cases.ListOpenTasks, Depends(_task_use_case(task_use_cases.ListOpenTasks))
+    task_use_cases.ListOpenTasks,
+    Depends(_use_case(lambda uow: task_use_cases.ListOpenTasks(uow.tasks))),
 ]
 CountTasksDep = Annotated[
-    task_use_cases.CountTasks, Depends(_task_use_case(task_use_cases.CountTasks))
+    task_use_cases.CountTasks,
+    Depends(_use_case(lambda uow: task_use_cases.CountTasks(uow.tasks))),
 ]
 CreateTaskDep = Annotated[
-    task_use_cases.CreateTask, Depends(_task_use_case(task_use_cases.CreateTask))
+    task_use_cases.CreateTask,
+    Depends(_use_case(lambda uow: task_use_cases.CreateTask(uow.tasks, uow.projects))),
 ]
 GetTaskDep = Annotated[
-    task_use_cases.GetTask, Depends(_task_use_case(task_use_cases.GetTask))
+    task_use_cases.GetTask,
+    Depends(_use_case(lambda uow: task_use_cases.GetTask(uow.tasks))),
 ]
 UpdateTaskDep = Annotated[
-    task_use_cases.UpdateTask, Depends(_task_use_case(task_use_cases.UpdateTask))
+    task_use_cases.UpdateTask,
+    Depends(_use_case(lambda uow: task_use_cases.UpdateTask(uow.tasks, uow.projects))),
 ]
 DeleteTaskDep = Annotated[
-    task_use_cases.DeleteTask, Depends(_task_use_case(task_use_cases.DeleteTask))
+    task_use_cases.DeleteTask,
+    Depends(_use_case(lambda uow: task_use_cases.DeleteTask(uow.tasks))),
 ]
 ReorderTasksDep = Annotated[
-    task_use_cases.ReorderTasks, Depends(_task_use_case(task_use_cases.ReorderTasks))
+    task_use_cases.ReorderTasks,
+    Depends(_use_case(lambda uow: task_use_cases.ReorderTasks(uow.tasks))),
 ]
 
 ListProjectsDep = Annotated[
     project_use_cases.ListProjects,
-    Depends(_project_use_case(project_use_cases.ListProjects)),
+    Depends(_use_case(lambda uow: project_use_cases.ListProjects(uow.projects))),
 ]
 CreateProjectDep = Annotated[
     project_use_cases.CreateProject,
-    Depends(_project_use_case(project_use_cases.CreateProject)),
+    Depends(_use_case(lambda uow: project_use_cases.CreateProject(uow.projects))),
 ]
 GetProjectDep = Annotated[
     project_use_cases.GetProject,
-    Depends(_project_use_case(project_use_cases.GetProject)),
+    Depends(_use_case(lambda uow: project_use_cases.GetProject(uow.projects))),
 ]
 UpdateProjectDep = Annotated[
     project_use_cases.UpdateProject,
-    Depends(_project_use_case(project_use_cases.UpdateProject)),
+    Depends(_use_case(lambda uow: project_use_cases.UpdateProject(uow.projects))),
 ]
 DeleteProjectDep = Annotated[
     project_use_cases.DeleteProject,
-    Depends(_project_use_case(project_use_cases.DeleteProject)),
+    Depends(_use_case(lambda uow: project_use_cases.DeleteProject(uow.projects))),
 ]
 ReorderProjectsDep = Annotated[
     project_use_cases.ReorderProjects,
-    Depends(_project_use_case(project_use_cases.ReorderProjects)),
+    Depends(_use_case(lambda uow: project_use_cases.ReorderProjects(uow.projects))),
 ]
 
 __all__ = [
+    "AuthenticateUserDep",
     "CountTasksDep",
     "CreateProjectDep",
     "CreateTaskDep",
@@ -118,11 +149,11 @@ __all__ = [
     "ListOpenTasksDep",
     "ListProjectsDep",
     "ListTasksDep",
-    "ProjectRepositoryDep",
+    "RefreshAccessTokenDep",
     "ReorderProjectsDep",
     "ReorderTasksDep",
     "SessionDep",
-    "TodoRepositoryDep",
+    "UnitOfWorkDep",
     "UpdateProjectDep",
     "UpdateTaskDep",
     "UserRepositoryDep",

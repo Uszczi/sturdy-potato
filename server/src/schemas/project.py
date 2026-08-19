@@ -1,7 +1,10 @@
 import re
 from datetime import datetime
+from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
+
+from use_cases.dtos import UNSET, ProjectCreateData, ProjectUpdateData
 
 _HEX_COLOR = re.compile(r"^#[0-9a-fA-F]{6}$")
 
@@ -24,6 +27,9 @@ class ProjectCreateInput(BaseModel):
     name: str = Field(min_length=1, max_length=100)
     color: str | None = Field(default=None, max_length=7)
 
+    def to_domain(self) -> ProjectCreateData:
+        return ProjectCreateData(name=self.name, color=self.color)
+
     @field_validator("name", mode="before")
     @classmethod
     def strip_name(cls, value: object) -> object:
@@ -42,6 +48,16 @@ class ProjectUpdateInput(BaseModel):
 
     name: str | None = Field(default=None, max_length=100)
     color: str | None = Field(default=None, max_length=7)
+
+    def to_domain(self) -> ProjectUpdateData:
+        # Only provided fields become changes (exclude_unset); the name
+        # validator guarantees a provided name is non-null.
+        provided = self.model_fields_set
+
+        def pick(name: str) -> Any:
+            return getattr(self, name) if name in provided else UNSET
+
+        return ProjectUpdateData(name=pick("name"), color=pick("color"))
 
     @field_validator("name", mode="before")
     @classmethod

@@ -1,16 +1,15 @@
 from typing import ClassVar
 
-from asyncer import asyncify
 from fastapi import FastAPI
 from sqladmin import Admin, ModelView
 from sqladmin.authentication import AuthenticationBackend
 from sqlmodel import col, select
 from starlette.requests import Request
 
-from auth import verify_password
 from config import settings
 from infrastructure.db import async_session_maker, engine
 from infrastructure.models import Project, Todo, User
+from infrastructure.security import password_hasher
 
 
 class AdminAuth(AuthenticationBackend):
@@ -31,7 +30,7 @@ class AdminAuth(AuthenticationBackend):
             )
         if user is None or not user.is_active or not user.is_staff:
             return False
-        if not await asyncify(verify_password)(password, user.hashed_password):
+        if not await password_hasher.verify(password, user.hashed_password):
             return False
         request.session["admin_user"] = user.username
         return True

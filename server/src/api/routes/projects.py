@@ -19,7 +19,8 @@ router = APIRouter(prefix="/projects", tags=["projects"])
 async def list_projects(
     user_id: CurrentUserId, use_case: ListProjectsDep
 ) -> list[ProjectSchema]:
-    return await use_case.execute(user_id)
+    projects = await use_case.execute(user_id)
+    return [ProjectSchema.model_validate(project) for project in projects]
 
 
 @router.post(
@@ -28,7 +29,8 @@ async def list_projects(
 async def create_project(
     body: ProjectCreateInput, user_id: CurrentUserId, use_case: CreateProjectDep
 ) -> ProjectSchema:
-    return await use_case.execute(user_id, body)
+    project = await use_case.execute(user_id, body.to_domain())
+    return ProjectSchema.model_validate(project)
 
 
 @router.post(
@@ -46,7 +48,8 @@ async def reorder_projects(
 async def retrieve_project(
     id: int, user_id: CurrentUserId, use_case: GetProjectDep
 ) -> ProjectSchema:
-    return await use_case.execute(user_id, id)
+    project = await use_case.execute(user_id, id)
+    return ProjectSchema.model_validate(project)
 
 
 @router.patch("/{id}/", operation_id="api_projects_partial_update")
@@ -56,7 +59,8 @@ async def update_project(
     user_id: CurrentUserId,
     use_case: UpdateProjectDep,
 ) -> ProjectSchema:
-    return await use_case.execute(user_id, id, body)
+    project = await use_case.execute(user_id, id, body.to_domain())
+    return ProjectSchema.model_validate(project)
 
 
 @router.delete(

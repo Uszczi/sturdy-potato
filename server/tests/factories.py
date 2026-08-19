@@ -3,8 +3,8 @@ from itertools import count
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from auth import create_access_token, hash_password
 from infrastructure.models import Project, Todo, User
+from infrastructure.security import password_hasher, token_service
 
 _user_counter = count(1)
 _project_counter = count(1)
@@ -21,7 +21,7 @@ async def create_user(
 ) -> User:
     user = User(
         username=username or f"user-{next(_user_counter)}",
-        hashed_password=hash_password(password),
+        hashed_password=password_hasher.hash(password),
         is_active=is_active,
         is_staff=is_staff,
     )
@@ -79,4 +79,4 @@ async def create_task(
 
 def auth_headers(user: User) -> dict[str, str]:
     assert user.id is not None
-    return {"Authorization": f"Bearer {create_access_token(user.id)}"}
+    return {"Authorization": f"Bearer {token_service.access_token(user.id)}"}

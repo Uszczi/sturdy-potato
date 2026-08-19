@@ -11,12 +11,11 @@ app = FastAPI(title="Sturdy Potato API", version="1.0.0")
 
 
 @app.exception_handler(UseCaseError)
-async def _use_case_error_handler(
-    request: Request, exc: UseCaseError
-) -> JSONResponse:
+async def _use_case_error_handler(request: Request, exc: UseCaseError) -> JSONResponse:
     # Map domain errors raised by use cases to HTTP responses, keeping the
     # {"detail": ...} shape FastAPI's HTTPException produces.
     return JSONResponse(status_code=exc.status_code, content={"detail": exc.detail})
+
 
 # Kept for non-browser-same-origin clients (e.g. a future mobile app). The web
 # client is served same-origin below, so it does not rely on CORS.

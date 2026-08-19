@@ -1,14 +1,14 @@
-from infrastructure.models import Todo
-from infrastructure.repositories import TodoRepository
-from schemas.todo import TodoCreateInput
+from use_cases.dtos import TaskCreateData
+from use_cases.entities import Task
+from use_cases.ports import ProjectRepository, TaskRepository
 from use_cases.tasks._helpers import ensure_project
 
 
 class CreateTask:
-    def __init__(self, tasks: TodoRepository) -> None:
+    def __init__(self, tasks: TaskRepository, projects: ProjectRepository) -> None:
         self._tasks = tasks
+        self._projects = projects
 
-    async def execute(self, user_id: int, data: TodoCreateInput) -> Todo:
-        payload = data.model_dump()
-        await ensure_project(self._tasks, user_id, payload["project_id"])
-        return await self._tasks.create_for_user(user_id, payload)
+    async def execute(self, user_id: int, data: TaskCreateData) -> Task:
+        await ensure_project(self._projects, user_id, data.project_id)
+        return await self._tasks.create(user_id, data)

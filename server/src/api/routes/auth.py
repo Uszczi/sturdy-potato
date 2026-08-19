@@ -1,13 +1,6 @@
-from asyncer import asyncify
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter
 
-from api.dependencies import UserRepositoryDep
-from auth import (
-    create_access_token,
-    create_refresh_token,
-    user_id_from_refresh,
-    verify_password,
-)
+from api.dependencies import AuthenticateUserDep, RefreshAccessTokenDep
 from schemas.auth import (
     AccessToken,
     TokenObtainPair,
@@ -17,29 +10,17 @@ from schemas.auth import (
 
 router = APIRouter(prefix="/token", tags=["api"])
 
-_invalid_credentials = HTTPException(
-    status_code=status.HTTP_401_UNAUTHORIZED,
-    detail="No active account found with the given credentials.",
-)
-
 
 @router.post("/", operation_id="api_token_create")
-async def obtain_token(body: TokenObtainPair, users: UserRepositoryDep) -> TokenPair:
-    user = await users.get_by_username(body.username)
-    if (
-        user is None
-        or not user.is_active
-        or not await asyncify(verify_password)(body.password, user.hashed_password)
-    ):
-        raise _invalid_credentials
-    assert user.id is not None
-    return TokenPair(
-        access=create_access_token(user.id),
-        refresh=create_refresh_token(user.id),
-    )
+async def obtain_token(
+    body: TokenObtainPair, use_case: AuthenticateUserDep
+) -> TokenPair:
+    tokens = await use_case.execute(body.username, body.password)
+    return TokenPair(access=tokens.access, refresh=tokens.refresh)
 
 
 @router.post("/refresh/", operation_id="api_token_refresh_create")
-async def refresh_token(body: TokenRefresh) -> AccessToken:
-    user_id = user_id_from_refresh(body.refresh)
-    return AccessToken(access=create_access_token(user_id))
+async def refresh_token(
+    body: TokenRefresh, use_case: RefreshAccessTokenDep
+) -> AccessToken:
+    return AccessToken(access=use_case.execute(body.refresh))

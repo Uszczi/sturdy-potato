@@ -55,7 +55,15 @@ def test_cli_create_heavy_invokes_seed_heavy(monkeypatch: pytest.MonkeyPatch) ->
     monkeypatch.setattr(seed_module, "seed_heavy", fake_seed_heavy)
     result = CliRunner().invoke(
         cli,
-        ["create-heavy", "--projects", "3", "--max-tasks", "5", "--completed-ratio", "0.5"],
+        [
+            "create-heavy",
+            "--projects",
+            "3",
+            "--max-tasks",
+            "5",
+            "--completed-ratio",
+            "0.5",
+        ],
     )
 
     assert result.exit_code == 0

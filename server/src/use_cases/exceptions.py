@@ -13,6 +13,19 @@ class NotFoundError(UseCaseError):
     detail = "Not found."
 
 
+class AuthenticationError(UseCaseError):
+    status_code = 401
+    detail = "Not authenticated."
+
+
+class InvalidCredentials(AuthenticationError):
+    detail = "No active account found with the given credentials."
+
+
+class InvalidToken(AuthenticationError):
+    detail = "Invalid or expired token."
+
+
 class ConflictError(UseCaseError):
     status_code = 400
     detail = "Conflict."

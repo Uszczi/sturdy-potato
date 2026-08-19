@@ -5,9 +5,9 @@ from datetime import UTC, date, datetime, timedelta
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from sqlmodel import select
 
-from auth import hash_password
 from infrastructure.db import async_session_maker
 from infrastructure.models import Project, Todo, User
+from infrastructure.security import password_hasher
 
 DEMO_USERNAME = os.environ.get("SEEDDB_DEMO_USERNAME", "demo")
 DEMO_PASSWORD = os.environ.get("SEEDDB_DEMO_PASSWORD", "demo-password-123")
@@ -99,7 +99,7 @@ async def _get_or_create_demo_user(
         return user, False
     user = User(
         username=username,
-        hashed_password=hash_password(password),
+        hashed_password=password_hasher.hash(password),
         is_active=True,
     )
     session.add(user)
@@ -245,7 +245,7 @@ async def seed_admin(
         if user is None:
             user = User(
                 username=username,
-                hashed_password=hash_password(password),
+                hashed_password=password_hasher.hash(password),
                 is_active=True,
                 is_staff=True,
             )

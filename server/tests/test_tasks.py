@@ -74,7 +74,9 @@ async def test_reopening_a_task_returns_it_to_the_open_group(
 ) -> None:
     user = await create_user(session)
     await create_task(session, user, title="Open", position=0)
-    done = await create_task(session, user, title="Reopened", completed=True, position=1)
+    done = await create_task(
+        session, user, title="Reopened", completed=True, position=1
+    )
     headers = auth_headers(user)
 
     await client.patch(

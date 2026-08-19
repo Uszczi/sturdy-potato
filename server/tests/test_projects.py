@@ -107,9 +107,21 @@ async def test_create_project_rejects_invalid_color(
     assert response.status_code == 422
 
 
-async def test_update_project_color(
+async def test_create_project_rejects_non_string_color(
     client: AsyncClient, session: AsyncSession
 ) -> None:
+    user = await create_user(session)
+
+    response = await client.post(
+        "/api/projects/",
+        headers=auth_headers(user),
+        json={"name": "Roadmap", "color": 123},
+    )
+
+    assert response.status_code == 422
+
+
+async def test_update_project_color(client: AsyncClient, session: AsyncSession) -> None:
     user = await create_user(session)
     project = await create_project(session, user, color="#f43f5e")
 
@@ -123,9 +135,7 @@ async def test_update_project_color(
     assert response.json()["color"] == "#10b981"
 
 
-async def test_clear_project_color(
-    client: AsyncClient, session: AsyncSession
-) -> None:
+async def test_clear_project_color(client: AsyncClient, session: AsyncSession) -> None:
     user = await create_user(session)
     project = await create_project(session, user, color="#f43f5e")
 

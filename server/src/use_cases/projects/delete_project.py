@@ -1,5 +1,5 @@
-from infrastructure.repositories import ProjectRepository
 from use_cases.exceptions import ProjectNotFound
+from use_cases.ports import ProjectRepository
 
 
 class DeleteProject:
