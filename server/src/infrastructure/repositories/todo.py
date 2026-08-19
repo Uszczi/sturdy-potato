@@ -14,7 +14,10 @@ def _today() -> date:
 
 
 class TodoRepository:
-    async def list_for_user(self, session: AsyncSession, user_id: int) -> list[Todo]:
+    def __init__(self, session: AsyncSession) -> None:
+        self._session = session
+
+    async def list_for_user(self, user_id: int) -> list[Todo]:
         statement = (
             select(Todo)
             .where(col(Todo.user_id) == user_id)
@@ -22,11 +25,10 @@ class TodoRepository:
                 col(Todo.position), col(Todo.created_at).desc(), col(Todo.id).desc()
             )
         )
-        return list(await session.scalars(statement))
+        return list(await self._session.scalars(statement))
 
     async def list_for_view(
         self,
-        session: AsyncSession,
         user_id: int,
         view: str = "inbox",
         project_id: int | None = None,
@@ -50,11 +52,10 @@ class TodoRepository:
             col(Todo.created_at).desc(),
             col(Todo.id).desc(),
         )
-        return list(await session.scalars(statement))
+        return list(await self._session.scalars(statement))
 
     async def list_open_for_user(
         self,
-        session: AsyncSession,
         user_id: int,
         limit: int | None = None,
     ) -> list[Todo]:
@@ -67,11 +68,10 @@ class TodoRepository:
         )
         if limit is not None:
             statement = statement.limit(limit)
-        return list(await session.scalars(statement))
+        return list(await self._session.scalars(statement))
 
     async def count_for_user(
         self,
-        session: AsyncSession,
         user_id: int,
         *,
         completed: bool | None = None,
@@ -81,45 +81,41 @@ class TodoRepository:
         )
         if completed is not None:
             statement = statement.where(col(Todo.completed) == completed)
-        total: int | None = await session.scalar(statement)
+        total: int | None = await self._session.scalar(statement)
         return total or 0
 
     async def get_project_for_user(
-        self, session: AsyncSession, user_id: int, project_id: int
+        self, user_id: int, project_id: int
     ) -> Project | None:
         statement = select(Project).where(
             col(Project.user_id) == user_id, col(Project.id) == project_id
         )
-        project: Project | None = await session.scalar(statement)
+        project: Project | None = await self._session.scalar(statement)
         return project
 
-    async def get_for_user(
-        self, session: AsyncSession, user_id: int, task_id: int
-    ) -> Todo | None:
+    async def get_for_user(self, user_id: int, task_id: int) -> Todo | None:
         statement = select(Todo).where(
             col(Todo.user_id) == user_id, col(Todo.id) == task_id
         )
-        task: Todo | None = await session.scalar(statement)
+        task: Todo | None = await self._session.scalar(statement)
         return task
 
     async def create_for_user(
-        self, session: AsyncSession, user_id: int, data: Mapping[str, Any]
+        self, user_id: int, data: Mapping[str, Any]
     ) -> Todo:
         task_data = dict(data)
         if "position" not in task_data:
-            max_position: int | None = await session.scalar(
+            max_position: int | None = await self._session.scalar(
                 select(func.max(col(Todo.position))).where(col(Todo.user_id) == user_id)
             )
             task_data["position"] = (max_position or -1) + 1
         task = Todo(user_id=user_id, **task_data)
-        session.add(task)
-        await session.commit()
-        await session.refresh(task)
+        self._session.add(task)
+        await self._session.commit()
+        await self._session.refresh(task)
         return task
 
-    async def reorder_for_user(
-        self, session: AsyncSession, user_id: int, ordered_ids: list[int]
-    ) -> bool:
+    async def reorder_for_user(self, user_id: int, ordered_ids: list[int]) -> bool:
         statement = (
             select(Todo)
             .where(col(Todo.user_id) == user_id)
@@ -127,7 +123,7 @@ class TodoRepository:
                 col(Todo.position), col(Todo.created_at).desc(), col(Todo.id).desc()
             )
         )
-        tasks = list(await session.scalars(statement))
+        tasks = list(await self._session.scalars(statement))
         tasks_by_id = {task.id: task for task in tasks}
         if len(set(ordered_ids)) != len(ordered_ids) or not set(ordered_ids) <= set(
             tasks_by_id
@@ -137,19 +133,17 @@ class TodoRepository:
         slots = [index for index, task in enumerate(tasks) if task.id in ordered_ids]
         for position, task_id in zip(slots, ordered_ids, strict=True):
             tasks_by_id[task_id].position = position
-        await session.commit()
+        await self._session.commit()
         return True
 
-    async def update(
-        self, session: AsyncSession, task: Todo, data: Mapping[str, Any]
-    ) -> Todo:
+    async def update(self, task: Todo, data: Mapping[str, Any]) -> Todo:
         for field, value in data.items():
             setattr(task, field, value)
-        session.add(task)
-        await session.commit()
-        await session.refresh(task)
+        self._session.add(task)
+        await self._session.commit()
+        await self._session.refresh(task)
         return task
 
-    async def delete(self, session: AsyncSession, task: Todo) -> None:
-        await session.delete(task)
-        await session.commit()
+    async def delete(self, task: Todo) -> None:
+        await self._session.delete(task)
+        await self._session.commit()

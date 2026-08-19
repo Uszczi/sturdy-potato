@@ -1,15 +1,13 @@
 from asyncer import asyncify
 from fastapi import APIRouter, HTTPException, status
-from sqlmodel import select
 
+from api.dependencies import UserRepositoryDep
 from auth import (
     create_access_token,
     create_refresh_token,
     user_id_from_refresh,
     verify_password,
 )
-from infrastructure.db import SessionDep
-from infrastructure.models import User
 from schemas.auth import (
     AccessToken,
     TokenObtainPair,
@@ -26,8 +24,8 @@ _invalid_credentials = HTTPException(
 
 
 @router.post("/", operation_id="api_token_create")
-async def obtain_token(body: TokenObtainPair, session: SessionDep) -> TokenPair:
-    user = await session.scalar(select(User).where(User.username == body.username))
+async def obtain_token(body: TokenObtainPair, users: UserRepositoryDep) -> TokenPair:
+    user = await users.get_by_username(body.username)
     if (
         user is None
         or not user.is_active
