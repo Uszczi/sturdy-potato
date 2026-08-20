@@ -2,19 +2,17 @@
 
 All URIs are relative to *http://localhost*
 
-| Method | HTTP request | Description |
-|------------- | ------------- | -------------|
-| [**apiTasksCountRetrieve**](TasksApi.md#apitaskscountretrieve) | **GET** /api/tasks/count/ | Count Tasks |
-| [**apiTasksCreate**](TasksApi.md#apitaskscreate) | **POST** /api/tasks/ | Create Task |
-| [**apiTasksDestroy**](TasksApi.md#apitasksdestroy) | **DELETE** /api/tasks/{id}/ | Delete Task |
-| [**apiTasksList**](TasksApi.md#apitaskslist) | **GET** /api/tasks/ | List Tasks |
-| [**apiTasksOpenList**](TasksApi.md#apitasksopenlist) | **GET** /api/tasks/open/ | Open Tasks |
-| [**apiTasksPartialUpdate**](TasksApi.md#apitaskspartialupdate) | **PATCH** /api/tasks/{id}/ | Update Task |
+| Method                                                         | HTTP request                 | Description   |
+| -------------------------------------------------------------- | ---------------------------- | ------------- |
+| [**apiTasksCountRetrieve**](TasksApi.md#apitaskscountretrieve) | **GET** /api/tasks/count/    | Count Tasks   |
+| [**apiTasksCreate**](TasksApi.md#apitaskscreate)               | **POST** /api/tasks/         | Create Task   |
+| [**apiTasksDestroy**](TasksApi.md#apitasksdestroy)             | **DELETE** /api/tasks/{id}/  | Delete Task   |
+| [**apiTasksList**](TasksApi.md#apitaskslist)                   | **GET** /api/tasks/          | List Tasks    |
+| [**apiTasksOpenList**](TasksApi.md#apitasksopenlist)           | **GET** /api/tasks/open/     | Open Tasks    |
+| [**apiTasksPartialUpdate**](TasksApi.md#apitaskspartialupdate) | **PATCH** /api/tasks/{id}/   | Update Task   |
 | [**apiTasksReorderCreate**](TasksApi.md#apitasksreordercreate) | **POST** /api/tasks/reorder/ | Reorder Tasks |
-| [**apiTasksRetrieve**](TasksApi.md#apitasksretrieve) | **GET** /api/tasks/{id}/ | Retrieve Task |
-| [**apiTasksViewList**](TasksApi.md#apitasksviewlist) | **GET** /api/tasks/view/ | View Tasks |
-
-
+| [**apiTasksRetrieve**](TasksApi.md#apitasksretrieve)           | **GET** /api/tasks/{id}/     | Retrieve Task |
+| [**apiTasksViewList**](TasksApi.md#apitasksviewlist)           | **GET** /api/tasks/view/     | View Tasks    |
 
 ## apiTasksCountRetrieve
 
@@ -33,7 +31,7 @@ import type { ApiTasksCountRetrieveRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: HTTPBearer
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -58,10 +56,9 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **status** | `TaskStatus` |  | [Optional] [Defaults to `undefined`] [Enum: open, done] |
+| Name       | Type         | Description | Notes                                                   |
+| ---------- | ------------ | ----------- | ------------------------------------------------------- |
+| **status** | `TaskStatus` |             | [Optional] [Defaults to `undefined`] [Enum: open, done] |
 
 ### Return type
 
@@ -76,15 +73,14 @@ example().catch(console.error);
 - **Content-Type**: Not defined
 - **Accept**: `application/json`
 
-
 ### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** | Successful Response |  -  |
-| **422** | Validation Error |  -  |
+
+| Status code | Description         | Response headers |
+| ----------- | ------------------- | ---------------- |
+| **200**     | Successful Response | -                |
+| **422**     | Validation Error    | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## apiTasksCreate
 
@@ -103,7 +99,7 @@ import type { ApiTasksCreateRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: HTTPBearer
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -128,10 +124,9 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **taskCreateInput** | [TaskCreateInput](TaskCreateInput.md) |  | |
+| Name                | Type                                  | Description | Notes |
+| ------------------- | ------------------------------------- | ----------- | ----- |
+| **taskCreateInput** | [TaskCreateInput](TaskCreateInput.md) |             |       |
 
 ### Return type
 
@@ -146,15 +141,14 @@ example().catch(console.error);
 - **Content-Type**: `application/json`
 - **Accept**: `application/json`
 
-
 ### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **201** | Successful Response |  -  |
-| **422** | Validation Error |  -  |
+
+| Status code | Description         | Response headers |
+| ----------- | ------------------- | ---------------- |
+| **201**     | Successful Response | -                |
+| **422**     | Validation Error    | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## apiTasksDestroy
 
@@ -165,15 +159,12 @@ Delete Task
 ### Example
 
 ```ts
-import {
-  Configuration,
-  TasksApi,
-} from '';
-import type { ApiTasksDestroyRequest } from '';
+import { Configuration, TasksApi } from "";
+import type { ApiTasksDestroyRequest } from "";
 
 async function example() {
   console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: HTTPBearer
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -198,10 +189,9 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **id** | `number` |  | [Defaults to `undefined`] |
+| Name   | Type     | Description | Notes                     |
+| ------ | -------- | ----------- | ------------------------- |
+| **id** | `number` |             | [Defaults to `undefined`] |
 
 ### Return type
 
@@ -216,15 +206,14 @@ example().catch(console.error);
 - **Content-Type**: Not defined
 - **Accept**: `application/json`
 
-
 ### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **204** | Successful Response |  -  |
-| **422** | Validation Error |  -  |
+
+| Status code | Description         | Response headers |
+| ----------- | ------------------- | ---------------- |
+| **204**     | Successful Response | -                |
+| **422**     | Validation Error    | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## apiTasksList
 
@@ -235,15 +224,12 @@ List Tasks
 ### Example
 
 ```ts
-import {
-  Configuration,
-  TasksApi,
-} from '';
-import type { ApiTasksListRequest } from '';
+import { Configuration, TasksApi } from "";
+import type { ApiTasksListRequest } from "";
 
 async function example() {
   console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: HTTPBearer
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -278,14 +264,13 @@ This endpoint does not need any parameter.
 - **Content-Type**: Not defined
 - **Accept**: `application/json`
 
-
 ### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** | Successful Response |  -  |
+
+| Status code | Description         | Response headers |
+| ----------- | ------------------- | ---------------- |
+| **200**     | Successful Response | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## apiTasksOpenList
 
@@ -296,15 +281,12 @@ Open Tasks
 ### Example
 
 ```ts
-import {
-  Configuration,
-  TasksApi,
-} from '';
-import type { ApiTasksOpenListRequest } from '';
+import { Configuration, TasksApi } from "";
+import type { ApiTasksOpenListRequest } from "";
 
 async function example() {
   console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: HTTPBearer
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -329,10 +311,9 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **limit** | `number` |  | [Optional] [Defaults to `undefined`] |
+| Name      | Type     | Description | Notes                                |
+| --------- | -------- | ----------- | ------------------------------------ |
+| **limit** | `number` |             | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -347,15 +328,14 @@ example().catch(console.error);
 - **Content-Type**: Not defined
 - **Accept**: `application/json`
 
-
 ### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** | Successful Response |  -  |
-| **422** | Validation Error |  -  |
+
+| Status code | Description         | Response headers |
+| ----------- | ------------------- | ---------------- |
+| **200**     | Successful Response | -                |
+| **422**     | Validation Error    | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## apiTasksPartialUpdate
 
@@ -374,7 +354,7 @@ import type { ApiTasksPartialUpdateRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: HTTPBearer
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -401,11 +381,10 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **id** | `number` |  | [Defaults to `undefined`] |
-| **taskUpdateInput** | [TaskUpdateInput](TaskUpdateInput.md) |  | |
+| Name                | Type                                  | Description | Notes                     |
+| ------------------- | ------------------------------------- | ----------- | ------------------------- |
+| **id**              | `number`                              |             | [Defaults to `undefined`] |
+| **taskUpdateInput** | [TaskUpdateInput](TaskUpdateInput.md) |             |                           |
 
 ### Return type
 
@@ -420,15 +399,14 @@ example().catch(console.error);
 - **Content-Type**: `application/json`
 - **Accept**: `application/json`
 
-
 ### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** | Successful Response |  -  |
-| **422** | Validation Error |  -  |
+
+| Status code | Description         | Response headers |
+| ----------- | ------------------- | ---------------- |
+| **200**     | Successful Response | -                |
+| **422**     | Validation Error    | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## apiTasksReorderCreate
 
@@ -447,7 +425,7 @@ import type { ApiTasksReorderCreateRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: HTTPBearer
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -472,10 +450,9 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **reorderInput** | [ReorderInput](ReorderInput.md) |  | |
+| Name             | Type                            | Description | Notes |
+| ---------------- | ------------------------------- | ----------- | ----- |
+| **reorderInput** | [ReorderInput](ReorderInput.md) |             |       |
 
 ### Return type
 
@@ -490,15 +467,14 @@ example().catch(console.error);
 - **Content-Type**: `application/json`
 - **Accept**: `application/json`
 
-
 ### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **204** | Successful Response |  -  |
-| **422** | Validation Error |  -  |
+
+| Status code | Description         | Response headers |
+| ----------- | ------------------- | ---------------- |
+| **204**     | Successful Response | -                |
+| **422**     | Validation Error    | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## apiTasksRetrieve
 
@@ -509,15 +485,12 @@ Retrieve Task
 ### Example
 
 ```ts
-import {
-  Configuration,
-  TasksApi,
-} from '';
-import type { ApiTasksRetrieveRequest } from '';
+import { Configuration, TasksApi } from "";
+import type { ApiTasksRetrieveRequest } from "";
 
 async function example() {
   console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: HTTPBearer
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -542,10 +515,9 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **id** | `number` |  | [Defaults to `undefined`] |
+| Name   | Type     | Description | Notes                     |
+| ------ | -------- | ----------- | ------------------------- |
+| **id** | `number` |             | [Defaults to `undefined`] |
 
 ### Return type
 
@@ -560,15 +532,14 @@ example().catch(console.error);
 - **Content-Type**: Not defined
 - **Accept**: `application/json`
 
-
 ### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** | Successful Response |  -  |
-| **422** | Validation Error |  -  |
+
+| Status code | Description         | Response headers |
+| ----------- | ------------------- | ---------------- |
+| **200**     | Successful Response | -                |
+| **422**     | Validation Error    | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## apiTasksViewList
 
@@ -579,15 +550,12 @@ View Tasks
 ### Example
 
 ```ts
-import {
-  Configuration,
-  TasksApi,
-} from '';
-import type { ApiTasksViewListRequest } from '';
+import { Configuration, TasksApi } from "";
+import type { ApiTasksViewListRequest } from "";
 
 async function example() {
   console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: HTTPBearer
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -616,12 +584,11 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **view** | `inbox`, `today`, `upcoming`, `all` |  | [Optional] [Defaults to `&#39;inbox&#39;`] [Enum: inbox, today, upcoming, all] |
-| **project** | `number` |  | [Optional] [Defaults to `undefined`] |
-| **tz** | `string` |  | [Optional] [Defaults to `&#39;UTC&#39;`] |
+| Name        | Type                                | Description | Notes                                                                          |
+| ----------- | ----------------------------------- | ----------- | ------------------------------------------------------------------------------ |
+| **view**    | `inbox`, `today`, `upcoming`, `all` |             | [Optional] [Defaults to `&#39;inbox&#39;`] [Enum: inbox, today, upcoming, all] |
+| **project** | `number`                            |             | [Optional] [Defaults to `undefined`]                                           |
+| **tz**      | `string`                            |             | [Optional] [Defaults to `&#39;UTC&#39;`]                                       |
 
 ### Return type
 
@@ -636,12 +603,11 @@ example().catch(console.error);
 - **Content-Type**: Not defined
 - **Accept**: `application/json`
 
-
 ### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** | Successful Response |  -  |
-| **422** | Validation Error |  -  |
+
+| Status code | Description         | Response headers |
+| ----------- | ------------------- | ---------------- |
+| **200**     | Successful Response | -                |
+| **422**     | Validation Error    | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-

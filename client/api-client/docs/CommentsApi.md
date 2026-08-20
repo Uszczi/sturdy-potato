@@ -2,14 +2,12 @@
 
 All URIs are relative to *http://localhost*
 
-| Method | HTTP request | Description |
-|------------- | ------------- | -------------|
-| [**apiTaskCommentsCreate**](CommentsApi.md#apitaskcommentscreate) | **POST** /api/tasks/{task_id}/comments/ | Create Comment |
-| [**apiTaskCommentsDestroy**](CommentsApi.md#apitaskcommentsdestroy) | **DELETE** /api/tasks/{task_id}/comments/{comment_id}/ | Delete Comment |
-| [**apiTaskCommentsList**](CommentsApi.md#apitaskcommentslist) | **GET** /api/tasks/{task_id}/comments/ | List Comments |
-| [**apiTaskCommentsPartialUpdate**](CommentsApi.md#apitaskcommentspartialupdate) | **PATCH** /api/tasks/{task_id}/comments/{comment_id}/ | Update Comment |
-
-
+| Method                                                                          | HTTP request                                           | Description    |
+| ------------------------------------------------------------------------------- | ------------------------------------------------------ | -------------- |
+| [**apiTaskCommentsCreate**](CommentsApi.md#apitaskcommentscreate)               | **POST** /api/tasks/{task_id}/comments/                | Create Comment |
+| [**apiTaskCommentsDestroy**](CommentsApi.md#apitaskcommentsdestroy)             | **DELETE** /api/tasks/{task_id}/comments/{comment_id}/ | Delete Comment |
+| [**apiTaskCommentsList**](CommentsApi.md#apitaskcommentslist)                   | **GET** /api/tasks/{task_id}/comments/                 | List Comments  |
+| [**apiTaskCommentsPartialUpdate**](CommentsApi.md#apitaskcommentspartialupdate) | **PATCH** /api/tasks/{task_id}/comments/{comment_id}/  | Update Comment |
 
 ## apiTaskCommentsCreate
 
@@ -28,7 +26,7 @@ import type { ApiTaskCommentsCreateRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: HTTPBearer
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -55,11 +53,10 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **taskId** | `number` |  | [Defaults to `undefined`] |
-| **commentCreateInput** | [CommentCreateInput](CommentCreateInput.md) |  | |
+| Name                   | Type                                        | Description | Notes                     |
+| ---------------------- | ------------------------------------------- | ----------- | ------------------------- |
+| **taskId**             | `number`                                    |             | [Defaults to `undefined`] |
+| **commentCreateInput** | [CommentCreateInput](CommentCreateInput.md) |             |                           |
 
 ### Return type
 
@@ -74,15 +71,14 @@ example().catch(console.error);
 - **Content-Type**: `application/json`
 - **Accept**: `application/json`
 
-
 ### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **201** | Successful Response |  -  |
-| **422** | Validation Error |  -  |
+
+| Status code | Description         | Response headers |
+| ----------- | ------------------- | ---------------- |
+| **201**     | Successful Response | -                |
+| **422**     | Validation Error    | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## apiTaskCommentsDestroy
 
@@ -93,15 +89,12 @@ Delete Comment
 ### Example
 
 ```ts
-import {
-  Configuration,
-  CommentsApi,
-} from '';
-import type { ApiTaskCommentsDestroyRequest } from '';
+import { Configuration, CommentsApi } from "";
+import type { ApiTaskCommentsDestroyRequest } from "";
 
 async function example() {
   console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: HTTPBearer
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -128,11 +121,10 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **taskId** | `number` |  | [Defaults to `undefined`] |
-| **commentId** | `number` |  | [Defaults to `undefined`] |
+| Name          | Type     | Description | Notes                     |
+| ------------- | -------- | ----------- | ------------------------- |
+| **taskId**    | `number` |             | [Defaults to `undefined`] |
+| **commentId** | `number` |             | [Defaults to `undefined`] |
 
 ### Return type
 
@@ -147,15 +139,14 @@ example().catch(console.error);
 - **Content-Type**: Not defined
 - **Accept**: `application/json`
 
-
 ### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **204** | Successful Response |  -  |
-| **422** | Validation Error |  -  |
+
+| Status code | Description         | Response headers |
+| ----------- | ------------------- | ---------------- |
+| **204**     | Successful Response | -                |
+| **422**     | Validation Error    | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## apiTaskCommentsList
 
@@ -166,15 +157,12 @@ List Comments
 ### Example
 
 ```ts
-import {
-  Configuration,
-  CommentsApi,
-} from '';
-import type { ApiTaskCommentsListRequest } from '';
+import { Configuration, CommentsApi } from "";
+import type { ApiTaskCommentsListRequest } from "";
 
 async function example() {
   console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: HTTPBearer
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -199,10 +187,9 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **taskId** | `number` |  | [Defaults to `undefined`] |
+| Name       | Type     | Description | Notes                     |
+| ---------- | -------- | ----------- | ------------------------- |
+| **taskId** | `number` |             | [Defaults to `undefined`] |
 
 ### Return type
 
@@ -217,15 +204,14 @@ example().catch(console.error);
 - **Content-Type**: Not defined
 - **Accept**: `application/json`
 
-
 ### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** | Successful Response |  -  |
-| **422** | Validation Error |  -  |
+
+| Status code | Description         | Response headers |
+| ----------- | ------------------- | ---------------- |
+| **200**     | Successful Response | -                |
+| **422**     | Validation Error    | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## apiTaskCommentsPartialUpdate
 
@@ -244,7 +230,7 @@ import type { ApiTaskCommentsPartialUpdateRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: HTTPBearer
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -273,12 +259,11 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **taskId** | `number` |  | [Defaults to `undefined`] |
-| **commentId** | `number` |  | [Defaults to `undefined`] |
-| **commentUpdateInput** | [CommentUpdateInput](CommentUpdateInput.md) |  | |
+| Name                   | Type                                        | Description | Notes                     |
+| ---------------------- | ------------------------------------------- | ----------- | ------------------------- |
+| **taskId**             | `number`                                    |             | [Defaults to `undefined`] |
+| **commentId**          | `number`                                    |             | [Defaults to `undefined`] |
+| **commentUpdateInput** | [CommentUpdateInput](CommentUpdateInput.md) |             |                           |
 
 ### Return type
 
@@ -293,12 +278,11 @@ example().catch(console.error);
 - **Content-Type**: `application/json`
 - **Accept**: `application/json`
 
-
 ### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** | Successful Response |  -  |
-| **422** | Validation Error |  -  |
+
+| Status code | Description         | Response headers |
+| ----------- | ------------------- | ---------------- |
+| **200**     | Successful Response | -                |
+| **422**     | Validation Error    | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-

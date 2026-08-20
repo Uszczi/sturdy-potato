@@ -20,7 +20,7 @@ function Kanban() {
   const refresh = useAppStore((state) => state.refresh);
   const getTasksForProject = useAppStore((state) => state.getTasksForProject);
   const [tasks, setTasks] = useState([]);
-  const columnNames = ["TODO", "DOING", "DONE"];
+  const columnNames = ["TODO", "DOING", "TESTING", "DONE"];
 
   useEffect(() => {
     refresh();
@@ -32,12 +32,12 @@ function Kanban() {
 
   return (
     <main className="bg-base-200 grid min-h-screen place-items-center p-4">
-      <div className="card bg-base-100 h-full w-full shadow-xl">
+      <div className="card bg-base-100 flex h-full w-full flex-col shadow-xl">
         Kanban
         <ProjectSelector />
-        <div className="grid grid-cols-3 gap-4">
+        <div className="flex flex-1 flex-nowrap gap-4 overflow-x-auto">
           {columnNames.map((columnName) => (
-            <div key={columnName} className="flex flex-col gap-4">
+            <div key={columnName} className="flex shrink-0 flex-col gap-4">
               <h1>{columnName}</h1>
 
               {tasks.map((task) => (
