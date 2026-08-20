@@ -1,9 +1,14 @@
 apis/ApiApi.ts
+apis/CommentsApi.ts
 apis/ProjectsApi.ts
 apis/TasksApi.ts
 apis/index.ts
 docs/AccessToken.md
 docs/ApiApi.md
+docs/CommentCreateInput.md
+docs/CommentSchema.md
+docs/CommentUpdateInput.md
+docs/CommentsApi.md
 docs/CurrentTime.md
 docs/HTTPValidationError.md
 docs/LocationInner.md
@@ -25,6 +30,9 @@ docs/UserRegister.md
 docs/ValidationError.md
 index.ts
 models/AccessToken.ts
+models/CommentCreateInput.ts
+models/CommentSchema.ts
+models/CommentUpdateInput.ts
 models/CurrentTime.ts
 models/HTTPValidationError.ts
 models/LocationInner.ts

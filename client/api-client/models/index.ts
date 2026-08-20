@@ -1,6 +1,9 @@
 /* tslint:disable */
 /* eslint-disable */
 export * from './AccessToken';
+export * from './CommentCreateInput';
+export * from './CommentSchema';
+export * from './CommentUpdateInput';
 export * from './CurrentTime';
 export * from './HTTPValidationError';
 export * from './LocationInner';
