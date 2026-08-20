@@ -24,7 +24,6 @@ function AppLayout() {
   const unauthorized = useAppStore((state) => state.unauthorized);
   const refresh = useAppStore((state) => state.refresh);
 
-  // Load projects and tasks into the store once the shell mounts.
   useEffect(() => {
     void refresh();
   }, [refresh]);

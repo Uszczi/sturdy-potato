@@ -15,6 +15,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as AppIndexRouteImport } from './routes/_app.index'
 import { Route as AppTasksRouteImport } from './routes/_app.tasks'
+import { Route as KanbanIndexRouteImport } from './routes/kanban/index'
 import { Route as AppProjectsIndexRouteImport } from './routes/_app.projects.index'
 import { Route as AppProjectsProjectIdRouteImport } from './routes/_app.projects.$projectId'
 
@@ -47,6 +48,11 @@ const AppTasksRoute = AppTasksRouteImport.update({
   path: '/tasks',
   getParentRoute: () => AppRoute,
 } as any)
+const KanbanIndexRoute = KanbanIndexRouteImport.update({
+  id: '/kanban/',
+  path: '/kanban/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AppProjectsIndexRoute = AppProjectsIndexRouteImport.update({
   id: '/projects/',
   path: '/projects/',
@@ -64,6 +70,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
   '/tasks': typeof AppTasksRoute
+  '/kanban/': typeof KanbanIndexRoute
   '/projects/$projectId': typeof AppProjectsProjectIdRoute
   '/projects/': typeof AppProjectsIndexRoute
 }
@@ -73,6 +80,7 @@ export interface FileRoutesByTo {
   '/register': typeof RegisterRoute
   '/tasks': typeof AppTasksRoute
   '/': typeof AppIndexRoute
+  '/kanban': typeof KanbanIndexRoute
   '/projects/$projectId': typeof AppProjectsProjectIdRoute
   '/projects': typeof AppProjectsIndexRoute
 }
@@ -84,6 +92,7 @@ export interface FileRoutesById {
   '/register': typeof RegisterRoute
   '/_app/tasks': typeof AppTasksRoute
   '/_app/': typeof AppIndexRoute
+  '/kanban/': typeof KanbanIndexRoute
   '/_app/projects/$projectId': typeof AppProjectsProjectIdRoute
   '/_app/projects/': typeof AppProjectsIndexRoute
 }
@@ -95,6 +104,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/register'
     | '/tasks'
+    | '/kanban/'
     | '/projects/$projectId'
     | '/projects/'
   fileRoutesByTo: FileRoutesByTo
@@ -104,6 +114,7 @@ export interface FileRouteTypes {
     | '/register'
     | '/tasks'
     | '/'
+    | '/kanban'
     | '/projects/$projectId'
     | '/projects'
   id:
@@ -114,6 +125,7 @@ export interface FileRouteTypes {
     | '/register'
     | '/_app/tasks'
     | '/_app/'
+    | '/kanban/'
     | '/_app/projects/$projectId'
     | '/_app/projects/'
   fileRoutesById: FileRoutesById
@@ -123,6 +135,7 @@ export interface RootRouteChildren {
   LoggedOutRoute: typeof LoggedOutRoute
   LoginRoute: typeof LoginRoute
   RegisterRoute: typeof RegisterRoute
+  KanbanIndexRoute: typeof KanbanIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -169,6 +182,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppTasksRouteImport
       parentRoute: typeof AppRoute
     }
+    '/kanban/': {
+      id: '/kanban/'
+      path: '/kanban'
+      fullPath: '/kanban/'
+      preLoaderRoute: typeof KanbanIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_app/projects/': {
       id: '/_app/projects/'
       path: '/projects'
@@ -207,6 +227,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoggedOutRoute: LoggedOutRoute,
   LoginRoute: LoginRoute,
   RegisterRoute: RegisterRoute,
+  KanbanIndexRoute: KanbanIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
