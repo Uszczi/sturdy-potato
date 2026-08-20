@@ -15,6 +15,7 @@ dependencies = [
     "pydantic>=2.13.4",
     "pydantic-settings>=2.7.0",
     "pyjwt>=2.10.0",
+    "pytest-xdist>=3.8.0",
     "redis>=5.2.0",
     "sqladmin>=0.31.0",
     "sqlalchemy[asyncio]>=2.0.36",

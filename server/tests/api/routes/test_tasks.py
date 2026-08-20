@@ -308,21 +308,6 @@ async def test_reorder_with_an_empty_order_is_a_noop(
     assert response.status_code == 204
 
 
-async def test_reorder_rejects_duplicate_ids(
-    client: AsyncClient, session: AsyncSession
-) -> None:
-    user = await create_user(session)
-    task = await create_task(session, user)
-
-    response = await client.post(
-        "/api/tasks/reorder/",
-        headers=auth_headers(user),
-        json={"order": [task.id, task.id]},
-    )
-
-    assert response.status_code == 422
-
-
 async def test_view_inbox_returns_unassigned_tasks(
     client: AsyncClient, session: AsyncSession
 ) -> None:

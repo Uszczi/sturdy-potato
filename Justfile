@@ -63,7 +63,7 @@ lint-check:
 
 test:
 	cd server && \
-	uv run pytest --cov=src --cov-report=html:skip-covered --cov-fail-under=100 -v tests/
+	uv run pytest --cov=src --cov-report=html:skip-covered --cov-fail-under=100 -v -n auto tests/
 
 e2e-install:
 	cd client && npx playwright install chromium

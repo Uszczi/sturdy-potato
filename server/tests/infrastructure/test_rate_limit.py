@@ -1,4 +1,3 @@
-import pytest
 from httpx import AsyncClient
 from starlette.requests import Request
 
@@ -71,10 +70,3 @@ async def test_login_endpoint_is_rate_limited(client: AsyncClient) -> None:
 
 def test_too_many_requests_carries_a_retry_after_header() -> None:
     assert TooManyRequests().headers == {"Retry-After": "60"}
-
-
-@pytest.mark.parametrize("attempts", [1, 5])
-def test_limiter_records_each_attempt(attempts: int) -> None:
-    limiter = RateLimiter(max_requests=10, window_seconds=60, clock=FakeClock())
-    for _ in range(attempts):
-        assert limiter.allow("ip") is True

@@ -33,7 +33,8 @@ async function globalSetup() {
 
     await page.getByLabel("Username").fill(DEMO_USER);
     await page.getByLabel("Password").fill(DEMO_PASSWORD);
-    await page.getByRole("button", { name: "Log in" }).click();
+    // Exact match: the page also has a "Log in using demo account" button.
+    await page.getByRole("button", { name: "Log in", exact: true }).click();
 
     // A successful login redirects to the overview page.
     await page.waitForURL(`${baseURL}/`);

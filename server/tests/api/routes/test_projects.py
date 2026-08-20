@@ -1,3 +1,4 @@
+import pytest
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -93,29 +94,16 @@ async def test_create_project_with_color(
     assert response.json()["color"] == "#6366f1"
 
 
+@pytest.mark.parametrize("color", ["blue", 123])
 async def test_create_project_rejects_invalid_color(
-    client: AsyncClient, session: AsyncSession
+    client: AsyncClient, session: AsyncSession, color: object
 ) -> None:
     user = await create_user(session)
 
     response = await client.post(
         "/api/projects/",
         headers=auth_headers(user),
-        json={"name": "Roadmap", "color": "blue"},
-    )
-
-    assert response.status_code == 422
-
-
-async def test_create_project_rejects_non_string_color(
-    client: AsyncClient, session: AsyncSession
-) -> None:
-    user = await create_user(session)
-
-    response = await client.post(
-        "/api/projects/",
-        headers=auth_headers(user),
-        json={"name": "Roadmap", "color": 123},
+        json={"name": "Roadmap", "color": color},
     )
 
     assert response.status_code == 422

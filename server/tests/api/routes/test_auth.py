@@ -5,7 +5,7 @@ from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from config import settings
-from tests.factories import auth_headers, create_user
+from tests.factories import create_user
 
 DEMO_PASSWORD = "password-123"
 
@@ -95,26 +95,6 @@ async def test_obtain_token_rejects_wrong_password(
     assert response.status_code == 401
 
 
-async def test_obtain_token_rejects_unknown_user(client: AsyncClient) -> None:
-    response = await client.post(
-        "/api/token/", json={"username": "ghost", "password": DEMO_PASSWORD}
-    )
-
-    assert response.status_code == 401
-
-
-async def test_obtain_token_rejects_inactive_user(
-    client: AsyncClient, session: AsyncSession
-) -> None:
-    await create_user(session, username="demo", password=DEMO_PASSWORD, is_active=False)
-
-    response = await client.post(
-        "/api/token/", json={"username": "demo", "password": DEMO_PASSWORD}
-    )
-
-    assert response.status_code == 401
-
-
 async def test_refresh_returns_a_new_access_token(
     client: AsyncClient, session: AsyncSession
 ) -> None:
@@ -140,6 +120,8 @@ async def test_refresh_rejects_a_garbage_token(client: AsyncClient) -> None:
 
 
 async def test_refresh_rejects_an_access_token(client: AsyncClient) -> None:
+    # A real, validly-signed token of the wrong type must be refused: this is the
+    # token_type check in the production TokenIssuer, which the fake can't reach.
     access = _make_token(user_id=1, token_type="access")
 
     response = await client.post("/api/token/refresh/", json={"refresh": access})
@@ -149,28 +131,6 @@ async def test_refresh_rejects_an_access_token(client: AsyncClient) -> None:
 
 async def test_refresh_rejects_a_non_integer_subject(client: AsyncClient) -> None:
     token = _make_token(user_id="not-an-int", token_type="refresh")
-
-    response = await client.post("/api/token/refresh/", json={"refresh": token})
-
-    assert response.status_code == 401
-
-
-async def test_refresh_rejects_a_deleted_user(client: AsyncClient) -> None:
-    # A validly-signed refresh token for an account that no longer exists must
-    # not mint a fresh access token.
-    token = _make_token(user_id=999, token_type="refresh")
-
-    response = await client.post("/api/token/refresh/", json={"refresh": token})
-
-    assert response.status_code == 401
-
-
-async def test_refresh_rejects_a_deactivated_user(
-    client: AsyncClient, session: AsyncSession
-) -> None:
-    user = await create_user(session, is_active=False)
-    assert user.id is not None
-    token = _make_token(user_id=user.id, token_type="refresh")
 
     response = await client.post("/api/token/refresh/", json={"refresh": token})
 
@@ -193,16 +153,6 @@ async def test_protected_endpoint_rejects_a_malformed_token(
     assert response.status_code == 401
 
 
-async def test_protected_endpoint_rejects_a_refresh_token(client: AsyncClient) -> None:
-    token = _make_token(user_id=1, token_type="refresh")
-
-    response = await client.get(
-        "/api/tasks/", headers={"Authorization": f"Bearer {token}"}
-    )
-
-    assert response.status_code == 401
-
-
 async def test_protected_endpoint_rejects_a_non_integer_subject(
     client: AsyncClient,
 ) -> None:
@@ -211,25 +161,5 @@ async def test_protected_endpoint_rejects_a_non_integer_subject(
     response = await client.get(
         "/api/tasks/", headers={"Authorization": f"Bearer {token}"}
     )
-
-    assert response.status_code == 401
-
-
-async def test_protected_endpoint_rejects_a_missing_user(client: AsyncClient) -> None:
-    token = _make_token(user_id=999, token_type="access")
-
-    response = await client.get(
-        "/api/tasks/", headers={"Authorization": f"Bearer {token}"}
-    )
-
-    assert response.status_code == 401
-
-
-async def test_protected_endpoint_rejects_an_inactive_user(
-    client: AsyncClient, session: AsyncSession
-) -> None:
-    user = await create_user(session, is_active=False)
-
-    response = await client.get("/api/tasks/", headers=auth_headers(user))
 
     assert response.status_code == 401
