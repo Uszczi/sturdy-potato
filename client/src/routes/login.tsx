@@ -5,8 +5,8 @@ import {
   redirect,
   useNavigate,
 } from "@tanstack/react-router";
-import { ResponseError } from "../../api-client";
-import { login } from "../services/auth";
+import { ResponseError } from "@api-client";
+import { login, loginAsDemo } from "@/services/auth";
 
 type LoginSearch = {
   redirect?: string;
@@ -31,6 +31,23 @@ function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+
+  async function handleDemoLogin() {
+    setError(null);
+    setSubmitting(true);
+    try {
+      await loginAsDemo();
+      navigate({ to: search.redirect ?? "/" });
+    } catch (err) {
+      setError(
+        err instanceof ResponseError && err.response.status === 401
+          ? "Incorrect username or password."
+          : "Something went wrong. Please try again.",
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  }
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -100,6 +117,17 @@ function Login() {
               </button>
             </fieldset>
           </form>
+
+          <p className="text-center text-sm">or</p>
+
+          <button
+            onClick={handleDemoLogin}
+            className="btn btn-secondary btn-block"
+            disabled={submitting}
+          >
+            {submitting && <span className="loading loading-spinner" />}
+            Log in using demo account
+          </button>
 
           <p className="mt-2 text-center text-sm">
             Don't have an account?{" "}

@@ -19,6 +19,13 @@ export async function login(username: string, password: string): Promise<void> {
   localStorage.setItem(USERNAME_KEY, username);
 }
 
+export async function loginAsDemo(): Promise<void> {
+  const tokens = await api.obtainTokenAsDemoApiTokenAsDemoPost();
+  localStorage.setItem(ACCESS_KEY, tokens.access);
+  localStorage.setItem(REFRESH_KEY, tokens.refresh);
+  localStorage.setItem(USERNAME_KEY, "demo");
+}
+
 /**
  * Create an account and sign in with it. The API returns a JWT pair on success
  * (same shape as login), so registering leaves the user authenticated. Throws a

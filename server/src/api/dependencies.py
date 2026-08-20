@@ -1,11 +1,3 @@
-"""Central definitions for the FastAPI dependencies used across the API.
-
-This module is the composition root. A single Unit of Work owns the per-request
-session and transaction; each use case is built from the repositories it needs,
-declared explicitly at the call site. Use cases depend only on the repository
-ports, so nothing here leaks a framework concern into the use-case layer.
-"""
-
 from collections.abc import AsyncGenerator, Callable
 from typing import Annotated
 
@@ -22,8 +14,6 @@ from use_cases import tasks as task_use_cases
 
 
 async def get_unit_of_work(session: SessionDep) -> AsyncGenerator[UnitOfWork]:
-    # Commit once, after the endpoint returns successfully; roll back if it
-    # raised (including domain UseCaseErrors), so a request is all-or-nothing.
     uow = UnitOfWork(session)
     try:
         yield uow
@@ -74,8 +64,6 @@ AuthenticateUserDep = Annotated[
 RefreshAccessTokenDep = Annotated[
     auth_use_cases.RefreshAccessToken, Depends(provide_refresh_access_token)
 ]
-# Registration writes a new user, so it goes through the Unit of Work (which
-# commits on success) rather than a bare read-only repository.
 RegisterUserDep = Annotated[
     auth_use_cases.RegisterUser,
     Depends(

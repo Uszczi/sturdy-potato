@@ -1,3 +1,4 @@
+from use_cases.exceptions import UseCaseError
 from use_cases.dtos import IssuedTokens
 from use_cases.exceptions import InvalidCredentials
 from use_cases.ports import PasswordHasher, TokenIssuer, UserRepository
@@ -22,6 +23,17 @@ class AuthenticateUser:
             or not await self._passwords.verify(password, user.hashed_password)
         ):
             raise InvalidCredentials()
+        return IssuedTokens(
+            access=self._tokens.access_token(user.id),
+            refresh=self._tokens.refresh_token(user.id),
+        )
+
+    async def execute_for_demo(self) -> IssuedTokens:
+        user = await self._users.get_by_username("demo")
+
+        if user is None:
+            raise UseCaseError()
+
         return IssuedTokens(
             access=self._tokens.access_token(user.id),
             refresh=self._tokens.refresh_token(user.id),

@@ -9,8 +9,6 @@ from schemas.auth import (
     TokenRefresh,
 )
 
-# Both endpoints are unauthenticated guessing targets, so every request first
-# passes the per-client rate limiter.
 router = APIRouter(
     prefix="/token",
     tags=["api"],
@@ -23,6 +21,12 @@ async def obtain_token(
     body: TokenObtainPair, use_case: AuthenticateUserDep
 ) -> TokenPair:
     tokens = await use_case.execute(body.username, body.password)
+    return TokenPair(access=tokens.access, refresh=tokens.refresh)
+
+
+@router.post("/as-demo")
+async def obtain_token_as_demo(use_case: AuthenticateUserDep) -> TokenPair:
+    tokens = await use_case.execute_for_demo()
     return TokenPair(access=tokens.access, refresh=tokens.refresh)
 
 
