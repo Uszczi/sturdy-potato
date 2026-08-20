@@ -14,7 +14,15 @@ from sqlmodel import SQLModel
 
 import infrastructure.db as db_module
 import infrastructure.models  # noqa: F401  (registers tables on SQLModel.metadata)
+from infrastructure.rate_limit import login_rate_limiter
 from main import app
+
+
+@pytest.fixture(autouse=True)
+def _reset_rate_limiter() -> None:
+    # The auth rate limiter is process-global; clear it so counts from one test
+    # never spill into the next (and the limit test starts from zero).
+    login_rate_limiter.reset()
 
 
 @pytest_asyncio.fixture

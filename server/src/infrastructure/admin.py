@@ -70,7 +70,7 @@ def setup_admin(app: FastAPI) -> Admin:
     admin = Admin(
         app,
         engine,
-        authentication_backend=AdminAuth(secret_key=settings.secret_key),
+        authentication_backend=AdminAuth(secret_key=settings.admin_session_secret),
     )
     admin.add_view(UserAdmin)
     admin.add_view(ProjectAdmin)

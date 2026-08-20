@@ -13,7 +13,10 @@ DEMO_USERNAME = os.environ.get("SEEDDB_DEMO_USERNAME", "demo")
 DEMO_PASSWORD = os.environ.get("SEEDDB_DEMO_PASSWORD", "demo-password-123")
 
 ADMIN_USERNAME = os.environ.get("SEEDDB_ADMIN_USERNAME", "admin")
-ADMIN_PASSWORD = os.environ.get("SEEDDB_ADMIN_PASSWORD", "admin-password-123")
+# Deliberately no default: an admin can sign in to the /admin panel, so its
+# password must always be supplied explicitly rather than defaulting to a
+# well-known value that could be seeded into a real deployment.
+ADMIN_PASSWORD = os.environ.get("SEEDDB_ADMIN_PASSWORD")
 
 HEAVY_USERNAME = os.environ.get("SEEDDB_HEAVY_USERNAME", "heavy")
 HEAVY_PASSWORD = os.environ.get("SEEDDB_HEAVY_PASSWORD", "heavy-password-123")
@@ -236,8 +239,8 @@ async def seed_heavy(
 
 
 async def seed_admin(
-    username: str = ADMIN_USERNAME,
-    password: str = ADMIN_PASSWORD,
+    username: str,
+    password: str,
     session_maker: async_sessionmaker[AsyncSession] = async_session_maker,
 ) -> None:
     async with session_maker() as session:

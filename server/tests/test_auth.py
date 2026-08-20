@@ -105,6 +105,28 @@ async def test_refresh_rejects_a_non_integer_subject(client: AsyncClient) -> Non
     assert response.status_code == 401
 
 
+async def test_refresh_rejects_a_deleted_user(client: AsyncClient) -> None:
+    # A validly-signed refresh token for an account that no longer exists must
+    # not mint a fresh access token.
+    token = _make_token(user_id=999, token_type="refresh")
+
+    response = await client.post("/api/token/refresh/", json={"refresh": token})
+
+    assert response.status_code == 401
+
+
+async def test_refresh_rejects_a_deactivated_user(
+    client: AsyncClient, session: AsyncSession
+) -> None:
+    user = await create_user(session, is_active=False)
+    assert user.id is not None
+    token = _make_token(user_id=user.id, token_type="refresh")
+
+    response = await client.post("/api/token/refresh/", json={"refresh": token})
+
+    assert response.status_code == 401
+
+
 async def test_protected_endpoint_requires_a_token(client: AsyncClient) -> None:
     response = await client.get("/api/tasks/")
 

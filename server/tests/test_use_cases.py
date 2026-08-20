@@ -187,17 +187,32 @@ async def test_authenticate_rejects_an_inactive_user() -> None:
         await _authenticate(_user(is_active=False)).execute("demo", "secret")
 
 
-def test_refresh_returns_a_new_access_token() -> None:
-    use_case = RefreshAccessToken(FakeTokenIssuer())
+def _refresh(user: User | None) -> RefreshAccessToken:
+    users = FakeUserRepository([user] if user is not None else [])
+    return RefreshAccessToken(users, FakeTokenIssuer())
 
-    assert use_case.execute("refresh:7") == "access:7"
+
+async def test_refresh_returns_a_new_access_token() -> None:
+    use_case = _refresh(_user())
+
+    assert await use_case.execute(f"refresh:{USER}") == f"access:{USER}"
 
 
-def test_refresh_rejects_a_non_refresh_token() -> None:
-    use_case = RefreshAccessToken(FakeTokenIssuer())
-
+async def test_refresh_rejects_a_non_refresh_token() -> None:
     with pytest.raises(InvalidToken):
-        use_case.execute("access:7")
+        await _refresh(_user()).execute(f"access:{USER}")
+
+
+async def test_refresh_rejects_a_missing_user() -> None:
+    # A refresh token that decodes fine but whose account no longer exists must
+    # not keep minting access tokens.
+    with pytest.raises(InvalidToken):
+        await _refresh(None).execute(f"refresh:{USER}")
+
+
+async def test_refresh_rejects_an_inactive_user() -> None:
+    with pytest.raises(InvalidToken):
+        await _refresh(_user(is_active=False)).execute(f"refresh:{USER}")
 
 
 def _get_current_user(user: User | None) -> GetCurrentUser:

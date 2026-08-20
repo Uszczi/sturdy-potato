@@ -1,6 +1,7 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
 from api.dependencies import AuthenticateUserDep, RefreshAccessTokenDep
+from infrastructure.rate_limit import rate_limit_login
 from schemas.auth import (
     AccessToken,
     TokenObtainPair,
@@ -8,7 +9,13 @@ from schemas.auth import (
     TokenRefresh,
 )
 
-router = APIRouter(prefix="/token", tags=["api"])
+# Both endpoints are unauthenticated guessing targets, so every request first
+# passes the per-client rate limiter.
+router = APIRouter(
+    prefix="/token",
+    tags=["api"],
+    dependencies=[Depends(rate_limit_login)],
+)
 
 
 @router.post("/", operation_id="api_token_create")
@@ -23,4 +30,4 @@ async def obtain_token(
 async def refresh_token(
     body: TokenRefresh, use_case: RefreshAccessTokenDep
 ) -> AccessToken:
-    return AccessToken(access=use_case.execute(body.refresh))
+    return AccessToken(access=await use_case.execute(body.refresh))

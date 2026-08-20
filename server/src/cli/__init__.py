@@ -57,7 +57,13 @@ def create_heavy_command(
 
 @cli.command("create-admin")
 @click.option("--username", default=seed_module.ADMIN_USERNAME, show_default=True)
-@click.option("--password", default=seed_module.ADMIN_PASSWORD, show_default=True)
+@click.option(
+    "--password",
+    default=seed_module.ADMIN_PASSWORD,
+    required=seed_module.ADMIN_PASSWORD is None,
+    show_default=False,
+    help="Required (or set SEEDDB_ADMIN_PASSWORD); no default is provided.",
+)
 def create_admin_command(username: str, password: str) -> None:
     """Create or promote an active staff user for the /admin panel."""
     asyncio.run(seed_module.seed_admin(username, password))

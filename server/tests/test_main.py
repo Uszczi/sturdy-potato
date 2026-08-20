@@ -27,3 +27,23 @@ async def test_frontend_served_when_dist_present(
     finally:
         # Restore the module for other tests that imported `app` from it.
         importlib.reload(main)
+
+
+def test_admin_not_mounted_by_default() -> None:
+    # admin_enabled defaults to False, so the module imported by the suite has
+    # no /admin routes.
+    assert not any(
+        getattr(route, "path", "").startswith("/admin") for route in main.app.routes
+    )
+
+
+def test_admin_mounted_when_enabled(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(settings, "admin_enabled", True)
+    try:
+        reloaded = importlib.reload(main)
+        assert any(
+            getattr(route, "path", "").startswith("/admin")
+            for route in reloaded.app.routes
+        )
+    finally:
+        importlib.reload(main)

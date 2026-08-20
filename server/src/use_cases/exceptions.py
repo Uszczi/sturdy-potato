@@ -57,3 +57,9 @@ class InvalidReorder(UseCaseError):
 class InvalidTimezone(UseCaseError):
     status_code = 400
     detail = "Unknown time zone."
+
+
+class TooManyRequests(UseCaseError):
+    status_code = 429
+    detail = "Too many requests. Please try again later."
+    headers: ClassVar[dict[str, str] | None] = {"Retry-After": "60"}

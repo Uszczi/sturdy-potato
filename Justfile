@@ -27,7 +27,8 @@ create-heavy username="heavy" password="heavy-password-123" projects="100" max_t
 	cd server && \
 	PYTHONPATH=src uv run python -m cli create-heavy --username "{{username}}" --password "{{password}}" --projects "{{projects}}" --max-tasks "{{max_tasks}}" --completed-ratio "{{completed_ratio}}" --seed "{{seed}}"
 
-create-admin username="admin" password="admin-password-123":
+# Password is required (no default): e.g. `just create-admin hunter2`.
+create-admin password username="admin":
 	cd server && \
 	PYTHONPATH=src uv run python -m cli create-admin --username "{{username}}" --password "{{password}}"
 

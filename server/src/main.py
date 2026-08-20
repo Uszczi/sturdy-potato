@@ -33,8 +33,10 @@ app.add_middleware(
 
 app.include_router(api_router)
 
-# SQLAdmin database UI, mounted at /admin behind a login (see AdminAuth).
-setup_admin(app)
+# SQLAdmin database UI, mounted at /admin behind a staff login (see AdminAuth).
+# Opt-in per deployment (ADMIN_ENABLED) so it is never exposed by default.
+if settings.admin_enabled:
+    setup_admin(app)
 
 # Serve the built SPA (Vite output) when it is present. In production the
 # Docker image bundles the compiled client here; in local dev the client is

@@ -62,8 +62,10 @@ def provide_authenticate_user(
     return auth_use_cases.AuthenticateUser(users, password_hasher, token_service)
 
 
-def provide_refresh_access_token() -> auth_use_cases.RefreshAccessToken:
-    return auth_use_cases.RefreshAccessToken(token_service)
+def provide_refresh_access_token(
+    users: UserRepositoryDep,
+) -> auth_use_cases.RefreshAccessToken:
+    return auth_use_cases.RefreshAccessToken(users, token_service)
 
 
 AuthenticateUserDep = Annotated[
