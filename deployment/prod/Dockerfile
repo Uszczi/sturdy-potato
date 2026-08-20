@@ -38,8 +38,6 @@ COPY server/src ./src
 # Built SPA, served same-origin by FastAPI (see main.py / settings.frontend_dir).
 COPY --from=client-build /build/dist ./client-dist
 
-RUN mkdir -p /app/data
-
 EXPOSE 8000
 
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "3"]

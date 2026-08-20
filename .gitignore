@@ -9,9 +9,6 @@ wheels/
 # Virtual environments
 .venv
 
-db.sqlite3
-e2e-db.sqlite3
-
 node_modules/
 
 .coverage

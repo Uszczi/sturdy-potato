@@ -27,7 +27,11 @@ class Settings(BaseSettings):
     # "production"); that gates both the secret-key check and the admin panel.
     environment: str = "development"
 
-    database_url: str = f"sqlite+aiosqlite:///{BASE_DIR / 'db.sqlite3'}"
+    database_url: str = (
+        "postgresql+asyncpg://postgres:postgres@localhost:5432/sturdy_potato"
+    )
+
+    redis_url: str = "redis://localhost:6379/0"
 
     secret_key: str = INSECURE_SECRET_KEY
 

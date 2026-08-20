@@ -3,6 +3,16 @@ all: lint test e2e
 start:
 	aspire start
 
+# Run a local PostgreSQL for `just migrate` / `just run` outside of `aspire start`.
+db:
+	docker run --rm --name sturdy-potato-postgres \
+		-e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=sturdy_potato \
+		-p 5432:5432 postgres:17-alpine
+
+# Run a local Redis for `just run` outside of `aspire start`.
+redis:
+	docker run --rm --name sturdy-potato-redis -p 6379:6379 redis:7-alpine
+
 run:
 	cd server && \
 	uv run fastapi dev src/main.py

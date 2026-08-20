@@ -1,4 +1,30 @@
 services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: sturdy_potato
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d sturdy_potato"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   web:
     build:
       context: .
@@ -6,13 +32,17 @@ services:
     command:
       - sh
       - -c
-      - alembic -c src/infrastructure/alembic/alembic.ini upgrade head && python src/seed.py && exec fastapi run src/main.py --host 0.0.0.0 --port 8000
+      - alembic -c src/infrastructure/alembic/alembic.ini upgrade head && python -m cli seed && exec fastapi run src/main.py --host 0.0.0.0 --port 8000
     environment:
-      DATABASE_URL: sqlite+aiosqlite:////app/data/db.sqlite3
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@db:5432/sturdy_potato
+      REDIS_URL: redis://redis:6379/0
     ports:
       - "${PORT:-8000}:8000"
-    volumes:
-      - sqlite_data:/app/data
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
 
 volumes:
-  sqlite_data:
+  postgres_data:

@@ -23,8 +23,6 @@ ENV PATH="/app/.venv/bin:$PATH" \
 COPY --from=python-dependencies /app/.venv /app/.venv
 COPY src ./src
 
-RUN mkdir -p /app/data
-
 EXPOSE 8000
 
 CMD ["fastapi", "run", "src/main.py", "--host", "0.0.0.0", "--port", "8000"]
