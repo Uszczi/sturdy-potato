@@ -118,7 +118,7 @@ function Overview() {
                     </p>
                   </div>
                   <span className="text-base-content/40 text-xs">
-                    {shortDate(task.createdAt)}
+                    {task.createdAt.toString().slice(0, 10)}
                   </span>
                 </li>
               ))}
