@@ -36,7 +36,7 @@ function ThemeToggle() {
 
       <ul
         tabIndex={0}
-        className="dropdown-content menu z-50 mt-2 w-40 rounded-box bg-base-200 p-2 shadow-xl"
+        className="dropdown-content menu rounded-box bg-base-200 z-50 mt-2 w-40 p-2 shadow-xl"
       >
         {THEMES.map((theme) => (
           <li key={theme}>
@@ -47,7 +47,7 @@ function ThemeToggle() {
             >
               <span
                 data-theme={theme}
-                className="inline-block size-4 rounded-full border border-base-content/20 bg-primary"
+                className="border-base-content/20 bg-primary inline-block size-4 rounded-full border"
               />
               {THEME_LABELS[theme]}
             </button>

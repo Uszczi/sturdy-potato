@@ -14,7 +14,11 @@ type ProjectColorPickerProps = {
  * A swatch button that opens a small palette of preset project colours. Picking
  * a swatch (or "Default") calls `onSelect` and closes the dropdown.
  */
-function ProjectColorPicker({ value, onSelect, label }: ProjectColorPickerProps) {
+function ProjectColorPicker({
+  value,
+  onSelect,
+  label,
+}: ProjectColorPickerProps) {
   const detailsRef = useRef<HTMLDetailsElement>(null);
 
   function choose(color: string | null) {
@@ -25,13 +29,13 @@ function ProjectColorPicker({ value, onSelect, label }: ProjectColorPickerProps)
   return (
     <details ref={detailsRef} className="dropdown">
       <summary
-        className="grid size-6 cursor-pointer place-items-center rounded-full ring-1 ring-base-300 transition hover:ring-base-content/30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+        className="ring-base-300 hover:ring-base-content/30 focus-visible:outline-primary grid size-6 cursor-pointer place-items-center rounded-full ring-1 transition focus-visible:outline-2 focus-visible:outline-offset-2"
         aria-label={`Color for ${label}: ${colorName(value)}`}
       >
         <ProjectDot color={value} className="size-3" />
       </summary>
-      <div className="dropdown-content z-10 mt-2 rounded-box border border-base-300 bg-base-100 p-3 shadow-lg">
-        <p className="mb-2 text-xs font-bold tracking-wider text-base-content/50 uppercase">
+      <div className="dropdown-content rounded-box border-base-300 bg-base-100 z-10 mt-2 border p-3 shadow-lg">
+        <p className="text-base-content/50 mb-2 text-xs font-bold tracking-wider uppercase">
           Color
         </p>
         <div className="grid grid-cols-4 gap-2">
@@ -46,7 +50,7 @@ function ProjectColorPicker({ value, onSelect, label }: ProjectColorPickerProps)
                 aria-pressed={selected}
                 className={`grid size-7 place-items-center rounded-full transition ${
                   selected
-                    ? "ring-2 ring-base-content ring-offset-2 ring-offset-base-100"
+                    ? "ring-base-content ring-offset-base-100 ring-2 ring-offset-2"
                     : "hover:scale-110"
                 }`}
                 style={{ backgroundColor: option.value }}
@@ -74,7 +78,7 @@ function ProjectColorPicker({ value, onSelect, label }: ProjectColorPickerProps)
         <button
           type="button"
           onClick={() => choose(null)}
-          className="btn mt-3 w-full justify-start btn-ghost btn-sm"
+          className="btn btn-ghost btn-sm mt-3 w-full justify-start"
         >
           <ProjectDot color={null} className="size-3" />
           Default

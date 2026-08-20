@@ -7,7 +7,7 @@ function MenuButton() {
   return (
     <button
       type="button"
-      className="btn -ml-2 btn-square shrink-0 btn-ghost"
+      className="btn btn-square btn-ghost -ml-2 shrink-0"
       onClick={toggle}
       aria-label={open ? "Close navigation" : "Open navigation"}
     >

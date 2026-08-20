@@ -21,7 +21,9 @@ async function addTask(page: Page, title: string): Promise<void> {
 }
 
 test.describe("reordering", () => {
-  test("drags a task above another and persists the order", async ({ page }) => {
+  test("drags a task above another and persists the order", async ({
+    page,
+  }) => {
     // Unique, sortable marker so the two rows are found among the shared inbox.
     const marker = `E2E reorder ${Date.now()}`;
     const first = `${marker} A`;
@@ -78,9 +80,7 @@ test.describe("reordering", () => {
       await page.locator("#project-composer button[type='submit']").click();
       // The name renders twice per row (color-picker label + title), so match
       // the first occurrence.
-      await expect(
-        page.getByText(name, { exact: true }).first(),
-      ).toBeVisible();
+      await expect(page.getByText(name, { exact: true }).first()).toBeVisible();
     }
 
     const rows = page.getByRole("list", { name: "Project list" }).locator("li");
@@ -88,7 +88,9 @@ test.describe("reordering", () => {
       await indexOf(rows, first),
     );
 
-    await rows.filter({ hasText: second }).dragTo(rows.filter({ hasText: first }));
+    await rows
+      .filter({ hasText: second })
+      .dragTo(rows.filter({ hasText: first }));
 
     await expect
       .poll(async () => indexOf(rows, second))

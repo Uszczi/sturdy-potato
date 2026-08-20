@@ -12,7 +12,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 function RootLayout() {
   return (
     <>
-      <div className="fixed right-4 top-4 z-50">
+      <div className="fixed top-4 right-4 z-50">
         <ThemeToggle />
       </div>
       <Outlet />

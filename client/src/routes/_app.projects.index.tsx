@@ -63,7 +63,7 @@ function Projects() {
         <div className="flex items-start gap-3">
           <MenuButton />
           <div>
-            <p className="text-xs font-bold tracking-[0.18em] text-base-content/45 uppercase">
+            <p className="text-base-content/45 text-xs font-bold tracking-[0.18em] uppercase">
               Workspace
             </p>
             <h1 className="mt-1 text-3xl font-bold tracking-tight sm:text-4xl">
@@ -73,7 +73,7 @@ function Projects() {
         </div>
         <Link
           to="/tasks"
-          className="btn gap-2 self-start btn-ghost text-base-content/60 btn-sm hover:bg-base-200 hover:text-base-content"
+          className="btn btn-ghost text-base-content/60 btn-sm hover:bg-base-200 hover:text-base-content gap-2 self-start"
         >
           Inbox
           <svg
@@ -84,7 +84,11 @@ function Projects() {
             stroke="currentColor"
             strokeWidth="1.8"
           >
-            <path strokeLinecap="round" strokeLinejoin="round" d="m15 19-7-7 7-7" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="m15 19-7-7 7-7"
+            />
           </svg>
         </Link>
       </header>
@@ -97,7 +101,7 @@ function Projects() {
         </h2>
         {projects.length > 0 ? (
           <ul
-            className="divide-y divide-base-300 border-y border-base-300"
+            className="divide-base-300 border-base-300 divide-y border-y"
             aria-label="Project list"
           >
             {items.map((project) => (
@@ -113,9 +117,9 @@ function Projects() {
                 onDragEnd={handleDragEnd}
                 className={activeId === project.id ? "opacity-50" : ""}
               >
-                <div className="group flex items-center gap-1 transition-colors hover:bg-base-200">
+                <div className="group hover:bg-base-200 flex items-center gap-1 transition-colors">
                   <span
-                    className="drag-handle ml-1 grid size-8 shrink-0 cursor-grab place-items-center rounded-md text-base-content/30 active:cursor-grabbing sm:ml-2"
+                    className="drag-handle text-base-content/30 ml-1 grid size-8 shrink-0 cursor-grab place-items-center rounded-md active:cursor-grabbing sm:ml-2"
                     aria-hidden="true"
                   >
                     <svg
@@ -133,20 +137,20 @@ function Projects() {
                   <Link
                     to="/projects/$projectId"
                     params={{ projectId: String(project.id) }}
-                    className="flex min-w-0 flex-1 items-center gap-3 px-2 py-3.5 transition-colors focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-primary sm:px-3"
+                    className="focus-visible:outline-primary flex min-w-0 flex-1 items-center gap-3 px-2 py-3.5 transition-colors focus-visible:outline-2 focus-visible:outline-offset-[-2px] sm:px-3"
                   >
                     <span className="min-w-0 flex-1">
                       <span className="block truncate text-sm font-semibold">
                         {project.name}
                       </span>
-                      <span className="mt-0.5 block text-xs text-base-content/50">
+                      <span className="text-base-content/50 mt-0.5 block text-xs">
                         {project.taskCount ?? 0}{" "}
                         {(project.taskCount ?? 0) === 1 ? "task" : "tasks"}
                       </span>
                     </span>
                     <svg
                       aria-hidden="true"
-                      className="size-4 shrink-0 text-base-content/35"
+                      className="text-base-content/35 size-4 shrink-0"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -164,8 +168,8 @@ function Projects() {
             ))}
           </ul>
         ) : (
-          <div className="border-y border-base-300 px-4 py-12 text-center sm:py-16">
-            <span className="mx-auto grid size-10 place-items-center rounded-full bg-base-200 text-primary">
+          <div className="border-base-300 border-y px-4 py-12 text-center sm:py-16">
+            <span className="bg-base-200 text-primary mx-auto grid size-10 place-items-center rounded-full">
               <svg
                 aria-hidden="true"
                 className="size-5"
@@ -182,7 +186,7 @@ function Projects() {
               </svg>
             </span>
             <h2 className="mt-3 text-lg font-semibold">No projects yet.</h2>
-            <p className="mx-auto max-w-sm text-sm leading-6 text-base-content/65">
+            <p className="text-base-content/65 mx-auto max-w-sm text-sm leading-6">
               Add a project above, then give related tasks a home.
             </p>
           </div>
@@ -236,9 +240,9 @@ function ProjectComposer({ composeDefault }: { composeDefault?: boolean }) {
           aria-expanded={open}
           aria-controls="project-composer"
           onClick={reveal}
-          className="group flex w-full items-center gap-3 rounded-lg px-2 py-2 text-left text-sm text-base-content/55 transition hover:bg-base-200 hover:text-primary"
+          className="group text-base-content/55 hover:bg-base-200 hover:text-primary flex w-full items-center gap-3 rounded-lg px-2 py-2 text-left text-sm transition"
         >
-          <span className="grid size-6 place-items-center rounded-full text-primary transition group-hover:bg-primary group-hover:text-primary-content">
+          <span className="text-primary group-hover:bg-primary group-hover:text-primary-content grid size-6 place-items-center rounded-full transition">
             <svg
               aria-hidden="true"
               className="size-4"
@@ -257,7 +261,7 @@ function ProjectComposer({ composeDefault }: { composeDefault?: boolean }) {
         <form
           id="project-composer"
           onSubmit={handleSubmit}
-          className="overflow-hidden rounded-lg border border-base-300 bg-base-100 shadow-sm"
+          className="border-base-300 bg-base-100 overflow-hidden rounded-lg border shadow-sm"
         >
           <label className="sr-only" htmlFor="project-name">
             New project name
@@ -267,7 +271,7 @@ function ProjectComposer({ composeDefault }: { composeDefault?: boolean }) {
             ref={nameRef}
             name="name"
             type="text"
-            className="input w-full input-ghost px-4 py-3 text-base font-medium focus:outline-none"
+            className="input input-ghost w-full px-4 py-3 text-base font-medium focus:outline-none"
             placeholder="What is this project about?"
             maxLength={100}
             autoComplete="off"
@@ -275,7 +279,7 @@ function ProjectComposer({ composeDefault }: { composeDefault?: boolean }) {
             onChange={(event) => setName(event.target.value)}
             required
           />
-          <div className="flex items-center gap-2 border-t border-base-300 px-3 py-2">
+          <div className="border-base-300 flex items-center gap-2 border-t px-3 py-2">
             <ProjectColorPicker
               value={color}
               label="new project"
@@ -283,7 +287,7 @@ function ProjectComposer({ composeDefault }: { composeDefault?: boolean }) {
             />
             <button
               type="button"
-              className="btn ml-auto btn-ghost btn-sm"
+              className="btn btn-ghost btn-sm ml-auto"
               onClick={() => {
                 setName("");
                 setColor(null);

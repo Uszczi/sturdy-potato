@@ -26,7 +26,12 @@
     // Off for the same reason: the generated client uses non-erasable syntax
     // (e.g. constructor parameter properties in runtime.ts).
     "erasableSyntaxOnly": false,
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "@api-client": ["api-client"]
+    }
   },
   "include": ["src"]
 }

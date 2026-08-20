@@ -8,7 +8,11 @@ test.use({ storageState: { cookies: [], origins: [] } });
 
 async function fillRegisterForm(
   page: import("@playwright/test").Page,
-  { username, password, confirm }: { username: string; password: string; confirm: string },
+  {
+    username,
+    password,
+    confirm,
+  }: { username: string; password: string; confirm: string },
 ) {
   await page.getByLabel("Username").fill(username);
   // "Password" would also match "Confirm password", so match it exactly.

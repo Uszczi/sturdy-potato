@@ -1,12 +1,3 @@
 {
-  "plugins": ["prettier-plugin-jinja-template", "prettier-plugin-tailwindcss"],
-  "tailwindStylesheet": "./assets/style.css",
-  "overrides": [
-    {
-      "files": ["templates/**/*.html", "**/templates/**/*.html"],
-      "options": {
-        "parser": "jinja-template"
-      }
-    }
-  ]
+  "plugins": ["prettier-plugin-tailwindcss"]
 }

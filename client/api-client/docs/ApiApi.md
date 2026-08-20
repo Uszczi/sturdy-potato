@@ -2,14 +2,12 @@
 
 All URIs are relative to *http://localhost*
 
-| Method | HTTP request | Description |
-|------------- | ------------- | -------------|
-| [**apiRegisterCreate**](ApiApi.md#apiregistercreate) | **POST** /api/register/ | Register |
-| [**apiTimeRead**](ApiApi.md#apitimeread) | **GET** /api/time/ | Read Current Time |
-| [**apiTokenCreate**](ApiApi.md#apitokencreate) | **POST** /api/token/ | Obtain Token |
-| [**apiTokenRefreshCreate**](ApiApi.md#apitokenrefreshcreate) | **POST** /api/token/refresh/ | Refresh Token |
-
-
+| Method                                                       | HTTP request                 | Description       |
+| ------------------------------------------------------------ | ---------------------------- | ----------------- |
+| [**apiRegisterCreate**](ApiApi.md#apiregistercreate)         | **POST** /api/register/      | Register          |
+| [**apiTimeRead**](ApiApi.md#apitimeread)                     | **GET** /api/time/           | Read Current Time |
+| [**apiTokenCreate**](ApiApi.md#apitokencreate)               | **POST** /api/token/         | Obtain Token      |
+| [**apiTokenRefreshCreate**](ApiApi.md#apitokenrefreshcreate) | **POST** /api/token/refresh/ | Refresh Token     |
 
 ## apiRegisterCreate
 
@@ -49,10 +47,9 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **userRegister** | [UserRegister](UserRegister.md) |  | |
+| Name             | Type                            | Description | Notes |
+| ---------------- | ------------------------------- | ----------- | ----- |
+| **userRegister** | [UserRegister](UserRegister.md) |             |       |
 
 ### Return type
 
@@ -67,15 +64,14 @@ No authorization required
 - **Content-Type**: `application/json`
 - **Accept**: `application/json`
 
-
 ### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **201** | Successful Response |  -  |
-| **422** | Validation Error |  -  |
+
+| Status code | Description         | Response headers |
+| ----------- | ------------------- | ---------------- |
+| **201**     | Successful Response | -                |
+| **422**     | Validation Error    | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## apiTimeRead
 
@@ -86,11 +82,8 @@ Read Current Time
 ### Example
 
 ```ts
-import {
-  Configuration,
-  ApiApi,
-} from '';
-import type { ApiTimeReadRequest } from '';
+import { Configuration, ApiApi } from "";
+import type { ApiTimeReadRequest } from "";
 
 async function example() {
   console.log("🚀 Testing  SDK...");
@@ -125,14 +118,13 @@ No authorization required
 - **Content-Type**: Not defined
 - **Accept**: `application/json`
 
-
 ### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** | Successful Response |  -  |
+
+| Status code | Description         | Response headers |
+| ----------- | ------------------- | ---------------- |
+| **200**     | Successful Response | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## apiTokenCreate
 
@@ -172,10 +164,9 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **tokenObtainPair** | [TokenObtainPair](TokenObtainPair.md) |  | |
+| Name                | Type                                  | Description | Notes |
+| ------------------- | ------------------------------------- | ----------- | ----- |
+| **tokenObtainPair** | [TokenObtainPair](TokenObtainPair.md) |             |       |
 
 ### Return type
 
@@ -190,15 +181,14 @@ No authorization required
 - **Content-Type**: `application/json`
 - **Accept**: `application/json`
 
-
 ### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** | Successful Response |  -  |
-| **422** | Validation Error |  -  |
+
+| Status code | Description         | Response headers |
+| ----------- | ------------------- | ---------------- |
+| **200**     | Successful Response | -                |
+| **422**     | Validation Error    | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## apiTokenRefreshCreate
 
@@ -238,10 +228,9 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **tokenRefresh** | [TokenRefresh](TokenRefresh.md) |  | |
+| Name             | Type                            | Description | Notes |
+| ---------------- | ------------------------------- | ----------- | ----- |
+| **tokenRefresh** | [TokenRefresh](TokenRefresh.md) |             |       |
 
 ### Return type
 
@@ -256,12 +245,11 @@ No authorization required
 - **Content-Type**: `application/json`
 - **Accept**: `application/json`
 
-
 ### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** | Successful Response |  -  |
-| **422** | Validation Error |  -  |
+
+| Status code | Description         | Response headers |
+| ----------- | ------------------- | ---------------- |
+| **200**     | Successful Response | -                |
+| **422**     | Validation Error    | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-

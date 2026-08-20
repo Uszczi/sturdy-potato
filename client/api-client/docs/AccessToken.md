@@ -1,34 +1,30 @@
-
 # AccessToken
-
 
 ## Properties
 
-Name | Type
------------- | -------------
-`access` | string
+| Name     | Type   |
+| -------- | ------ |
+| `access` | string |
 
 ## Example
 
 ```typescript
-import type { AccessToken } from ''
+import type { AccessToken } from "";
 
 // TODO: Update the object below with actual values
 const example = {
-  "access": null,
-} satisfies AccessToken
+  access: null,
+} satisfies AccessToken;
 
-console.log(example)
+console.log(example);
 
 // Convert the instance to a JSON string
-const exampleJSON: string = JSON.stringify(example)
-console.log(exampleJSON)
+const exampleJSON: string = JSON.stringify(example);
+console.log(exampleJSON);
 
 // Parse the JSON string back to an object
-const exampleParsed = JSON.parse(exampleJSON) as AccessToken
-console.log(exampleParsed)
+const exampleParsed = JSON.parse(exampleJSON) as AccessToken;
+console.log(exampleParsed);
 ```
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
-

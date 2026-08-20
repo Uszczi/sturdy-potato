@@ -1,31 +1,23 @@
 import { useEffect, useRef, useState } from "react";
-import type { ProjectSchema, TaskSchema } from "../../api-client";
+import type { ProjectSchema, TaskSchema } from "@api-client";
 import { Link } from "@tanstack/react-router";
-import { useAppStore } from "../stores/app-store";
+import { useAppStore } from "@/stores/app-store";
 import {
   formatDueLong,
   formatDueShort,
   formatTimestamp,
-} from "../services/format";
+} from "@/services/format";
 import MenuButton from "./MenuButton";
 import ProjectColorPicker from "./ProjectColorPicker";
 
 type TaskListViewProps = {
-  /** Small uppercase label above the heading ("Tasks" or "Project"). */
   eyebrow: string;
   heading: string;
-  /** Tasks already filtered for this view. */
   tasks: TaskSchema[];
-  /** Present on the project detail page; drives the dot, count and empty copy. */
   project?: ProjectSchema;
-  /** Open the composer on first render (the `?compose=1` entry point). */
   composeDefault?: boolean;
 };
 
-/**
- * The task list page shell: header, add-task composer, the task list and a
- * detail modal. Mirrors templates/todo/task_list.html and its partials.
- */
 function TaskListView({
   eyebrow,
   heading,
@@ -37,8 +29,6 @@ function TaskListView({
   const updateProject = useAppStore((state) => state.updateProject);
   const reorderTasks = useAppStore((state) => state.reorderTasks);
 
-  // Local copy so a drag reorders rows live; it resyncs whenever the store
-  // hands us a fresh list (after the reorder persists, or any other change).
   const [items, setItems] = useState(tasks);
   const draggingId = useRef<number | null>(null);
   const [activeId, setActiveId] = useState<number | null>(null);
@@ -79,7 +69,9 @@ function TaskListView({
     draggingId.current = null;
     setActiveId(null);
     if (!dropped) return;
-    const openIds = items.filter((task) => !task.completed).map((task) => task.id);
+    const openIds = items
+      .filter((task) => !task.completed)
+      .map((task) => task.id);
     const originalIds = tasks
       .filter((task) => !task.completed)
       .map((task) => task.id);
@@ -98,21 +90,19 @@ function TaskListView({
               <ProjectColorPicker
                 value={project.color}
                 label={project.name}
-                onSelect={(color) =>
-                  void updateProject(project.id, { color })
-                }
+                onSelect={(color) => void updateProject(project.id, { color })}
               />
             </span>
           )}
           <div>
-            <p className="text-xs font-bold tracking-[0.18em] text-base-content/45 uppercase">
+            <p className="text-base-content/45 text-xs font-bold tracking-[0.18em] uppercase">
               {eyebrow}
             </p>
             <h1 className="mt-1 text-3xl font-bold tracking-tight sm:text-4xl">
               {heading}
             </h1>
             {project && (
-              <p className="mt-2 text-sm text-base-content/55">
+              <p className="text-base-content/55 mt-2 text-sm">
                 {project.taskCount ?? 0}{" "}
                 {(project.taskCount ?? 0) === 1 ? "task" : "tasks"}
               </p>
@@ -121,7 +111,7 @@ function TaskListView({
         </div>
         <Link
           to="/projects"
-          className="btn gap-2 self-start btn-ghost text-base-content/60 btn-sm hover:bg-base-200 hover:text-base-content"
+          className="btn btn-ghost text-base-content/60 btn-sm hover:bg-base-200 hover:text-base-content gap-2 self-start"
         >
           {project ? "All projects" : "Projects"}
           <svg
@@ -132,12 +122,19 @@ function TaskListView({
             stroke="currentColor"
             strokeWidth="1.8"
           >
-            <path strokeLinecap="round" strokeLinejoin="round" d="m9 5 7 7-7 7" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="m9 5 7 7-7 7"
+            />
           </svg>
         </Link>
       </header>
 
-      <TaskComposer defaultProjectId={project?.id} composeDefault={composeDefault} />
+      <TaskComposer
+        defaultProjectId={project?.id}
+        composeDefault={composeDefault}
+      />
 
       <section aria-labelledby="task-list-heading">
         <h2 id="task-list-heading" className="sr-only">
@@ -147,7 +144,7 @@ function TaskListView({
           {tasks.length > 0 ? (
             <ul
               id="task-list"
-              className="divide-y divide-base-300 border-y border-base-300"
+              className="divide-base-300 border-base-300 divide-y border-y"
               aria-label="Task list"
             >
               {items.map((task) => (
@@ -163,8 +160,8 @@ function TaskListView({
               ))}
             </ul>
           ) : (
-            <div className="border-y border-base-300 px-4 py-12 text-center sm:py-16">
-              <span className="mx-auto grid size-10 place-items-center rounded-full bg-base-200 text-primary">
+            <div className="border-base-300 border-y px-4 py-12 text-center sm:py-16">
+              <span className="bg-base-200 text-primary mx-auto grid size-10 place-items-center rounded-full">
                 <svg
                   aria-hidden="true"
                   className="size-5"
@@ -183,7 +180,7 @@ function TaskListView({
               <h2 className="mt-3 text-lg font-semibold">
                 {project ? "No tasks in this project yet." : "No tasks yet."}
               </h2>
-              <p className="mx-auto max-w-sm text-sm leading-6 text-base-content/65">
+              <p className="text-base-content/65 mx-auto max-w-sm text-sm leading-6">
                 {project
                   ? "Add a task above to start this project moving."
                   : "Your inbox is quiet. New tasks will appear here when you add them."}
@@ -249,9 +246,9 @@ function TaskComposer({
           aria-expanded={open}
           aria-controls="task-composer"
           onClick={reveal}
-          className="group flex w-full items-center gap-3 rounded-lg px-2 py-2 text-left text-sm text-base-content/55 transition hover:bg-base-200 hover:text-primary"
+          className="group text-base-content/55 hover:bg-base-200 hover:text-primary flex w-full items-center gap-3 rounded-lg px-2 py-2 text-left text-sm transition"
         >
-          <span className="grid size-6 place-items-center rounded-full text-primary transition group-hover:bg-primary group-hover:text-primary-content">
+          <span className="text-primary group-hover:bg-primary group-hover:text-primary-content grid size-6 place-items-center rounded-full transition">
             <svg
               aria-hidden="true"
               className="size-4"
@@ -270,7 +267,7 @@ function TaskComposer({
         <form
           id="task-composer"
           onSubmit={handleSubmit}
-          className="overflow-hidden rounded-lg border border-base-300 bg-base-100 shadow-sm"
+          className="border-base-300 bg-base-100 overflow-hidden rounded-lg border shadow-sm"
         >
           <label className="sr-only" htmlFor="task-title">
             New task title
@@ -280,7 +277,7 @@ function TaskComposer({
             ref={titleRef}
             name="title"
             type="text"
-            className="input w-full input-ghost px-4 pt-3 text-base font-medium focus:outline-none"
+            className="input input-ghost w-full px-4 pt-3 text-base font-medium focus:outline-none"
             placeholder="What needs to be done?"
             maxLength={200}
             autoComplete="off"
@@ -288,7 +285,7 @@ function TaskComposer({
             onChange={(event) => setTitle(event.target.value)}
             required
           />
-          <div className="flex flex-wrap items-center gap-2 border-t border-base-300 px-3 py-2">
+          <div className="border-base-300 flex flex-wrap items-center gap-2 border-t px-3 py-2">
             <label className="sr-only" htmlFor="task-due-date">
               Due date
             </label>
@@ -296,7 +293,7 @@ function TaskComposer({
               id="task-due-date"
               name="due_date"
               type="date"
-              className="input-bordered input w-auto input-sm"
+              className="input-bordered input input-sm w-auto"
               aria-label="Due date"
               value={dueDate}
               onChange={(event) => setDueDate(event.target.value)}
@@ -307,7 +304,7 @@ function TaskComposer({
             <select
               id="task-project"
               name="project_id"
-              className="select-bordered select max-w-48 select-sm"
+              className="select-bordered select select-sm max-w-48"
               aria-label="Project"
               value={projectId}
               onChange={(event) => setProjectId(event.target.value)}
@@ -377,7 +374,7 @@ function TaskRow({
   return (
     <li
       id={`task-${task.id}`}
-      className={`group cursor-pointer transition-colors duration-200 hover:bg-base-200/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
+      className={`group hover:bg-base-200/60 focus-visible:outline-primary cursor-pointer transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 ${
         dragging ? "opacity-50" : ""
       }`}
       role="button"
@@ -392,7 +389,7 @@ function TaskRow({
     >
       <div className="flex items-start gap-3 px-3 py-3 sm:px-4">
         <span
-          className={`drag-handle mt-0.5 grid size-5 shrink-0 place-items-center rounded text-base-content/25 ${
+          className={`drag-handle text-base-content/25 mt-0.5 grid size-5 shrink-0 place-items-center rounded ${
             draggable ? "cursor-grab active:cursor-grabbing" : ""
           }`}
           aria-hidden="true"
@@ -417,7 +414,7 @@ function TaskRow({
           className={`${
             task.completed
               ? "border-success bg-success text-success-content"
-              : "border-base-content/30 text-transparent hover:border-primary hover:text-primary"
+              : "border-base-content/30 hover:border-primary hover:text-primary text-transparent"
           } mt-0.5 grid size-5 shrink-0 place-items-center rounded-full border-2 transition-colors`}
           aria-pressed={task.completed}
           aria-label={
@@ -434,7 +431,11 @@ function TaskRow({
             stroke="currentColor"
             strokeWidth="2.5"
           >
-            <path strokeLinecap="round" strokeLinejoin="round" d="m5 12 4 4L19 6" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="m5 12 4 4L19 6"
+            />
           </svg>
         </button>
         <div className="min-w-0 flex-1">
@@ -446,7 +447,7 @@ function TaskRow({
             {task.title}
           </h2>
           {task.dueDate && (
-            <div className="mt-1 flex items-center gap-2 text-xs text-base-content/50">
+            <div className="text-base-content/50 mt-1 flex items-center gap-2 text-xs">
               <svg
                 aria-hidden="true"
                 className="size-3.5"
@@ -465,7 +466,7 @@ function TaskRow({
         <select
           id={`task-project-${task.id}`}
           name="project_id"
-          className="select max-w-32 select-ghost text-xs font-medium text-base-content/50 opacity-70 transition select-xs group-hover:opacity-100 focus:opacity-100"
+          className="select select-ghost text-base-content/50 select-xs max-w-32 text-xs font-medium opacity-70 transition group-hover:opacity-100 focus:opacity-100"
           aria-label={`Project for ${task.title}`}
           value={task.projectId ? String(task.projectId) : ""}
           onClick={(event) => event.stopPropagation()}
@@ -528,7 +529,7 @@ function TaskModal({
       >
         <header className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-xs font-bold tracking-[0.2em] text-primary uppercase">
+            <p className="text-primary text-xs font-bold tracking-[0.2em] uppercase">
               Task details
             </p>
             <h2 id="task-modal-title" className="mt-2 text-2xl font-bold">
@@ -556,11 +557,11 @@ function TaskModal({
           </button>
         </header>
         {task.description && (
-          <p className="mt-6 whitespace-pre-line text-base-content/75">
+          <p className="text-base-content/75 mt-6 whitespace-pre-line">
             {task.description}
           </p>
         )}
-        <dl className="mt-6 grid grid-cols-2 gap-4 border-t border-base-300 pt-5 text-sm">
+        <dl className="border-base-300 mt-6 grid grid-cols-2 gap-4 border-t pt-5 text-sm">
           <Detail label="Status">
             <span className="badge badge-outline">
               {task.completed ? "Completed" : "Open"}
@@ -587,10 +588,10 @@ function Detail({
 }) {
   return (
     <div>
-      <dt className="text-xs font-bold tracking-wider text-base-content/50 uppercase">
+      <dt className="text-base-content/50 text-xs font-bold tracking-wider uppercase">
         {label}
       </dt>
-      <dd className="mt-2 text-base-content/75">{children}</dd>
+      <dd className="text-base-content/75 mt-2">{children}</dd>
     </div>
   );
 }

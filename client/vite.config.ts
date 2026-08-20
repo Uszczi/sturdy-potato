@@ -1,7 +1,8 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import tailwindcss from '@tailwindcss/vite'
-import { tanstackRouter } from '@tanstack/router-plugin/vite'
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import tailwindcss from "@tailwindcss/vite";
+import { tanstackRouter } from "@tanstack/router-plugin/vite";
+import tsconfigPaths from "vite-tsconfig-paths";
 
 export default defineConfig({
   server: {
@@ -18,18 +19,20 @@ export default defineConfig({
     // The backend target is overridable (VITE_API_PROXY_TARGET) so the e2e
     // suite can point a dev server at its isolated API on a non-default port.
     proxy: {
-      '^/api(?:/|$)': process.env.VITE_API_PROXY_TARGET ?? 'http://127.0.0.1:8000',
+      "^/api(?:/|$)":
+        process.env.VITE_API_PROXY_TARGET ?? "http://127.0.0.1:8000",
     },
   },
   plugins: [
-    tanstackRouter({ target: 'react', autoCodeSplitting: true }),
+    tanstackRouter({ target: "react", autoCodeSplitting: true }),
     react(),
     tailwindcss(),
+    tsconfigPaths(),
   ],
   optimizeDeps: {
-    include: ['zustand'],
+    include: ["zustand"],
   },
   resolve: {
-    dedupe: ['react', 'react-dom'],
+    dedupe: ["react", "react-dom"],
   },
-})
+});

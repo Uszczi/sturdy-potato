@@ -17,7 +17,9 @@ export function toggleTask(task: TaskSchema): Promise<TaskSchema> {
 }
 
 export function reorderTasks(orderedIds: number[]): Promise<void> {
-  return tasksApi.apiTasksReorderCreate({ reorderInput: { order: orderedIds } });
+  return tasksApi.apiTasksReorderCreate({
+    reorderInput: { order: orderedIds },
+  });
 }
 
 export function assignTaskProject(

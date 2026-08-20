@@ -1,61 +1,54 @@
 import { create } from "zustand";
-import type {
-  ProjectSchema,
-  TaskSchema,
-  TaskCreateInput,
-} from "../../api-client";
-import { ResponseError } from "../../api-client";
-import { logout } from "../services/auth";
+import type { ProjectSchema, TaskSchema, TaskCreateInput } from "@api-client";
+import { ResponseError } from "@api-client";
+import { logout } from "@/services/auth";
 import {
   createProject,
   listProjects,
   reorderProjects,
   updateProject,
-} from "../services/projects";
+} from "@/services/projects";
 import {
   assignTaskProject,
   createTask,
   listTasks,
   reorderTasks,
   toggleTask,
-} from "../services/tasks";
+} from "@/services/tasks";
 
 type AppState = {
-  // Domain data, shared by the sidebar and every page.
   projects: ProjectSchema[];
   tasks: TaskSchema[];
   loaded: boolean;
   loading: boolean;
   error: string | null;
-  /** Set when the API rejects our token; the shell redirects to login. */
   unauthorized: boolean;
 
-  // Shared UI state.
   sidebarOpen: boolean;
   setSidebarOpen: (open: boolean) => void;
   toggleSidebar: () => void;
 
-  // Data actions. Each mutation refreshes so `taskCount` stays in sync.
+  kanbanSelectedProject: ProjectSchema | null;
+  setKanbanSelectedProject: (project: ProjectSchema | null) => void;
+
+  getTasksForProject: (projectId: number | null) => TaskSchema[];
+
   refresh: () => Promise<void>;
   addProject: (name: string, color?: string | null) => Promise<void>;
   updateProject: (
     id: number,
     changes: { name?: string; color?: string | null },
   ) => Promise<void>;
-  /** Persist a drag-and-drop reorder of the projects (their new order). */
   reorderProjects: (orderedIds: number[]) => Promise<void>;
   addTask: (input: TaskCreateInput) => Promise<void>;
   toggleTask: (task: TaskSchema) => Promise<void>;
-  assignTaskProject: (taskId: number, projectId: number | null) => Promise<void>;
-  /** Persist a drag-and-drop reorder of the given task ids (their new order). */
+  assignTaskProject: (
+    taskId: number,
+    projectId: number | null,
+  ) => Promise<void>;
   reorderTasks: (orderedIds: number[]) => Promise<void>;
 };
 
-/**
- * Order tasks the same way the API does, so a locally-updated task lands in the
- * right spot without refetching the whole list: open tasks first (by manual
- * position), then completed tasks with the most recently completed on top.
- */
 function compareTasks(a: TaskSchema, b: TaskSchema): number {
   if (a.completed !== b.completed) return a.completed ? 1 : -1;
   if (!a.completed) {
@@ -100,10 +93,16 @@ export const useAppStore = create<AppState>((set, get) => ({
   error: null,
   unauthorized: false,
 
-  sidebarOpen:
-    typeof window === "undefined" ? true : window.innerWidth >= 1024,
+  sidebarOpen: typeof window === "undefined" ? true : window.innerWidth >= 1024,
   setSidebarOpen: (open) => set({ sidebarOpen: open }),
   toggleSidebar: () => set({ sidebarOpen: !get().sidebarOpen }),
+
+  kanbanSelectedProject: null,
+  setKanbanSelectedProject: (project) =>
+    set({ kanbanSelectedProject: project }),
+
+  getTasksForProject: (projectId) =>
+    get().tasks.filter((task) => task.projectId === projectId),
 
   refresh: async () => {
     set({ loading: true, error: null });
@@ -159,7 +158,9 @@ export const useAppStore = create<AppState>((set, get) => ({
     await guard(set, async () => {
       const updated = await toggleTask(task);
       const tasks = get()
-        .tasks.map((existing) => (existing.id === updated.id ? updated : existing))
+        .tasks.map((existing) =>
+          existing.id === updated.id ? updated : existing,
+        )
         .sort(compareTasks);
       set({ tasks });
     });

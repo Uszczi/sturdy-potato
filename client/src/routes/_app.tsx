@@ -47,7 +47,7 @@ function AppLayout() {
       {open && (
         <div
           onClick={() => setSidebarOpen(false)}
-          className="fixed inset-0 z-30 bg-neutral/40 backdrop-blur-sm lg:hidden"
+          className="bg-neutral/40 fixed inset-0 z-30 backdrop-blur-sm lg:hidden"
           aria-hidden="true"
         />
       )}

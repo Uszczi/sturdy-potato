@@ -66,8 +66,8 @@ function Register() {
   }
 
   return (
-    <main className="grid min-h-screen place-items-center bg-base-200 p-4">
-      <div className="card w-full max-w-sm bg-base-100 shadow-xl">
+    <main className="bg-base-200 grid min-h-screen place-items-center p-4">
+      <div className="card bg-base-100 w-full max-w-sm shadow-xl">
         <div className="card-body">
           <h1 className="card-title text-2xl">Create your account</h1>
 
