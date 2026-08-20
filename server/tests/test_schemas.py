@@ -5,11 +5,11 @@ from pydantic import ValidationError
 
 from schemas.order import ReorderInput
 from schemas.project import ProjectCreateInput, ProjectUpdateInput
-from schemas.todo import TodoCreateInput, TodoUpdateInput
+from schemas.task import TaskCreateInput, TaskUpdateInput
 
 
 def test_todo_create_strips_title_and_blanks_optionals() -> None:
-    model = TodoCreateInput(title="  Buy milk  ", project_id="", due_date="")
+    model = TaskCreateInput(title="  Buy milk  ", project_id="", due_date="")
 
     assert model.title == "Buy milk"
     assert model.project_id is None
@@ -17,7 +17,7 @@ def test_todo_create_strips_title_and_blanks_optionals() -> None:
 
 
 def test_todo_create_keeps_provided_optionals() -> None:
-    model = TodoCreateInput(title="x", project_id=3, due_date="2024-01-02")
+    model = TaskCreateInput(title="x", project_id=3, due_date="2024-01-02")
 
     assert model.project_id == 3
     assert model.due_date == date(2024, 1, 2)
@@ -25,26 +25,26 @@ def test_todo_create_keeps_provided_optionals() -> None:
 
 def test_todo_create_rejects_a_non_string_title() -> None:
     with pytest.raises(ValidationError):
-        TodoCreateInput(title=123)
+        TaskCreateInput(title=123)
 
 
 def test_todo_create_rejects_a_blank_title() -> None:
     with pytest.raises(ValidationError):
-        TodoCreateInput(title="   ")
+        TaskCreateInput(title="   ")
 
 
 @pytest.mark.parametrize("field", ["title", "description", "completed"])
 def test_todo_update_rejects_null_fields(field: str) -> None:
     with pytest.raises(ValidationError):
-        TodoUpdateInput(**{field: None})
+        TaskUpdateInput(**{field: None})
 
 
 def test_todo_update_blanks_and_keeps_optionals() -> None:
-    blanked = TodoUpdateInput(project_id="", due_date="")
+    blanked = TaskUpdateInput(project_id="", due_date="")
     assert blanked.project_id is None
     assert blanked.due_date is None
 
-    kept = TodoUpdateInput(project_id=2, due_date="2024-01-02")
+    kept = TaskUpdateInput(project_id=2, due_date="2024-01-02")
     assert kept.project_id == 2
     assert kept.due_date == date(2024, 1, 2)
 

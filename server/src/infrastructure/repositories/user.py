@@ -27,3 +27,7 @@ class UserRepository:
             select(User).where(col(User.username) == username)
         )
         return _to_entity(user) if user is not None else None
+
+    async def get_by_id(self, user_id: int) -> UserEntity | None:
+        user = await self._session.get(User, user_id)
+        return _to_entity(user) if user is not None else None

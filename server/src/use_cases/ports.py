@@ -7,6 +7,7 @@ lets tests substitute in-memory fakes without a database.
 """
 
 from collections.abc import Mapping
+from datetime import date
 from typing import Any, Protocol
 
 from use_cases.dtos import ProjectCreateData, TaskCreateData
@@ -15,6 +16,8 @@ from use_cases.entities import Project, Task, User
 
 class UserRepository(Protocol):
     async def get_by_username(self, username: str) -> User | None: ...
+
+    async def get_by_id(self, user_id: int) -> User | None: ...
 
 
 class PasswordHasher(Protocol):
@@ -26,6 +29,9 @@ class TokenIssuer(Protocol):
 
     def refresh_token(self, user_id: int) -> str: ...
 
+    # Raises InvalidToken if the token is not a valid access token.
+    def user_id_from_access(self, token: str) -> int: ...
+
     # Raises InvalidToken if the token is not a valid refresh token.
     def user_id_from_refresh(self, token: str) -> int: ...
 
@@ -34,7 +40,7 @@ class TaskRepository(Protocol):
     async def list_all(self, user_id: int) -> list[Task]: ...
 
     async def list_for_view(
-        self, user_id: int, *, view: str, project_id: int | None
+        self, user_id: int, *, view: str, project_id: int | None, today: date
     ) -> list[Task]: ...
 
     async def list_open(self, user_id: int, *, limit: int | None) -> list[Task]: ...

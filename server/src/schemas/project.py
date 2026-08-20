@@ -1,10 +1,10 @@
 import re
 from datetime import datetime
-from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from use_cases.dtos import UNSET, ProjectCreateData, ProjectUpdateData
+from schemas._coercions import reject_null, strip_if_str
+from use_cases.dtos import ProjectCreateData, ProjectUpdateData
 
 _HEX_COLOR = re.compile(r"^#[0-9a-fA-F]{6}$")
 
@@ -33,9 +33,7 @@ class ProjectCreateInput(BaseModel):
     @field_validator("name", mode="before")
     @classmethod
     def strip_name(cls, value: object) -> object:
-        if isinstance(value, str):
-            return value.strip()
-        return value
+        return strip_if_str(value)
 
     @field_validator("color", mode="before")
     @classmethod
@@ -50,23 +48,16 @@ class ProjectUpdateInput(BaseModel):
     color: str | None = Field(default=None, max_length=7)
 
     def to_domain(self) -> ProjectUpdateData:
-        # Only provided fields become changes (exclude_unset); the name
-        # validator guarantees a provided name is non-null.
-        provided = self.model_fields_set
-
-        def pick(name: str) -> Any:
-            return getattr(self, name) if name in provided else UNSET
-
-        return ProjectUpdateData(name=pick("name"), color=pick("color"))
+        # Pass only the fields the client actually sent; the rest keep their
+        # UNSET default and so become non-changes (exclude_unset). A provided
+        # name is non-null thanks to the validator below.
+        provided = {name: getattr(self, name) for name in self.model_fields_set}
+        return ProjectUpdateData(**provided)
 
     @field_validator("name", mode="before")
     @classmethod
     def strip_name(cls, value: object) -> object:
-        if value is None:
-            raise ValueError("Input should not be null")
-        if isinstance(value, str):
-            return value.strip()
-        return value
+        return strip_if_str(reject_null(value))
 
     @field_validator("color", mode="before")
     @classmethod

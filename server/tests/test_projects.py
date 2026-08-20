@@ -207,6 +207,18 @@ async def test_reorder_projects(client: AsyncClient, session: AsyncSession) -> N
     assert [project["id"] for project in listed.json()] == [second.id, first.id]
 
 
+async def test_reorder_with_an_empty_order_is_a_noop(
+    client: AsyncClient, session: AsyncSession
+) -> None:
+    user = await create_user(session)
+
+    response = await client.post(
+        "/api/projects/reorder/", headers=auth_headers(user), json={"order": []}
+    )
+
+    assert response.status_code == 204
+
+
 async def test_reorder_rejects_another_users_project(
     client: AsyncClient, session: AsyncSession
 ) -> None:
@@ -248,3 +260,51 @@ async def test_delete_missing_project_returns_404(
     response = await client.delete("/api/projects/999/", headers=auth_headers(user))
 
     assert response.status_code == 404
+
+
+async def test_cannot_retrieve_another_users_project(
+    client: AsyncClient, session: AsyncSession
+) -> None:
+    owner = await create_user(session)
+    project = await create_project(session, owner, name="Private")
+    intruder = await create_user(session)
+
+    response = await client.get(
+        f"/api/projects/{project.id}/", headers=auth_headers(intruder)
+    )
+
+    assert response.status_code == 404
+
+
+async def test_cannot_update_another_users_project(
+    client: AsyncClient, session: AsyncSession
+) -> None:
+    owner = await create_user(session)
+    project = await create_project(session, owner, name="Private")
+    intruder = await create_user(session)
+
+    response = await client.patch(
+        f"/api/projects/{project.id}/",
+        headers=auth_headers(intruder),
+        json={"name": "Hijacked"},
+    )
+
+    assert response.status_code == 404
+
+
+async def test_cannot_delete_another_users_project(
+    client: AsyncClient, session: AsyncSession
+) -> None:
+    owner = await create_user(session)
+    project = await create_project(session, owner, name="Private")
+    intruder = await create_user(session)
+
+    response = await client.delete(
+        f"/api/projects/{project.id}/", headers=auth_headers(intruder)
+    )
+
+    assert response.status_code == 404
+    still_there = await client.get(
+        f"/api/projects/{project.id}/", headers=auth_headers(owner)
+    )
+    assert still_there.status_code == 200

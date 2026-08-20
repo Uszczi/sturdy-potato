@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from sqlmodel import select
 
 from infrastructure.db import async_session_maker
-from infrastructure.models import Project, Todo, User
+from infrastructure.models import Project, Task, User
 from infrastructure.security import password_hasher
 
 DEMO_USERNAME = os.environ.get("SEEDDB_DEMO_USERNAME", "demo")
@@ -127,15 +127,15 @@ async def _seed_projects_and_todos(session: AsyncSession, user: User) -> None:
             await session.refresh(project)
         for task_position, (title, description, completed) in enumerate(todos):
             existing = await session.scalar(
-                select(Todo).where(
-                    Todo.user_id == user.id,
-                    Todo.project_id == project.id,
-                    Todo.title == title,
+                select(Task).where(
+                    Task.user_id == user.id,
+                    Task.project_id == project.id,
+                    Task.title == title,
                 )
             )
             if existing is None:
                 session.add(
-                    Todo(
+                    Task(
                         user_id=user.id,
                         project_id=project.id,
                         title=title,
@@ -218,7 +218,7 @@ async def seed_heavy(
                 completed = rng.random() < completed_ratio
                 completed_total += completed
                 tasks.append(
-                    Todo(
+                    Task(
                         user_id=user.id,
                         project_id=project.id,
                         title=f"Task {number + 1}",

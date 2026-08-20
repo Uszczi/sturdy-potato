@@ -1,11 +1,12 @@
 from collections.abc import Mapping
 from typing import Any
 
-from sqlalchemy import func, update
+from sqlalchemy import func, insert, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import col, select
 
-from infrastructure.models import Project, Todo
+from infrastructure.models import Project, Task, utcnow
+from infrastructure.repositories._positioning import next_position_subquery
 from use_cases.dtos import ProjectCreateData
 from use_cases.entities import Project as ProjectEntity
 
@@ -35,8 +36,8 @@ class ProjectRepository:
     # Project reads carry a task_count aggregate, so they select the project
     # alongside a LEFT JOIN count of its tasks.
     _count_select = (
-        select(Project, func.count(col(Todo.id)))
-        .outerjoin(Todo, col(Todo.project_id) == col(Project.id))
+        select(Project, func.count(col(Task.id)))
+        .outerjoin(Task, col(Task.project_id) == col(Project.id))
         .group_by(col(Project.id))
     )
 
@@ -86,20 +87,24 @@ class ProjectRepository:
         return (await self._session.scalar(statement)) is not None
 
     async def create(self, user_id: int, data: ProjectCreateData) -> ProjectEntity:
-        max_position: int | None = await self._session.scalar(
-            select(func.max(col(Project.position))).where(
-                col(Project.user_id) == user_id
+        # Assign the next position inside the INSERT so concurrent creates can't
+        # read the same max and land on the same slot.
+        now = utcnow()
+        statement = (
+            insert(Project)
+            .values(
+                user_id=user_id,
+                name=data.name,
+                color=data.color,
+                position=next_position_subquery(
+                    col(Project.position), col(Project.user_id), user_id
+                ),
+                created_at=now,
+                updated_at=now,
             )
+            .returning(Project)
         )
-        project = Project(
-            user_id=user_id,
-            name=data.name,
-            color=data.color,
-            position=(max_position or -1) + 1,
-        )
-        self._session.add(project)
-        await self._session.flush()
-        await self._session.refresh(project)
+        project = (await self._session.scalars(statement)).one()
         # A freshly created project has no tasks yet.
         return _to_entity(project, 0)
 
@@ -122,8 +127,8 @@ class ProjectRepository:
         # Mirror the previous ON DELETE SET NULL: detach the project's tasks
         # before removing it so they survive as unassigned todos.
         await self._session.execute(
-            update(Todo)
-            .where(col(Todo.project_id) == project_id)
+            update(Task)
+            .where(col(Task.project_id) == project_id)
             .values(project_id=None)
         )
         await self._session.delete(project)

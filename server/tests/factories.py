@@ -3,7 +3,7 @@ from itertools import count
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from infrastructure.models import Project, Todo, User
+from infrastructure.models import Project, Task, User
 from infrastructure.security import password_hasher, token_service
 
 _user_counter = count(1)
@@ -61,8 +61,8 @@ async def create_task(
     position: int = 0,
     project: Project | None = None,
     due_date: date | None = None,
-) -> Todo:
-    task = Todo(
+) -> Task:
+    task = Task(
         user_id=user.id,
         project_id=project.id if project is not None else None,
         title=title or f"Task {next(_task_counter)}",

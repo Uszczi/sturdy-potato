@@ -53,7 +53,9 @@ class Project(SQLModel, table=True):
     updated_at: datetime = _updated_at_field()
 
 
-class Todo(SQLModel, table=True):
+class Task(SQLModel, table=True):
+    # The class is ``Task`` (matching the domain vocabulary), but the physical
+    # table keeps its original name so no data migration is needed.
     __tablename__ = "todos"
     __table_args__ = (
         # Matches the repository access patterns: list-all (user, position) and

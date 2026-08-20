@@ -15,11 +15,11 @@ from api.dependencies import (
 )
 from auth import CurrentUserId
 from schemas.order import ReorderInput
-from schemas.todo import (
+from schemas.task import (
     TaskCountSchema,
-    TodoCreateInput,
-    TodoSchema,
-    TodoUpdateInput,
+    TaskCreateInput,
+    TaskSchema,
+    TaskUpdateInput,
 )
 
 router = APIRouter(prefix="/tasks", tags=["tasks"])
@@ -28,17 +28,17 @@ router = APIRouter(prefix="/tasks", tags=["tasks"])
 @router.get("/", operation_id="api_tasks_list")
 async def list_tasks(
     user_id: CurrentUserId, use_case: ListTasksDep
-) -> list[TodoSchema]:
+) -> list[TaskSchema]:
     tasks = await use_case.execute(user_id)
-    return [TodoSchema.model_validate(task) for task in tasks]
+    return [TaskSchema.model_validate(task) for task in tasks]
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED, operation_id="api_tasks_create")
 async def create_task(
-    body: TodoCreateInput, user_id: CurrentUserId, use_case: CreateTaskDep
-) -> TodoSchema:
+    body: TaskCreateInput, user_id: CurrentUserId, use_case: CreateTaskDep
+) -> TaskSchema:
     task = await use_case.execute(user_id, body.to_domain())
-    return TodoSchema.model_validate(task)
+    return TaskSchema.model_validate(task)
 
 
 @router.get("/view/", operation_id="api_tasks_view_list")
@@ -47,9 +47,12 @@ async def view_tasks(
     use_case: ViewTasksDep,
     view: Annotated[Literal["inbox", "today", "upcoming", "all"], Query()] = "inbox",
     project: Annotated[int | None, Query()] = None,
-) -> list[TodoSchema]:
-    tasks = await use_case.execute(user_id, view=view, project_id=project)
-    return [TodoSchema.model_validate(task) for task in tasks]
+    # IANA name (e.g. "Europe/Warsaw") so "today"/"upcoming" resolve against the
+    # client's local day, not the server's. Defaults to UTC when omitted.
+    tz: Annotated[str, Query()] = "UTC",
+) -> list[TaskSchema]:
+    tasks = await use_case.execute(user_id, view=view, project_id=project, tz=tz)
+    return [TaskSchema.model_validate(task) for task in tasks]
 
 
 @router.get("/open/", operation_id="api_tasks_open_list")
@@ -57,9 +60,9 @@ async def open_tasks(
     user_id: CurrentUserId,
     use_case: ListOpenTasksDep,
     limit: Annotated[int | None, Query(ge=0)] = None,
-) -> list[TodoSchema]:
+) -> list[TaskSchema]:
     tasks = await use_case.execute(user_id, limit=limit)
-    return [TodoSchema.model_validate(task) for task in tasks]
+    return [TaskSchema.model_validate(task) for task in tasks]
 
 
 @router.get("/count/", operation_id="api_tasks_count_retrieve")
@@ -86,20 +89,20 @@ async def reorder_tasks(
 @router.get("/{id}/", operation_id="api_tasks_retrieve")
 async def retrieve_task(
     id: int, user_id: CurrentUserId, use_case: GetTaskDep
-) -> TodoSchema:
+) -> TaskSchema:
     task = await use_case.execute(user_id, id)
-    return TodoSchema.model_validate(task)
+    return TaskSchema.model_validate(task)
 
 
 @router.patch("/{id}/", operation_id="api_tasks_partial_update")
 async def update_task(
     id: int,
-    body: TodoUpdateInput,
+    body: TaskUpdateInput,
     user_id: CurrentUserId,
     use_case: UpdateTaskDep,
-) -> TodoSchema:
+) -> TaskSchema:
     task = await use_case.execute(user_id, id, body.to_domain())
-    return TodoSchema.model_validate(task)
+    return TaskSchema.model_validate(task)
 
 
 @router.delete(

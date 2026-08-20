@@ -16,6 +16,7 @@ from tests.fakes import (
     FakeUserRepository,
 )
 from use_cases.auth.authenticate_user import AuthenticateUser
+from use_cases.auth.get_current_user import GetCurrentUser
 from use_cases.auth.refresh_access_token import RefreshAccessToken
 from use_cases.dtos import (
     ProjectCreateData,
@@ -197,3 +198,29 @@ def test_refresh_rejects_a_non_refresh_token() -> None:
 
     with pytest.raises(InvalidToken):
         use_case.execute("access:7")
+
+
+def _get_current_user(user: User | None) -> GetCurrentUser:
+    users = FakeUserRepository([user] if user is not None else [])
+    return GetCurrentUser(users, FakeTokenIssuer())
+
+
+async def test_get_current_user_resolves_a_valid_access_token() -> None:
+    resolved = await _get_current_user(_user()).execute("access:1")
+
+    assert resolved.id == USER
+
+
+async def test_get_current_user_rejects_a_non_access_token() -> None:
+    with pytest.raises(InvalidToken):
+        await _get_current_user(_user()).execute("refresh:1")
+
+
+async def test_get_current_user_rejects_a_missing_user() -> None:
+    with pytest.raises(InvalidToken):
+        await _get_current_user(None).execute("access:1")
+
+
+async def test_get_current_user_rejects_an_inactive_user() -> None:
+    with pytest.raises(InvalidToken):
+        await _get_current_user(_user(is_active=False)).execute("access:1")

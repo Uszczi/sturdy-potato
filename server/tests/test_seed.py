@@ -2,7 +2,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from sqlmodel import select
 
 from cli import seed as seed_module
-from infrastructure.models import Project, Todo, User
+from infrastructure.models import Project, Task, User
 from tests.factories import create_user
 
 _EXPECTED_TODOS = sum(len(todos) for _, todos in seed_module.SEEDED_PROJECTS)
@@ -18,7 +18,7 @@ async def test_seed_creates_demo_user_and_data(
     )
     assert user is not None
     projects = list(await session.scalars(select(Project)))
-    todos = list(await session.scalars(select(Todo)))
+    todos = list(await session.scalars(select(Task)))
     assert len(projects) == len(seed_module.SEEDED_PROJECTS)
     assert len(todos) == _EXPECTED_TODOS
 
@@ -31,7 +31,7 @@ async def test_seed_is_idempotent(
     await seed_module.seed(session_maker)
 
     users = list(await session.scalars(select(User)))
-    todos = list(await session.scalars(select(Todo)))
+    todos = list(await session.scalars(select(Task)))
     assert len(users) == 1
     assert len(todos) == _EXPECTED_TODOS
 
@@ -64,7 +64,7 @@ async def test_seed_heavy_creates_projects_with_growing_tasks(
     )
 
     projects = list(await session.scalars(select(Project)))
-    todos = list(await session.scalars(select(Todo)))
+    todos = list(await session.scalars(select(Task)))
     assert len(projects) == 3
     # Counts ramp 1 -> 5 across 3 projects: [1, 3, 5] = 9 tasks.
     assert len(todos) == sum(seed_module._heavy_task_counts(3, 5))
@@ -80,7 +80,7 @@ async def test_seed_heavy_completed_ratio_zero_leaves_tasks_open(
         "heavy", "pw-123", 3, 5, completed_ratio=0.0, session_maker=session_maker
     )
 
-    todos = list(await session.scalars(select(Todo)))
+    todos = list(await session.scalars(select(Task)))
     assert todos
     assert not any(todo.completed for todo in todos)
     # A reproducible seed spreads some tasks across due dates.

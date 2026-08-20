@@ -25,6 +25,9 @@ class FakeUserRepository:
     async def get_by_username(self, username: str) -> User | None:
         return self._users.get(username)
 
+    async def get_by_id(self, user_id: int) -> User | None:
+        return next((u for u in self._users.values() if u.id == user_id), None)
+
 
 class FakePasswordHasher:
     """Stores hashes as ``"hash:<password>"`` so verify is a plain comparison."""
@@ -43,8 +46,13 @@ class FakeTokenIssuer:
     def refresh_token(self, user_id: int) -> str:
         return f"refresh:{user_id}"
 
+    def user_id_from_access(self, token: str) -> int:
+        return self._user_id(token, "access:")
+
     def user_id_from_refresh(self, token: str) -> int:
-        prefix = "refresh:"
+        return self._user_id(token, "refresh:")
+
+    def _user_id(self, token: str, prefix: str) -> int:
         if not token.startswith(prefix):
             raise InvalidToken()
         return int(token.removeprefix(prefix))

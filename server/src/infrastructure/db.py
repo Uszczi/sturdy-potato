@@ -10,7 +10,10 @@ from sqlalchemy.ext.asyncio import (
 
 from config import settings
 
-engine = create_async_engine(settings.database_url)
+# ``timeout`` is SQLite's busy timeout (seconds): with several Uvicorn workers
+# sharing one database file, a writer waits for the current one to finish
+# instead of failing immediately with "database is locked".
+engine = create_async_engine(settings.database_url, connect_args={"timeout": 30})
 
 async_session_maker = async_sessionmaker(engine, expire_on_commit=False)
 

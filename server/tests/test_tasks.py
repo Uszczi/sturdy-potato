@@ -1,4 +1,4 @@
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, date, datetime, timedelta
 
 from freezegun import freeze_time
 from httpx import AsyncClient
@@ -296,6 +296,18 @@ async def test_reorder_rejects_another_users_task(
     assert response.status_code == 400
 
 
+async def test_reorder_with_an_empty_order_is_a_noop(
+    client: AsyncClient, session: AsyncSession
+) -> None:
+    user = await create_user(session)
+
+    response = await client.post(
+        "/api/tasks/reorder/", headers=auth_headers(user), json={"order": []}
+    )
+
+    assert response.status_code == 204
+
+
 async def test_reorder_rejects_duplicate_ids(
     client: AsyncClient, session: AsyncSession
 ) -> None:
@@ -380,6 +392,41 @@ async def test_view_today_and_upcoming(
     assert [t["title"] for t in upcoming_response.json()] == ["Due later"]
 
 
+@freeze_time("2026-08-19 23:30:00")
+async def test_view_today_respects_client_timezone(
+    client: AsyncClient, session: AsyncSession
+) -> None:
+    # At this instant it is still Aug 19 in UTC but already Aug 20 in UTC+14.
+    user = await create_user(session)
+    await create_task(session, user, title="Local tomorrow", due_date=date(2026, 8, 20))
+
+    default_view = await client.get(
+        "/api/tasks/view/", headers=auth_headers(user), params={"view": "today"}
+    )
+    ahead_view = await client.get(
+        "/api/tasks/view/",
+        headers=auth_headers(user),
+        params={"view": "today", "tz": "Pacific/Kiritimati"},
+    )
+
+    assert [t["title"] for t in default_view.json()] == []
+    assert [t["title"] for t in ahead_view.json()] == ["Local tomorrow"]
+
+
+async def test_view_rejects_an_unknown_timezone(
+    client: AsyncClient, session: AsyncSession
+) -> None:
+    user = await create_user(session)
+
+    response = await client.get(
+        "/api/tasks/view/",
+        headers=auth_headers(user),
+        params={"view": "today", "tz": "Mars/Phobos"},
+    )
+
+    assert response.status_code == 400
+
+
 async def test_view_all_returns_everything(
     client: AsyncClient, session: AsyncSession
 ) -> None:
@@ -424,3 +471,52 @@ async def test_count_tasks(client: AsyncClient, session: AsyncSession) -> None:
 
     assert total.json() == {"count": 2}
     assert open_only.json() == {"count": 1}
+
+
+async def test_cannot_retrieve_another_users_task(
+    client: AsyncClient, session: AsyncSession
+) -> None:
+    owner = await create_user(session)
+    task = await create_task(session, owner, title="Private")
+    intruder = await create_user(session)
+
+    response = await client.get(
+        f"/api/tasks/{task.id}/", headers=auth_headers(intruder)
+    )
+
+    assert response.status_code == 404
+
+
+async def test_cannot_update_another_users_task(
+    client: AsyncClient, session: AsyncSession
+) -> None:
+    owner = await create_user(session)
+    task = await create_task(session, owner, title="Private")
+    intruder = await create_user(session)
+
+    response = await client.patch(
+        f"/api/tasks/{task.id}/",
+        headers=auth_headers(intruder),
+        json={"title": "Hijacked"},
+    )
+
+    assert response.status_code == 404
+
+
+async def test_cannot_delete_another_users_task(
+    client: AsyncClient, session: AsyncSession
+) -> None:
+    owner = await create_user(session)
+    task = await create_task(session, owner, title="Private")
+    intruder = await create_user(session)
+
+    response = await client.delete(
+        f"/api/tasks/{task.id}/", headers=auth_headers(intruder)
+    )
+
+    assert response.status_code == 404
+    # The owner can still see it: the delete never touched their row.
+    still_there = await client.get(
+        f"/api/tasks/{task.id}/", headers=auth_headers(owner)
+    )
+    assert still_there.status_code == 200

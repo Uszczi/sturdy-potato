@@ -1,6 +1,11 @@
+from typing import ClassVar
+
+
 class UseCaseError(Exception):
     status_code = 400
     detail = "Error."
+    # Extra HTTP headers to attach when this error is mapped to a response.
+    headers: ClassVar[dict[str, str] | None] = None
 
     def __init__(self, detail: str | None = None) -> None:
         if detail is not None:
@@ -16,6 +21,7 @@ class NotFoundError(UseCaseError):
 class AuthenticationError(UseCaseError):
     status_code = 401
     detail = "Not authenticated."
+    headers: ClassVar[dict[str, str] | None] = {"WWW-Authenticate": "Bearer"}
 
 
 class InvalidCredentials(AuthenticationError):
@@ -46,3 +52,8 @@ class ProjectNameConflict(ConflictError):
 class InvalidReorder(UseCaseError):
     status_code = 400
     detail = "Order contains items outside this user."
+
+
+class InvalidTimezone(UseCaseError):
+    status_code = 400
+    detail = "Unknown time zone."

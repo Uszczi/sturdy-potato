@@ -8,7 +8,7 @@ from starlette.requests import Request
 
 from config import settings
 from infrastructure.db import async_session_maker, engine
-from infrastructure.models import Project, Todo, User
+from infrastructure.models import Project, Task, User
 from infrastructure.security import password_hasher
 
 
@@ -59,9 +59,9 @@ class ProjectAdmin(ModelView, model=Project):
     column_list: ClassVar = ["id", "user_id", "name", "color", "position"]
 
 
-class TodoAdmin(ModelView, model=Todo):
-    name = "Todo"
-    name_plural = "Todos"
+class TaskAdmin(ModelView, model=Task):
+    name = "Task"
+    name_plural = "Tasks"
     icon = "fa-solid fa-list-check"
     column_list: ClassVar = ["id", "user_id", "title", "completed", "due_date"]
 
@@ -74,5 +74,5 @@ def setup_admin(app: FastAPI) -> Admin:
     )
     admin.add_view(UserAdmin)
     admin.add_view(ProjectAdmin)
-    admin.add_view(TodoAdmin)
+    admin.add_view(TaskAdmin)
     return admin
