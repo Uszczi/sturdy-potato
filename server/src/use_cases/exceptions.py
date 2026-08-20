@@ -45,6 +45,10 @@ class ProjectNotFound(NotFoundError):
     detail = "Project not found."
 
 
+class CommentNotFound(NotFoundError):
+    detail = "Not found."
+
+
 class ProjectNameConflict(ConflictError):
     detail = "A project with this name already exists."
 

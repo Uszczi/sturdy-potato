@@ -60,6 +60,16 @@ class TaskUpdateData:
 
 
 @dataclass(frozen=True)
+class CommentCreateData:
+    body: str
+
+
+@dataclass(frozen=True)
+class CommentUpdateData:
+    body: str
+
+
+@dataclass(frozen=True)
 class ProjectCreateData:
     name: str
     color: str | None

@@ -10,8 +10,8 @@ from collections.abc import Mapping
 from datetime import date
 from typing import Any, Protocol
 
-from use_cases.dtos import ProjectCreateData, TaskCreateData
-from use_cases.entities import Project, Task, User
+from use_cases.dtos import CommentCreateData, ProjectCreateData, TaskCreateData
+from use_cases.entities import Comment, Project, Task, User
 from use_cases.task_status import TaskStatus
 
 
@@ -67,6 +67,22 @@ class TaskRepository(Protocol):
     async def set_positions(
         self, user_id: int, positions: Mapping[int, int]
     ) -> None: ...
+
+
+class CommentRepository(Protocol):
+    async def list_for_task(self, user_id: int, task_id: int) -> list[Comment]: ...
+
+    async def get(self, user_id: int, comment_id: int) -> Comment | None: ...
+
+    async def create(
+        self, user_id: int, task_id: int, data: CommentCreateData
+    ) -> Comment: ...
+
+    async def update(
+        self, user_id: int, comment_id: int, changes: Mapping[str, Any]
+    ) -> Comment | None: ...
+
+    async def delete(self, user_id: int, comment_id: int) -> bool: ...
 
 
 class ProjectRepository(Protocol):

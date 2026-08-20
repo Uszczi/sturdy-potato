@@ -35,6 +35,16 @@ class Task:
 
 
 @dataclass(frozen=True)
+class Comment:
+    id: int
+    task_id: int
+    user_id: int
+    body: str
+    created_at: datetime
+    updated_at: datetime
+
+
+@dataclass(frozen=True)
 class Project:
     id: int
     user_id: int

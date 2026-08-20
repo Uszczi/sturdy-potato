@@ -9,8 +9,8 @@ from collections.abc import Mapping
 from datetime import UTC, date, datetime
 from typing import Any
 
-from use_cases.dtos import ProjectCreateData, TaskCreateData
-from use_cases.entities import Project, Task, User
+from use_cases.dtos import CommentCreateData, ProjectCreateData, TaskCreateData
+from use_cases.entities import Comment, Project, Task, User
 from use_cases.exceptions import InvalidToken
 from use_cases.task_status import TaskStatus
 
@@ -167,6 +167,56 @@ class FakeTaskRepository:
 
     def _owned(self, user_id: int) -> list[Task]:
         return [t for t in self._tasks.values() if t.user_id == user_id]
+
+
+class FakeCommentRepository:
+    def __init__(self, comments: list[Comment] | None = None) -> None:
+        self._comments: dict[int, Comment] = {c.id: c for c in comments or []}
+        self._next_id = max(self._comments, default=0) + 1
+
+    async def list_for_task(self, user_id: int, task_id: int) -> list[Comment]:
+        owned = [
+            c
+            for c in self._comments.values()
+            if c.user_id == user_id and c.task_id == task_id
+        ]
+        return sorted(owned, key=lambda c: (c.created_at, c.id))
+
+    async def get(self, user_id: int, comment_id: int) -> Comment | None:
+        comment = self._comments.get(comment_id)
+        return comment if comment is not None and comment.user_id == user_id else None
+
+    async def create(
+        self, user_id: int, task_id: int, data: CommentCreateData
+    ) -> Comment:
+        comment = Comment(
+            id=self._next_id,
+            task_id=task_id,
+            user_id=user_id,
+            body=data.body,
+            created_at=_now(),
+            updated_at=_now(),
+        )
+        self._comments[comment.id] = comment
+        self._next_id += 1
+        return comment
+
+    async def update(
+        self, user_id: int, comment_id: int, changes: Mapping[str, Any]
+    ) -> Comment | None:
+        existing = await self.get(user_id, comment_id)
+        if existing is None:
+            return None
+        fields = {**existing.__dict__, **changes, "updated_at": _now()}
+        updated = Comment(**fields)
+        self._comments[comment_id] = updated
+        return updated
+
+    async def delete(self, user_id: int, comment_id: int) -> bool:
+        if await self.get(user_id, comment_id) is None:
+            return False
+        del self._comments[comment_id]
+        return True
 
 
 class FakeProjectRepository:

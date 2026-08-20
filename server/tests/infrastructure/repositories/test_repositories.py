@@ -7,7 +7,7 @@ port contract (the fakes honour it), so exercise it directly here.
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from infrastructure.repositories import TaskRepository
+from infrastructure.repositories import CommentRepository, TaskRepository
 
 
 async def test_update_returns_none_for_a_missing_task(session: AsyncSession) -> None:
@@ -16,3 +16,21 @@ async def test_update_returns_none_for_a_missing_task(session: AsyncSession) -> 
     result = await repository.update(user_id=1, task_id=999, changes={"title": "x"})
 
     assert result is None
+
+
+async def test_comment_update_returns_none_for_a_missing_comment(
+    session: AsyncSession,
+) -> None:
+    repository = CommentRepository(session)
+
+    result = await repository.update(user_id=1, comment_id=999, changes={"body": "x"})
+
+    assert result is None
+
+
+async def test_comment_delete_returns_false_for_a_missing_comment(
+    session: AsyncSession,
+) -> None:
+    repository = CommentRepository(session)
+
+    assert await repository.delete(user_id=1, comment_id=999) is False

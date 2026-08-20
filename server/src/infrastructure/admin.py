@@ -8,7 +8,7 @@ from starlette.requests import Request
 
 from config import settings
 from infrastructure.db import async_session_maker, engine
-from infrastructure.models import Project, Task, User
+from infrastructure.models import Comment, Project, Task, User
 from infrastructure.security import password_hasher
 
 
@@ -66,6 +66,13 @@ class TaskAdmin(ModelView, model=Task):
     column_list: ClassVar = ["id", "user_id", "title", "status", "due_date"]
 
 
+class CommentAdmin(ModelView, model=Comment):
+    name = "Comment"
+    name_plural = "Comments"
+    icon = "fa-solid fa-comment"
+    column_list: ClassVar = ["id", "task_id", "user_id", "created_at"]
+
+
 def setup_admin(app: FastAPI) -> Admin:
     admin = Admin(
         app,
@@ -75,4 +82,5 @@ def setup_admin(app: FastAPI) -> Admin:
     admin.add_view(UserAdmin)
     admin.add_view(ProjectAdmin)
     admin.add_view(TaskAdmin)
+    admin.add_view(CommentAdmin)
     return admin

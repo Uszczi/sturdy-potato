@@ -3,6 +3,7 @@ from datetime import date
 import pytest
 from pydantic import ValidationError
 
+from schemas.comment import CommentCreateInput, CommentUpdateInput
 from schemas.order import ReorderInput
 from schemas.project import ProjectCreateInput, ProjectUpdateInput
 from schemas.task import TaskCreateInput, TaskUpdateInput
@@ -70,6 +71,24 @@ def test_project_update_strips_name() -> None:
 def test_project_update_rejects_a_non_string_name() -> None:
     with pytest.raises(ValidationError):
         ProjectUpdateInput(name=123)
+
+
+def test_comment_create_strips_body() -> None:
+    assert CommentCreateInput(body="  Nice work  ").body == "Nice work"
+
+
+def test_comment_create_rejects_a_blank_body() -> None:
+    with pytest.raises(ValidationError):
+        CommentCreateInput(body="   ")
+
+
+def test_comment_update_strips_body() -> None:
+    assert CommentUpdateInput(body="  Edited  ").body == "Edited"
+
+
+def test_comment_update_rejects_a_blank_body() -> None:
+    with pytest.raises(ValidationError):
+        CommentUpdateInput(body="")
 
 
 def test_reorder_accepts_unique_ids() -> None:

@@ -3,15 +3,16 @@
 A FastAPI backend for a React todo SPA. The server is organized as:
 
 - `server/src/main.py` builds the FastAPI app and wires the routers.
-- `server/src/api/routes/` owns the HTTP layer (`/api/tasks/`, `/api/projects/`, `/api/token/`, `/api/register/`, `/api/time/`).
+- `server/src/api/routes/` owns the HTTP layer (`/api/tasks/`, `/api/tasks/{id}/comments/`, `/api/projects/`, `/api/token/`, `/api/register/`, `/api/time/`).
 - `server/src/infrastructure/cache.py` holds the async Redis client used for caching.
 - `server/src/repositories/` holds the async SQLAlchemy data access, one class per aggregate.
-- `server/src/models.py` defines the SQLModel tables (`User`, `Project`, `Todo`).
+- `server/src/models.py` defines the SQLModel tables (`User`, `Project`, `Todo`, `Comment`).
 - `server/src/schemas/` contains the Pydantic request/response models.
 - `server/src/auth.py` handles password hashing (argon2) and JWT issue/verify.
 - `server/src/seed.py` seeds the demo user and example data.
 
 Projects belong to one user, and tasks may be assigned to one of that user's projects.
+Tasks can carry comments; deleting a task cascades to its comments.
 Schema changes are versioned with Alembic (`server/src/infrastructure/alembic/`).
 Python tooling (`pyproject.toml`, `uv.lock`, `Dockerfile`) lives under `server/`.
 

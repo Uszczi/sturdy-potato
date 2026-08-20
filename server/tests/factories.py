@@ -3,13 +3,14 @@ from itertools import count
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from infrastructure.models import Project, Task, User
+from infrastructure.models import Comment, Project, Task, User
 from infrastructure.security import password_hasher, token_service
 from use_cases.task_status import TaskStatus
 
 _user_counter = count(1)
 _project_counter = count(1)
 _task_counter = count(1)
+_comment_counter = count(1)
 
 
 async def create_user(
@@ -76,6 +77,24 @@ async def create_task(
     await session.commit()
     await session.refresh(task)
     return task
+
+
+async def create_comment(
+    session: AsyncSession,
+    user: User,
+    task: Task,
+    *,
+    body: str | None = None,
+) -> Comment:
+    comment = Comment(
+        task_id=task.id,
+        user_id=user.id,
+        body=body or f"Comment {next(_comment_counter)}",
+    )
+    session.add(comment)
+    await session.commit()
+    await session.refresh(comment)
+    return comment
 
 
 def auth_headers(user: User) -> dict[str, str]:

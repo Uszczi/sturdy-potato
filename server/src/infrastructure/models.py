@@ -1,7 +1,7 @@
 from datetime import UTC, date, datetime
 from typing import Any
 
-from sqlalchemy import Column, DateTime, Index, UniqueConstraint
+from sqlalchemy import Column, DateTime, ForeignKey, Index, Integer, UniqueConstraint
 from sqlmodel import Field, SQLModel
 
 from use_cases.task_status import TaskStatus
@@ -77,5 +77,29 @@ class Task(SQLModel, table=True):
     status: str = Field(default=TaskStatus.OPEN, max_length=20)
     position: int = 0
     due_date: date | None = None
+    created_at: datetime = _created_at_field()
+    updated_at: datetime = _updated_at_field()
+
+
+class Comment(SQLModel, table=True):
+    __tablename__ = "comments"
+    __table_args__ = (
+        # Comments are always read as one task's thread, oldest first.
+        Index("ix_comment_task_created", "task_id", "created_at"),
+    )
+
+    id: int | None = Field(default=None, primary_key=True)
+    # ON DELETE CASCADE so deleting a task takes its comments with it; the DB
+    # does the cleanup, so no ORM relationship is needed on the delete path.
+    task_id: int = Field(
+        sa_column=Column(
+            Integer,
+            ForeignKey("todos.id", ondelete="CASCADE"),
+            nullable=False,
+        )
+    )
+    # The author; always the task owner today, kept explicit for future sharing.
+    user_id: int = Field(foreign_key="users.id")
+    body: str = Field(max_length=2000)
     created_at: datetime = _created_at_field()
     updated_at: datetime = _updated_at_field()

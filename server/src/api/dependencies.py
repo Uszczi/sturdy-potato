@@ -9,6 +9,7 @@ from infrastructure.repositories import UserRepository
 from infrastructure.security import password_hasher, token_service
 from infrastructure.unit_of_work import UnitOfWork
 from use_cases import auth as auth_use_cases
+from use_cases import comments as comment_use_cases
 from use_cases import projects as project_use_cases
 from use_cases import tasks as task_use_cases
 
@@ -112,6 +113,27 @@ ReorderTasksDep = Annotated[
     Depends(_use_case(lambda uow: task_use_cases.ReorderTasks(uow.tasks))),
 ]
 
+ListCommentsDep = Annotated[
+    comment_use_cases.ListComments,
+    Depends(
+        _use_case(lambda uow: comment_use_cases.ListComments(uow.comments, uow.tasks))
+    ),
+]
+CreateCommentDep = Annotated[
+    comment_use_cases.CreateComment,
+    Depends(
+        _use_case(lambda uow: comment_use_cases.CreateComment(uow.comments, uow.tasks))
+    ),
+]
+UpdateCommentDep = Annotated[
+    comment_use_cases.UpdateComment,
+    Depends(_use_case(lambda uow: comment_use_cases.UpdateComment(uow.comments))),
+]
+DeleteCommentDep = Annotated[
+    comment_use_cases.DeleteComment,
+    Depends(_use_case(lambda uow: comment_use_cases.DeleteComment(uow.comments))),
+]
+
 ListProjectsDep = Annotated[
     project_use_cases.ListProjects,
     Depends(_use_case(lambda uow: project_use_cases.ListProjects(uow.projects))),
@@ -140,14 +162,17 @@ ReorderProjectsDep = Annotated[
 __all__ = [
     "AuthenticateUserDep",
     "CountTasksDep",
+    "CreateCommentDep",
     "CreateProjectDep",
     "CreateTaskDep",
     "CurrentUser",
     "CurrentUserId",
+    "DeleteCommentDep",
     "DeleteProjectDep",
     "DeleteTaskDep",
     "GetProjectDep",
     "GetTaskDep",
+    "ListCommentsDep",
     "ListOpenTasksDep",
     "ListProjectsDep",
     "ListTasksDep",
@@ -157,6 +182,7 @@ __all__ = [
     "ReorderTasksDep",
     "SessionDep",
     "UnitOfWorkDep",
+    "UpdateCommentDep",
     "UpdateProjectDep",
     "UpdateTaskDep",
     "UserRepositoryDep",
