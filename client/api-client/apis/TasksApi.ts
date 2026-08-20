@@ -29,27 +29,27 @@ import {
     TaskCountSchemaToJSON,
 } from '../models/TaskCountSchema';
 import {
-    type TodoCreateInput,
-    TodoCreateInputFromJSON,
-    TodoCreateInputToJSON,
-} from '../models/TodoCreateInput';
+    type TaskCreateInput,
+    TaskCreateInputFromJSON,
+    TaskCreateInputToJSON,
+} from '../models/TaskCreateInput';
 import {
-    type TodoSchema,
-    TodoSchemaFromJSON,
-    TodoSchemaToJSON,
-} from '../models/TodoSchema';
+    type TaskSchema,
+    TaskSchemaFromJSON,
+    TaskSchemaToJSON,
+} from '../models/TaskSchema';
 import {
-    type TodoUpdateInput,
-    TodoUpdateInputFromJSON,
-    TodoUpdateInputToJSON,
-} from '../models/TodoUpdateInput';
+    type TaskUpdateInput,
+    TaskUpdateInputFromJSON,
+    TaskUpdateInputToJSON,
+} from '../models/TaskUpdateInput';
 
 export interface ApiTasksCountRetrieveRequest {
     completed?: boolean | null;
 }
 
 export interface ApiTasksCreateRequest {
-    todoCreateInput: TodoCreateInput;
+    taskCreateInput: TaskCreateInput;
 }
 
 export interface ApiTasksDestroyRequest {
@@ -62,7 +62,7 @@ export interface ApiTasksOpenListRequest {
 
 export interface ApiTasksPartialUpdateRequest {
     id: number;
-    todoUpdateInput: TodoUpdateInput;
+    taskUpdateInput: TaskUpdateInput;
 }
 
 export interface ApiTasksReorderCreateRequest {
@@ -76,6 +76,7 @@ export interface ApiTasksRetrieveRequest {
 export interface ApiTasksViewListRequest {
     view?: ApiTasksViewListViewEnum;
     project?: number | null;
+    tz?: string;
 }
 
 /**
@@ -136,10 +137,10 @@ export class TasksApi extends runtime.BaseAPI {
      * Creates request options for apiTasksCreate without sending the request
      */
     async apiTasksCreateRequestOpts(requestParameters: ApiTasksCreateRequest): Promise<runtime.RequestOpts> {
-        if (requestParameters['todoCreateInput'] == null) {
+        if (requestParameters['taskCreateInput'] == null) {
             throw new runtime.RequiredError(
-                'todoCreateInput',
-                'Required parameter "todoCreateInput" was null or undefined when calling apiTasksCreate().'
+                'taskCreateInput',
+                'Required parameter "taskCreateInput" was null or undefined when calling apiTasksCreate().'
             );
         }
 
@@ -165,24 +166,24 @@ export class TasksApi extends runtime.BaseAPI {
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: TodoCreateInputToJSON(requestParameters['todoCreateInput']),
+            body: TaskCreateInputToJSON(requestParameters['taskCreateInput']),
         };
     }
 
     /**
      * Create Task
      */
-    async apiTasksCreateRaw(requestParameters: ApiTasksCreateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TodoSchema>> {
+    async apiTasksCreateRaw(requestParameters: ApiTasksCreateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TaskSchema>> {
         const requestOptions = await this.apiTasksCreateRequestOpts(requestParameters);
         const response = await this.request(requestOptions, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => TodoSchemaFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => TaskSchemaFromJSON(jsonValue));
     }
 
     /**
      * Create Task
      */
-    async apiTasksCreate(requestParameters: ApiTasksCreateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TodoSchema> {
+    async apiTasksCreate(requestParameters: ApiTasksCreateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TaskSchema> {
         const response = await this.apiTasksCreateRaw(requestParameters, initOverrides);
         return await response.value();
     }
@@ -269,17 +270,17 @@ export class TasksApi extends runtime.BaseAPI {
     /**
      * List Tasks
      */
-    async apiTasksListRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<TodoSchema>>> {
+    async apiTasksListRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<TaskSchema>>> {
         const requestOptions = await this.apiTasksListRequestOpts();
         const response = await this.request(requestOptions, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(TodoSchemaFromJSON));
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(TaskSchemaFromJSON));
     }
 
     /**
      * List Tasks
      */
-    async apiTasksList(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<TodoSchema>> {
+    async apiTasksList(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<TaskSchema>> {
         const response = await this.apiTasksListRaw(initOverrides);
         return await response.value();
     }
@@ -318,17 +319,17 @@ export class TasksApi extends runtime.BaseAPI {
     /**
      * Open Tasks
      */
-    async apiTasksOpenListRaw(requestParameters: ApiTasksOpenListRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<TodoSchema>>> {
+    async apiTasksOpenListRaw(requestParameters: ApiTasksOpenListRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<TaskSchema>>> {
         const requestOptions = await this.apiTasksOpenListRequestOpts(requestParameters);
         const response = await this.request(requestOptions, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(TodoSchemaFromJSON));
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(TaskSchemaFromJSON));
     }
 
     /**
      * Open Tasks
      */
-    async apiTasksOpenList(requestParameters: ApiTasksOpenListRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<TodoSchema>> {
+    async apiTasksOpenList(requestParameters: ApiTasksOpenListRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<TaskSchema>> {
         const response = await this.apiTasksOpenListRaw(requestParameters, initOverrides);
         return await response.value();
     }
@@ -344,10 +345,10 @@ export class TasksApi extends runtime.BaseAPI {
             );
         }
 
-        if (requestParameters['todoUpdateInput'] == null) {
+        if (requestParameters['taskUpdateInput'] == null) {
             throw new runtime.RequiredError(
-                'todoUpdateInput',
-                'Required parameter "todoUpdateInput" was null or undefined when calling apiTasksPartialUpdate().'
+                'taskUpdateInput',
+                'Required parameter "taskUpdateInput" was null or undefined when calling apiTasksPartialUpdate().'
             );
         }
 
@@ -374,24 +375,24 @@ export class TasksApi extends runtime.BaseAPI {
             method: 'PATCH',
             headers: headerParameters,
             query: queryParameters,
-            body: TodoUpdateInputToJSON(requestParameters['todoUpdateInput']),
+            body: TaskUpdateInputToJSON(requestParameters['taskUpdateInput']),
         };
     }
 
     /**
      * Update Task
      */
-    async apiTasksPartialUpdateRaw(requestParameters: ApiTasksPartialUpdateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TodoSchema>> {
+    async apiTasksPartialUpdateRaw(requestParameters: ApiTasksPartialUpdateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TaskSchema>> {
         const requestOptions = await this.apiTasksPartialUpdateRequestOpts(requestParameters);
         const response = await this.request(requestOptions, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => TodoSchemaFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => TaskSchemaFromJSON(jsonValue));
     }
 
     /**
      * Update Task
      */
-    async apiTasksPartialUpdate(requestParameters: ApiTasksPartialUpdateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TodoSchema> {
+    async apiTasksPartialUpdate(requestParameters: ApiTasksPartialUpdateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TaskSchema> {
         const response = await this.apiTasksPartialUpdateRaw(requestParameters, initOverrides);
         return await response.value();
     }
@@ -488,17 +489,17 @@ export class TasksApi extends runtime.BaseAPI {
     /**
      * Retrieve Task
      */
-    async apiTasksRetrieveRaw(requestParameters: ApiTasksRetrieveRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TodoSchema>> {
+    async apiTasksRetrieveRaw(requestParameters: ApiTasksRetrieveRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TaskSchema>> {
         const requestOptions = await this.apiTasksRetrieveRequestOpts(requestParameters);
         const response = await this.request(requestOptions, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => TodoSchemaFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => TaskSchemaFromJSON(jsonValue));
     }
 
     /**
      * Retrieve Task
      */
-    async apiTasksRetrieve(requestParameters: ApiTasksRetrieveRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TodoSchema> {
+    async apiTasksRetrieve(requestParameters: ApiTasksRetrieveRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TaskSchema> {
         const response = await this.apiTasksRetrieveRaw(requestParameters, initOverrides);
         return await response.value();
     }
@@ -515,6 +516,10 @@ export class TasksApi extends runtime.BaseAPI {
 
         if (requestParameters['project'] != null) {
             queryParameters['project'] = requestParameters['project'];
+        }
+
+        if (requestParameters['tz'] != null) {
+            queryParameters['tz'] = requestParameters['tz'];
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -541,17 +546,17 @@ export class TasksApi extends runtime.BaseAPI {
     /**
      * View Tasks
      */
-    async apiTasksViewListRaw(requestParameters: ApiTasksViewListRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<TodoSchema>>> {
+    async apiTasksViewListRaw(requestParameters: ApiTasksViewListRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<TaskSchema>>> {
         const requestOptions = await this.apiTasksViewListRequestOpts(requestParameters);
         const response = await this.request(requestOptions, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(TodoSchemaFromJSON));
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(TaskSchemaFromJSON));
     }
 
     /**
      * View Tasks
      */
-    async apiTasksViewList(requestParameters: ApiTasksViewListRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<TodoSchema>> {
+    async apiTasksViewList(requestParameters: ApiTasksViewListRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<TaskSchema>> {
         const response = await this.apiTasksViewListRaw(requestParameters, initOverrides);
         return await response.value();
     }

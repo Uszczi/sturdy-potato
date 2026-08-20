@@ -88,7 +88,7 @@ example().catch(console.error);
 
 ## apiTasksCreate
 
-> TodoSchema apiTasksCreate(todoCreateInput)
+> TaskSchema apiTasksCreate(taskCreateInput)
 
 Create Task
 
@@ -110,8 +110,8 @@ async function example() {
   const api = new TasksApi(config);
 
   const body = {
-    // TodoCreateInput
-    todoCreateInput: ...,
+    // TaskCreateInput
+    taskCreateInput: ...,
   } satisfies ApiTasksCreateRequest;
 
   try {
@@ -131,11 +131,11 @@ example().catch(console.error);
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **todoCreateInput** | [TodoCreateInput](TodoCreateInput.md) |  | |
+| **taskCreateInput** | [TaskCreateInput](TaskCreateInput.md) |  | |
 
 ### Return type
 
-[**TodoSchema**](TodoSchema.md)
+[**TaskSchema**](TaskSchema.md)
 
 ### Authorization
 
@@ -228,7 +228,7 @@ example().catch(console.error);
 
 ## apiTasksList
 
-> Array&lt;TodoSchema&gt; apiTasksList()
+> Array&lt;TaskSchema&gt; apiTasksList()
 
 List Tasks
 
@@ -267,7 +267,7 @@ This endpoint does not need any parameter.
 
 ### Return type
 
-[**Array&lt;TodoSchema&gt;**](TodoSchema.md)
+[**Array&lt;TaskSchema&gt;**](TaskSchema.md)
 
 ### Authorization
 
@@ -289,7 +289,7 @@ This endpoint does not need any parameter.
 
 ## apiTasksOpenList
 
-> Array&lt;TodoSchema&gt; apiTasksOpenList(limit)
+> Array&lt;TaskSchema&gt; apiTasksOpenList(limit)
 
 Open Tasks
 
@@ -336,7 +336,7 @@ example().catch(console.error);
 
 ### Return type
 
-[**Array&lt;TodoSchema&gt;**](TodoSchema.md)
+[**Array&lt;TaskSchema&gt;**](TaskSchema.md)
 
 ### Authorization
 
@@ -359,7 +359,7 @@ example().catch(console.error);
 
 ## apiTasksPartialUpdate
 
-> TodoSchema apiTasksPartialUpdate(id, todoUpdateInput)
+> TaskSchema apiTasksPartialUpdate(id, taskUpdateInput)
 
 Update Task
 
@@ -383,8 +383,8 @@ async function example() {
   const body = {
     // number
     id: 56,
-    // TodoUpdateInput
-    todoUpdateInput: ...,
+    // TaskUpdateInput
+    taskUpdateInput: ...,
   } satisfies ApiTasksPartialUpdateRequest;
 
   try {
@@ -405,11 +405,11 @@ example().catch(console.error);
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **id** | `number` |  | [Defaults to `undefined`] |
-| **todoUpdateInput** | [TodoUpdateInput](TodoUpdateInput.md) |  | |
+| **taskUpdateInput** | [TaskUpdateInput](TaskUpdateInput.md) |  | |
 
 ### Return type
 
-[**TodoSchema**](TodoSchema.md)
+[**TaskSchema**](TaskSchema.md)
 
 ### Authorization
 
@@ -502,7 +502,7 @@ example().catch(console.error);
 
 ## apiTasksRetrieve
 
-> TodoSchema apiTasksRetrieve(id)
+> TaskSchema apiTasksRetrieve(id)
 
 Retrieve Task
 
@@ -549,7 +549,7 @@ example().catch(console.error);
 
 ### Return type
 
-[**TodoSchema**](TodoSchema.md)
+[**TaskSchema**](TaskSchema.md)
 
 ### Authorization
 
@@ -572,7 +572,7 @@ example().catch(console.error);
 
 ## apiTasksViewList
 
-> Array&lt;TodoSchema&gt; apiTasksViewList(view, project)
+> Array&lt;TaskSchema&gt; apiTasksViewList(view, project, tz)
 
 View Tasks
 
@@ -598,6 +598,8 @@ async function example() {
     view: view_example,
     // number (optional)
     project: 56,
+    // string (optional)
+    tz: tz_example,
   } satisfies ApiTasksViewListRequest;
 
   try {
@@ -619,10 +621,11 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **view** | `inbox`, `today`, `upcoming`, `all` |  | [Optional] [Defaults to `&#39;inbox&#39;`] [Enum: inbox, today, upcoming, all] |
 | **project** | `number` |  | [Optional] [Defaults to `undefined`] |
+| **tz** | `string` |  | [Optional] [Defaults to `&#39;UTC&#39;`] |
 
 ### Return type
 
-[**Array&lt;TodoSchema&gt;**](TodoSchema.md)
+[**Array&lt;TaskSchema&gt;**](TaskSchema.md)
 
 ### Authorization
 

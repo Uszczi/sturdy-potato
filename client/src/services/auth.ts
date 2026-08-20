@@ -19,6 +19,23 @@ export async function login(username: string, password: string): Promise<void> {
   localStorage.setItem(USERNAME_KEY, username);
 }
 
+/**
+ * Create an account and sign in with it. The API returns a JWT pair on success
+ * (same shape as login), so registering leaves the user authenticated. Throws a
+ * `ResponseError` if the API rejects the request (e.g. 400 for a taken username).
+ */
+export async function register(
+  username: string,
+  password: string,
+): Promise<void> {
+  const tokens = await api.apiRegisterCreate({
+    userRegister: { username, password },
+  });
+  localStorage.setItem(ACCESS_KEY, tokens.access);
+  localStorage.setItem(REFRESH_KEY, tokens.refresh);
+  localStorage.setItem(USERNAME_KEY, username);
+}
+
 /** Drop the stored tokens. JWTs are stateless, so this is a client-side sign-out. */
 export function logout(): void {
   localStorage.removeItem(ACCESS_KEY);

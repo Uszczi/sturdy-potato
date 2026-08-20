@@ -1,36 +1,24 @@
 
-# TodoSchema
+# UserRegister
 
 
 ## Properties
 
 Name | Type
 ------------ | -------------
-`id` | number
-`title` | string
-`description` | string
-`completed` | boolean
-`projectId` | number
-`dueDate` | Date
-`createdAt` | Date
-`updatedAt` | Date
+`username` | string
+`password` | string
 
 ## Example
 
 ```typescript
-import type { TodoSchema } from ''
+import type { UserRegister } from ''
 
 // TODO: Update the object below with actual values
 const example = {
-  "id": null,
-  "title": null,
-  "description": null,
-  "completed": null,
-  "projectId": null,
-  "dueDate": null,
-  "createdAt": null,
-  "updatedAt": null,
-} satisfies TodoSchema
+  "username": null,
+  "password": null,
+} satisfies UserRegister
 
 console.log(example)
 
@@ -39,7 +27,7 @@ const exampleJSON: string = JSON.stringify(example)
 console.log(exampleJSON)
 
 // Parse the JSON string back to an object
-const exampleParsed = JSON.parse(exampleJSON) as TodoSchema
+const exampleParsed = JSON.parse(exampleJSON) as UserRegister
 console.log(exampleParsed)
 ```
 

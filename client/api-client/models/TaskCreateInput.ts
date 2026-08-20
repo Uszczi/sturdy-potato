@@ -16,71 +16,72 @@ import { mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface TodoUpdateInput
+ * @interface TaskCreateInput
  */
-export interface TodoUpdateInput {
+export interface TaskCreateInput {
     /**
      * 
      * @type {string}
-     * @memberof TodoUpdateInput
+     * @memberof TaskCreateInput
      */
-    title?: string | null;
+    title: string;
     /**
      * 
      * @type {string}
-     * @memberof TodoUpdateInput
+     * @memberof TaskCreateInput
      */
-    description?: string | null;
+    description?: string;
     /**
      * 
      * @type {boolean}
-     * @memberof TodoUpdateInput
+     * @memberof TaskCreateInput
      */
-    completed?: boolean | null;
+    completed?: boolean;
     /**
      * 
      * @type {number}
-     * @memberof TodoUpdateInput
+     * @memberof TaskCreateInput
      */
     projectId?: number | null;
     /**
      * 
      * @type {Date}
-     * @memberof TodoUpdateInput
+     * @memberof TaskCreateInput
      */
     dueDate?: Date | null;
 }
 
 /**
- * Check if a given object implements the TodoUpdateInput interface.
+ * Check if a given object implements the TaskCreateInput interface.
  */
-export function instanceOfTodoUpdateInput(value: object): value is TodoUpdateInput {
+export function instanceOfTaskCreateInput(value: object): value is TaskCreateInput {
+    if (!('title' in value) || value['title'] === undefined) return false;
     return true;
 }
 
-export function TodoUpdateInputFromJSON(json: any): TodoUpdateInput {
-    return TodoUpdateInputFromJSONTyped(json, false);
+export function TaskCreateInputFromJSON(json: any): TaskCreateInput {
+    return TaskCreateInputFromJSONTyped(json, false);
 }
 
-export function TodoUpdateInputFromJSONTyped(json: any, ignoreDiscriminator: boolean): TodoUpdateInput {
+export function TaskCreateInputFromJSONTyped(json: any, ignoreDiscriminator: boolean): TaskCreateInput {
     if (json == null) {
         return json;
     }
     return {
         
-        'title': json['title'] === undefined ? undefined : json['title'] === null ? null : json['title'],
-        'description': json['description'] === undefined ? undefined : json['description'] === null ? null : json['description'],
-        'completed': json['completed'] === undefined ? undefined : json['completed'] === null ? null : json['completed'],
+        'title': json['title'],
+        'description': json['description'] == null ? undefined : json['description'],
+        'completed': json['completed'] == null ? undefined : json['completed'],
         'projectId': json['project_id'] === undefined ? undefined : json['project_id'] === null ? null : json['project_id'],
         'dueDate': json['due_date'] === undefined ? undefined : json['due_date'] === null ? null : (new Date(json['due_date'])),
     };
 }
 
-export function TodoUpdateInputToJSON(json: any): TodoUpdateInput {
-    return TodoUpdateInputToJSONTyped(json, false);
+export function TaskCreateInputToJSON(json: any): TaskCreateInput {
+    return TaskCreateInputToJSONTyped(json, false);
 }
 
-export function TodoUpdateInputToJSONTyped(value?: TodoUpdateInput | null, ignoreDiscriminator: boolean = false): any {
+export function TaskCreateInputToJSONTyped(value?: TaskCreateInput | null, ignoreDiscriminator: boolean = false): any {
     if (value == null) {
         return value;
     }

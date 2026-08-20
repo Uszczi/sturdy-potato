@@ -19,6 +19,44 @@ def _make_token(**payload: object) -> str:
     )
 
 
+async def test_register_creates_a_user_who_can_then_log_in(
+    client: AsyncClient,
+) -> None:
+    response = await client.post(
+        "/api/register/", json={"username": "newbie", "password": "a-good-password"}
+    )
+
+    assert response.status_code == 201
+    body = response.json()
+    assert body["access"] and body["refresh"]
+
+    # The account was persisted (committed), so the new credentials authenticate.
+    login = await client.post(
+        "/api/token/", json={"username": "newbie", "password": "a-good-password"}
+    )
+    assert login.status_code == 200
+
+
+async def test_register_rejects_a_taken_username(
+    client: AsyncClient, session: AsyncSession
+) -> None:
+    await create_user(session, username="taken", password=DEMO_PASSWORD)
+
+    response = await client.post(
+        "/api/register/", json={"username": "taken", "password": "a-good-password"}
+    )
+
+    assert response.status_code == 400
+
+
+async def test_register_rejects_a_too_short_password(client: AsyncClient) -> None:
+    response = await client.post(
+        "/api/register/", json={"username": "newbie", "password": "short"}
+    )
+
+    assert response.status_code == 422
+
+
 async def test_obtain_token_returns_access_and_refresh(
     client: AsyncClient, session: AsyncSession
 ) -> None:

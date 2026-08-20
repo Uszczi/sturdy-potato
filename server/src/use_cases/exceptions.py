@@ -49,6 +49,10 @@ class ProjectNameConflict(ConflictError):
     detail = "A project with this name already exists."
 
 
+class UsernameConflict(ConflictError):
+    detail = "A user with this username already exists."
+
+
 class InvalidReorder(UseCaseError):
     status_code = 400
     detail = "Order contains items outside this user."

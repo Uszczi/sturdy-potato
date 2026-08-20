@@ -1,8 +1,8 @@
 import { create } from "zustand";
 import type {
   ProjectSchema,
-  TodoSchema,
-  TodoCreateInput,
+  TaskSchema,
+  TaskCreateInput,
 } from "../../api-client";
 import { ResponseError } from "../../api-client";
 import { logout } from "../services/auth";
@@ -23,7 +23,7 @@ import {
 type AppState = {
   // Domain data, shared by the sidebar and every page.
   projects: ProjectSchema[];
-  tasks: TodoSchema[];
+  tasks: TaskSchema[];
   loaded: boolean;
   loading: boolean;
   error: string | null;
@@ -44,8 +44,8 @@ type AppState = {
   ) => Promise<void>;
   /** Persist a drag-and-drop reorder of the projects (their new order). */
   reorderProjects: (orderedIds: number[]) => Promise<void>;
-  addTask: (input: TodoCreateInput) => Promise<void>;
-  toggleTask: (task: TodoSchema) => Promise<void>;
+  addTask: (input: TaskCreateInput) => Promise<void>;
+  toggleTask: (task: TaskSchema) => Promise<void>;
   assignTaskProject: (taskId: number, projectId: number | null) => Promise<void>;
   /** Persist a drag-and-drop reorder of the given task ids (their new order). */
   reorderTasks: (orderedIds: number[]) => Promise<void>;
@@ -56,7 +56,7 @@ type AppState = {
  * right spot without refetching the whole list: open tasks first (by manual
  * position), then completed tasks with the most recently completed on top.
  */
-function compareTasks(a: TodoSchema, b: TodoSchema): number {
+function compareTasks(a: TaskSchema, b: TaskSchema): number {
   if (a.completed !== b.completed) return a.completed ? 1 : -1;
   if (!a.completed) {
     if (a.position !== b.position) return a.position - b.position;

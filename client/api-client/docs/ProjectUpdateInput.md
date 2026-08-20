@@ -7,6 +7,7 @@
 Name | Type
 ------------ | -------------
 `name` | string
+`color` | string
 
 ## Example
 
@@ -16,6 +17,7 @@ import type { ProjectUpdateInput } from ''
 // TODO: Update the object below with actual values
 const example = {
   "name": null,
+  "color": null,
 } satisfies ProjectUpdateInput
 
 console.log(example)

@@ -32,13 +32,13 @@ export interface ProjectSchema {
      */
     name: string;
     /**
-     *
+     * 
      * @type {string}
      * @memberof ProjectSchema
      */
     color?: string | null;
     /**
-     *
+     * 
      * @type {number}
      * @memberof ProjectSchema
      */
@@ -80,7 +80,7 @@ export function ProjectSchemaFromJSONTyped(json: any, ignoreDiscriminator: boole
         
         'id': json['id'],
         'name': json['name'],
-        'color': json['color'] == null ? undefined : json['color'],
+        'color': json['color'] === undefined ? undefined : json['color'] === null ? null : json['color'],
         'taskCount': json['task_count'] == null ? undefined : json['task_count'],
         'createdAt': (new Date(json['created_at'])),
         'updatedAt': (new Date(json['updated_at'])),

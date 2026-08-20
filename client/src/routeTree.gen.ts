@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as LoggedOutRouteImport } from './routes/logged-out'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as RegisterRouteImport } from './routes/register'
 import { Route as AppIndexRouteImport } from './routes/_app.index'
 import { Route as AppTasksRouteImport } from './routes/_app.tasks'
 import { Route as AppProjectsIndexRouteImport } from './routes/_app.projects.index'
@@ -29,6 +30,11 @@ const LoggedOutRoute = LoggedOutRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RegisterRoute = RegisterRouteImport.update({
+  id: '/register',
+  path: '/register',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AppIndexRoute = AppIndexRouteImport.update({
@@ -56,6 +62,7 @@ export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
   '/logged-out': typeof LoggedOutRoute
   '/login': typeof LoginRoute
+  '/register': typeof RegisterRoute
   '/tasks': typeof AppTasksRoute
   '/projects/$projectId': typeof AppProjectsProjectIdRoute
   '/projects/': typeof AppProjectsIndexRoute
@@ -63,6 +70,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/logged-out': typeof LoggedOutRoute
   '/login': typeof LoginRoute
+  '/register': typeof RegisterRoute
   '/tasks': typeof AppTasksRoute
   '/': typeof AppIndexRoute
   '/projects/$projectId': typeof AppProjectsProjectIdRoute
@@ -73,6 +81,7 @@ export interface FileRoutesById {
   '/_app': typeof AppRouteWithChildren
   '/logged-out': typeof LoggedOutRoute
   '/login': typeof LoginRoute
+  '/register': typeof RegisterRoute
   '/_app/tasks': typeof AppTasksRoute
   '/_app/': typeof AppIndexRoute
   '/_app/projects/$projectId': typeof AppProjectsProjectIdRoute
@@ -84,6 +93,7 @@ export interface FileRouteTypes {
     | '/'
     | '/logged-out'
     | '/login'
+    | '/register'
     | '/tasks'
     | '/projects/$projectId'
     | '/projects/'
@@ -91,6 +101,7 @@ export interface FileRouteTypes {
   to:
     | '/logged-out'
     | '/login'
+    | '/register'
     | '/tasks'
     | '/'
     | '/projects/$projectId'
@@ -100,6 +111,7 @@ export interface FileRouteTypes {
     | '/_app'
     | '/logged-out'
     | '/login'
+    | '/register'
     | '/_app/tasks'
     | '/_app/'
     | '/_app/projects/$projectId'
@@ -110,6 +122,7 @@ export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
   LoggedOutRoute: typeof LoggedOutRoute
   LoginRoute: typeof LoginRoute
+  RegisterRoute: typeof RegisterRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -133,6 +146,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/register': {
+      id: '/register'
+      path: '/register'
+      fullPath: '/register'
+      preLoaderRoute: typeof RegisterRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_app/': {
@@ -186,6 +206,7 @@ const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
   LoggedOutRoute: LoggedOutRoute,
   LoginRoute: LoginRoute,
+  RegisterRoute: RegisterRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

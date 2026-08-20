@@ -1,5 +1,5 @@
 
-# TodoCreateInput
+# TaskUpdateInput
 
 
 ## Properties
@@ -15,7 +15,7 @@ Name | Type
 ## Example
 
 ```typescript
-import type { TodoCreateInput } from ''
+import type { TaskUpdateInput } from ''
 
 // TODO: Update the object below with actual values
 const example = {
@@ -24,7 +24,7 @@ const example = {
   "completed": null,
   "projectId": null,
   "dueDate": null,
-} satisfies TodoCreateInput
+} satisfies TaskUpdateInput
 
 console.log(example)
 
@@ -33,7 +33,7 @@ const exampleJSON: string = JSON.stringify(example)
 console.log(exampleJSON)
 
 // Parse the JSON string back to an object
-const exampleParsed = JSON.parse(exampleJSON) as TodoCreateInput
+const exampleParsed = JSON.parse(exampleJSON) as TaskUpdateInput
 console.log(exampleParsed)
 ```
 

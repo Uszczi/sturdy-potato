@@ -16,69 +16,69 @@ import { mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface TodoSchema
+ * @interface TaskSchema
  */
-export interface TodoSchema {
+export interface TaskSchema {
     /**
      * 
      * @type {number}
-     * @memberof TodoSchema
+     * @memberof TaskSchema
      */
     id: number;
     /**
      * 
      * @type {string}
-     * @memberof TodoSchema
+     * @memberof TaskSchema
      */
     title: string;
     /**
      * 
      * @type {string}
-     * @memberof TodoSchema
+     * @memberof TaskSchema
      */
     description: string;
     /**
      * 
      * @type {boolean}
-     * @memberof TodoSchema
+     * @memberof TaskSchema
      */
     completed: boolean;
     /**
-     *
+     * 
      * @type {number}
-     * @memberof TodoSchema
+     * @memberof TaskSchema
      */
     position: number;
     /**
-     *
+     * 
      * @type {number}
-     * @memberof TodoSchema
+     * @memberof TaskSchema
      */
     projectId: number | null;
     /**
      * 
      * @type {Date}
-     * @memberof TodoSchema
+     * @memberof TaskSchema
      */
     dueDate: Date | null;
     /**
      * 
      * @type {Date}
-     * @memberof TodoSchema
+     * @memberof TaskSchema
      */
     createdAt: Date;
     /**
      * 
      * @type {Date}
-     * @memberof TodoSchema
+     * @memberof TaskSchema
      */
     updatedAt: Date;
 }
 
 /**
- * Check if a given object implements the TodoSchema interface.
+ * Check if a given object implements the TaskSchema interface.
  */
-export function instanceOfTodoSchema(value: object): value is TodoSchema {
+export function instanceOfTaskSchema(value: object): value is TaskSchema {
     if (!('id' in value) || value['id'] === undefined) return false;
     if (!('title' in value) || value['title'] === undefined) return false;
     if (!('description' in value) || value['description'] === undefined) return false;
@@ -91,11 +91,11 @@ export function instanceOfTodoSchema(value: object): value is TodoSchema {
     return true;
 }
 
-export function TodoSchemaFromJSON(json: any): TodoSchema {
-    return TodoSchemaFromJSONTyped(json, false);
+export function TaskSchemaFromJSON(json: any): TaskSchema {
+    return TaskSchemaFromJSONTyped(json, false);
 }
 
-export function TodoSchemaFromJSONTyped(json: any, ignoreDiscriminator: boolean): TodoSchema {
+export function TaskSchemaFromJSONTyped(json: any, ignoreDiscriminator: boolean): TaskSchema {
     if (json == null) {
         return json;
     }
@@ -113,11 +113,11 @@ export function TodoSchemaFromJSONTyped(json: any, ignoreDiscriminator: boolean)
     };
 }
 
-export function TodoSchemaToJSON(json: any): TodoSchema {
-    return TodoSchemaToJSONTyped(json, false);
+export function TaskSchemaToJSON(json: any): TaskSchema {
+    return TaskSchemaToJSONTyped(json, false);
 }
 
-export function TodoSchemaToJSONTyped(value?: TodoSchema | null, ignoreDiscriminator: boolean = false): any {
+export function TaskSchemaToJSONTyped(value?: TaskSchema | null, ignoreDiscriminator: boolean = false): any {
     if (value == null) {
         return value;
     }

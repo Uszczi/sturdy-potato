@@ -3,7 +3,7 @@
 A FastAPI backend for a React todo SPA. The server is organized as:
 
 - `server/src/main.py` builds the FastAPI app and wires the routers.
-- `server/src/api/routes/` owns the HTTP layer (`/api/tasks/`, `/api/projects/`, `/api/token/`, `/api/time/`).
+- `server/src/api/routes/` owns the HTTP layer (`/api/tasks/`, `/api/projects/`, `/api/token/`, `/api/register/`, `/api/time/`).
 - `server/src/infrastructure/cache.py` holds the async Redis client used for caching.
 - `server/src/repositories/` holds the async SQLAlchemy data access, one class per aggregate.
 - `server/src/models.py` defines the SQLModel tables (`User`, `Project`, `Todo`).

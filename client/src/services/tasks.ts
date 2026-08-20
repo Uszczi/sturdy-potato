@@ -1,21 +1,21 @@
 import { tasksApi } from "../api";
-import type { TodoSchema, TodoCreateInput } from "../../api-client";
+import type { TaskSchema, TaskCreateInput } from "../../api-client";
 
 /** Every task for the signed-in user, in server order. */
-export function listTasks(): Promise<TodoSchema[]> {
+export function listTasks(): Promise<TaskSchema[]> {
   return tasksApi.apiTasksList();
 }
 
 /** Create a task from composer input (title, optional due date and project). */
-export function createTask(input: TodoCreateInput): Promise<TodoSchema> {
-  return tasksApi.apiTasksCreate({ todoCreateInput: input });
+export function createTask(input: TaskCreateInput): Promise<TaskSchema> {
+  return tasksApi.apiTasksCreate({ taskCreateInput: input });
 }
 
 /** Flip a task between open and completed. */
-export function toggleTask(task: TodoSchema): Promise<TodoSchema> {
+export function toggleTask(task: TaskSchema): Promise<TaskSchema> {
   return tasksApi.apiTasksPartialUpdate({
     id: task.id,
-    todoUpdateInput: { completed: !task.completed },
+    taskUpdateInput: { completed: !task.completed },
   });
 }
 
@@ -31,9 +31,9 @@ export function reorderTasks(orderedIds: number[]): Promise<void> {
 export function assignTaskProject(
   taskId: number,
   projectId: number | null,
-): Promise<TodoSchema> {
+): Promise<TaskSchema> {
   return tasksApi.apiTasksPartialUpdate({
     id: taskId,
-    todoUpdateInput: { projectId },
+    taskUpdateInput: { projectId },
   });
 }

@@ -6,14 +6,18 @@ import {
   useNavigate,
 } from "@tanstack/react-router";
 import { ResponseError } from "../../api-client";
-import { login } from "../services/auth";
+import { register } from "../services/auth";
 
-type LoginSearch = {
+type RegisterSearch = {
   redirect?: string;
 };
 
-export const Route = createFileRoute("/login")({
-  validateSearch: (search: Record<string, unknown>): LoginSearch => ({
+// Mirrors the backend's UserRegister schema (password Field min_length=8) so the
+// user gets immediate feedback instead of a round-trip 422.
+const MIN_PASSWORD_LENGTH = 8;
+
+export const Route = createFileRoute("/register")({
+  validateSearch: (search: Record<string, unknown>): RegisterSearch => ({
     redirect: typeof search.redirect === "string" ? search.redirect : undefined,
   }),
   beforeLoad: ({ context, search }) => {
@@ -21,28 +25,39 @@ export const Route = createFileRoute("/login")({
       throw redirect({ to: search.redirect ?? "/" });
     }
   },
-  component: Login,
+  component: Register,
 });
 
-function Login() {
+function Register() {
   const navigate = useNavigate();
   const search = Route.useSearch();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
     setError(null);
+
+    if (password !== confirmPassword) {
+      setError("The passwords do not match.");
+      return;
+    }
+    if (password.length < MIN_PASSWORD_LENGTH) {
+      setError(`Password must be at least ${MIN_PASSWORD_LENGTH} characters.`);
+      return;
+    }
+
     setSubmitting(true);
     try {
-      await login(username, password);
+      await register(username, password);
       navigate({ to: search.redirect ?? "/" });
     } catch (err) {
       setError(
-        err instanceof ResponseError && err.response.status === 401
-          ? "Incorrect username or password."
+        err instanceof ResponseError && err.response.status === 400
+          ? "That username is already taken."
           : "Something went wrong. Please try again.",
       );
     } finally {
@@ -54,7 +69,7 @@ function Login() {
     <main className="grid min-h-screen place-items-center bg-base-200 p-4">
       <div className="card w-full max-w-sm bg-base-100 shadow-xl">
         <div className="card-body">
-          <h1 className="card-title text-2xl">Log in</h1>
+          <h1 className="card-title text-2xl">Create your account</h1>
 
           {error && (
             <div role="alert" className="alert alert-error alert-soft">
@@ -83,10 +98,25 @@ function Login() {
               <input
                 id="password"
                 type="password"
-                autoComplete="current-password"
+                autoComplete="new-password"
                 className="input w-full"
+                minLength={MIN_PASSWORD_LENGTH}
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
+                required
+              />
+
+              <label className="label" htmlFor="confirm-password">
+                Confirm password
+              </label>
+              <input
+                id="confirm-password"
+                type="password"
+                autoComplete="new-password"
+                className="input w-full"
+                minLength={MIN_PASSWORD_LENGTH}
+                value={confirmPassword}
+                onChange={(event) => setConfirmPassword(event.target.value)}
                 required
               />
 
@@ -96,15 +126,15 @@ function Login() {
                 disabled={submitting}
               >
                 {submitting && <span className="loading loading-spinner" />}
-                Log in
+                Create account
               </button>
             </fieldset>
           </form>
 
           <p className="mt-2 text-center text-sm">
-            Don't have an account?{" "}
-            <Link to="/register" className="link link-primary">
-              Sign up
+            Already have an account?{" "}
+            <Link to="/login" className="link link-primary">
+              Log in
             </Link>
           </p>
         </div>

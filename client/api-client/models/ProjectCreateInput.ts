@@ -26,7 +26,7 @@ export interface ProjectCreateInput {
      */
     name: string;
     /**
-     *
+     * 
      * @type {string}
      * @memberof ProjectCreateInput
      */
@@ -50,9 +50,9 @@ export function ProjectCreateInputFromJSONTyped(json: any, ignoreDiscriminator: 
         return json;
     }
     return {
-
+        
         'name': json['name'],
-        'color': json['color'] == null ? undefined : json['color'],
+        'color': json['color'] === undefined ? undefined : json['color'] === null ? null : json['color'],
     };
 }
 
@@ -66,7 +66,7 @@ export function ProjectCreateInputToJSONTyped(value?: ProjectCreateInput | null,
     }
 
     return {
-
+        
         'name': value['name'],
         'color': value['color'],
     };

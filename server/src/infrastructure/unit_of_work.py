@@ -7,7 +7,11 @@ commits atomically (or rolls back as a whole on error).
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from infrastructure.repositories import ProjectRepository, TaskRepository
+from infrastructure.repositories import (
+    ProjectRepository,
+    TaskRepository,
+    UserRepository,
+)
 
 
 class UnitOfWork:
@@ -15,6 +19,7 @@ class UnitOfWork:
         self._session = session
         self.tasks = TaskRepository(session)
         self.projects = ProjectRepository(session)
+        self.users = UserRepository(session)
 
     async def commit(self) -> None:
         await self._session.commit()

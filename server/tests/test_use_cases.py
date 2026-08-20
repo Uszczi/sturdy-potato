@@ -18,6 +18,7 @@ from tests.fakes import (
 from use_cases.auth.authenticate_user import AuthenticateUser
 from use_cases.auth.get_current_user import GetCurrentUser
 from use_cases.auth.refresh_access_token import RefreshAccessToken
+from use_cases.auth.register_user import RegisterUser
 from use_cases.dtos import (
     ProjectCreateData,
     TaskCreateData,
@@ -31,6 +32,7 @@ from use_cases.exceptions import (
     ProjectNameConflict,
     ProjectNotFound,
     TaskNotFound,
+    UsernameConflict,
 )
 from use_cases.projects.create_project import CreateProject
 from use_cases.tasks.create_task import CreateTask
@@ -185,6 +187,31 @@ async def test_authenticate_rejects_an_unknown_user() -> None:
 async def test_authenticate_rejects_an_inactive_user() -> None:
     with pytest.raises(InvalidCredentials):
         await _authenticate(_user(is_active=False)).execute("demo", "secret")
+
+
+def _register(existing: User | None = None) -> tuple[RegisterUser, FakeUserRepository]:
+    users = FakeUserRepository([existing] if existing is not None else [])
+    return RegisterUser(users, FakePasswordHasher(), FakeTokenIssuer()), users
+
+
+async def test_register_creates_the_user_and_issues_tokens() -> None:
+    use_case, users = _register()
+
+    tokens = await use_case.execute("newbie", "a-good-password")
+
+    created = await users.get_by_username("newbie")
+    assert created is not None
+    # Password is stored hashed, never in the clear.
+    assert created.hashed_password == FakePasswordHasher().hash("a-good-password")
+    assert tokens.access == f"access:{created.id}"
+    assert tokens.refresh == f"refresh:{created.id}"
+
+
+async def test_register_rejects_a_taken_username() -> None:
+    use_case, _ = _register(_user())
+
+    with pytest.raises(UsernameConflict):
+        await use_case.execute("demo", "another-password")
 
 
 def _refresh(user: User | None) -> RefreshAccessToken:

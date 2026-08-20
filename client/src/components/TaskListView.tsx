@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import type { ProjectSchema, TodoSchema } from "../../api-client";
+import type { ProjectSchema, TaskSchema } from "../../api-client";
 import { Link } from "@tanstack/react-router";
 import { useAppStore } from "../stores/app-store";
 import {
@@ -15,7 +15,7 @@ type TaskListViewProps = {
   eyebrow: string;
   heading: string;
   /** Tasks already filtered for this view. */
-  tasks: TodoSchema[];
+  tasks: TaskSchema[];
   /** Present on the project detail page; drives the dot, count and empty copy. */
   project?: ProjectSchema;
   /** Open the composer on first render (the `?compose=1` entry point). */
@@ -33,7 +33,7 @@ function TaskListView({
   project,
   composeDefault = false,
 }: TaskListViewProps) {
-  const [selected, setSelected] = useState<TodoSchema | null>(null);
+  const [selected, setSelected] = useState<TaskSchema | null>(null);
   const updateProject = useAppStore((state) => state.updateProject);
   const reorderTasks = useAppStore((state) => state.reorderTasks);
 
@@ -354,7 +354,7 @@ function TaskRow({
   onDragEnter,
   onDragEnd,
 }: {
-  task: TodoSchema;
+  task: TaskSchema;
   onOpen: () => void;
   dragging: boolean;
   onDragStart: () => void;
@@ -492,7 +492,7 @@ function TaskModal({
   task,
   onClose,
 }: {
-  task: TodoSchema | null;
+  task: TaskSchema | null;
   onClose: () => void;
 }) {
   const projects = useAppStore((state) => state.projects);

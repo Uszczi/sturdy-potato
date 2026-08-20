@@ -31,3 +31,11 @@ class UserRepository:
     async def get_by_id(self, user_id: int) -> UserEntity | None:
         user = await self._session.get(User, user_id)
         return _to_entity(user) if user is not None else None
+
+    async def create(self, username: str, hashed_password: str) -> UserEntity:
+        user = User(username=username, hashed_password=hashed_password)
+        self._session.add(user)
+        # Flush (not commit) so the row gets its primary key while the Unit of
+        # Work still owns the transaction and decides when to commit.
+        await self._session.flush()
+        return _to_entity(user)

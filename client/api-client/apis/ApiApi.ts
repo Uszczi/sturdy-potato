@@ -19,6 +19,11 @@ import {
     AccessTokenToJSON,
 } from '../models/AccessToken';
 import {
+    type CurrentTime,
+    CurrentTimeFromJSON,
+    CurrentTimeToJSON,
+} from '../models/CurrentTime';
+import {
     type HTTPValidationError,
     HTTPValidationErrorFromJSON,
     HTTPValidationErrorToJSON,
@@ -38,6 +43,15 @@ import {
     TokenRefreshFromJSON,
     TokenRefreshToJSON,
 } from '../models/TokenRefresh';
+import {
+    type UserRegister,
+    UserRegisterFromJSON,
+    UserRegisterToJSON,
+} from '../models/UserRegister';
+
+export interface ApiRegisterCreateRequest {
+    userRegister: UserRegister;
+}
 
 export interface ApiTokenCreateRequest {
     tokenObtainPair: TokenObtainPair;
@@ -51,6 +65,90 @@ export interface ApiTokenRefreshCreateRequest {
  * 
  */
 export class ApiApi extends runtime.BaseAPI {
+
+    /**
+     * Creates request options for apiRegisterCreate without sending the request
+     */
+    async apiRegisterCreateRequestOpts(requestParameters: ApiRegisterCreateRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['userRegister'] == null) {
+            throw new runtime.RequiredError(
+                'userRegister',
+                'Required parameter "userRegister" was null or undefined when calling apiRegisterCreate().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+
+        let urlPath = `/api/register/`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: UserRegisterToJSON(requestParameters['userRegister']),
+        };
+    }
+
+    /**
+     * Register
+     */
+    async apiRegisterCreateRaw(requestParameters: ApiRegisterCreateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TokenPair>> {
+        const requestOptions = await this.apiRegisterCreateRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => TokenPairFromJSON(jsonValue));
+    }
+
+    /**
+     * Register
+     */
+    async apiRegisterCreate(requestParameters: ApiRegisterCreateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TokenPair> {
+        const response = await this.apiRegisterCreateRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for apiTimeRead without sending the request
+     */
+    async apiTimeReadRequestOpts(): Promise<runtime.RequestOpts> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/api/time/`;
+
+        return {
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * Read Current Time
+     */
+    async apiTimeReadRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<CurrentTime>> {
+        const requestOptions = await this.apiTimeReadRequestOpts();
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => CurrentTimeFromJSON(jsonValue));
+    }
+
+    /**
+     * Read Current Time
+     */
+    async apiTimeRead(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<CurrentTime> {
+        const response = await this.apiTimeReadRaw(initOverrides);
+        return await response.value();
+    }
 
     /**
      * Creates request options for apiTokenCreate without sending the request

@@ -74,6 +74,18 @@ AuthenticateUserDep = Annotated[
 RefreshAccessTokenDep = Annotated[
     auth_use_cases.RefreshAccessToken, Depends(provide_refresh_access_token)
 ]
+# Registration writes a new user, so it goes through the Unit of Work (which
+# commits on success) rather than a bare read-only repository.
+RegisterUserDep = Annotated[
+    auth_use_cases.RegisterUser,
+    Depends(
+        _use_case(
+            lambda uow: auth_use_cases.RegisterUser(
+                uow.users, password_hasher, token_service
+            )
+        )
+    ),
+]
 
 ListTasksDep = Annotated[
     task_use_cases.ListTasks,
@@ -152,6 +164,7 @@ __all__ = [
     "ListProjectsDep",
     "ListTasksDep",
     "RefreshAccessTokenDep",
+    "RegisterUserDep",
     "ReorderProjectsDep",
     "ReorderTasksDep",
     "SessionDep",

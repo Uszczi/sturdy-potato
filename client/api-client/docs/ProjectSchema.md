@@ -8,6 +8,7 @@ Name | Type
 ------------ | -------------
 `id` | number
 `name` | string
+`color` | string
 `taskCount` | number
 `createdAt` | Date
 `updatedAt` | Date
@@ -21,6 +22,7 @@ import type { ProjectSchema } from ''
 const example = {
   "id": null,
   "name": null,
+  "color": null,
   "taskCount": null,
   "createdAt": null,
   "updatedAt": null,

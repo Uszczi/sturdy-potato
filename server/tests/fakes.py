@@ -21,12 +21,25 @@ def _now() -> datetime:
 class FakeUserRepository:
     def __init__(self, users: list[User] | None = None) -> None:
         self._users = {u.username: u for u in users or []}
+        self._next_id = max((u.id for u in self._users.values()), default=0) + 1
 
     async def get_by_username(self, username: str) -> User | None:
         return self._users.get(username)
 
     async def get_by_id(self, user_id: int) -> User | None:
         return next((u for u in self._users.values() if u.id == user_id), None)
+
+    async def create(self, username: str, hashed_password: str) -> User:
+        user = User(
+            id=self._next_id,
+            username=username,
+            hashed_password=hashed_password,
+            is_active=True,
+            is_staff=False,
+        )
+        self._users[username] = user
+        self._next_id += 1
+        return user
 
 
 class FakePasswordHasher:

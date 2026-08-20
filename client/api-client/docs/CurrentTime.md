@@ -1,24 +1,24 @@
 
-# ProjectCreateInput
+# CurrentTime
 
 
 ## Properties
 
 Name | Type
 ------------ | -------------
-`name` | string
-`color` | string
+`currentTime` | Date
+`cached` | boolean
 
 ## Example
 
 ```typescript
-import type { ProjectCreateInput } from ''
+import type { CurrentTime } from ''
 
 // TODO: Update the object below with actual values
 const example = {
-  "name": null,
-  "color": null,
-} satisfies ProjectCreateInput
+  "currentTime": null,
+  "cached": null,
+} satisfies CurrentTime
 
 console.log(example)
 
@@ -27,7 +27,7 @@ const exampleJSON: string = JSON.stringify(example)
 console.log(exampleJSON)
 
 // Parse the JSON string back to an object
-const exampleParsed = JSON.parse(exampleJSON) as ProjectCreateInput
+const exampleParsed = JSON.parse(exampleJSON) as CurrentTime
 console.log(exampleParsed)
 ```
 

@@ -27,18 +27,32 @@ await redis.withEndpoint({
   isProxied: false,
 });
 
+const DATABASE_URL =
+  "postgresql+asyncpg://postgres:postgres@localhost:5432/sturdy_potato";
+
+// Run Alembic migrations to head before the server starts. This runs to
+// completion and exits (mirrors `just migrate`); the server waits for it below.
+const migrations = await builder.addPythonExecutable("migrations", "../server", "alembic");
+await migrations.withUv();
+await migrations.withArgs([
+  "-c",
+  "src/infrastructure/alembic/alembic.ini",
+  "upgrade",
+  "head",
+]);
+await migrations.withEnvironment("DATABASE_URL", DATABASE_URL);
+await migrations.waitFor(postgres);
+
 const server = await builder.addUvicornApp("server", "../server/src", "main:app");
 await server.withUv();
 await server.withoutHttpsCertificate();
-await server.withEnvironment(
-  "DATABASE_URL",
-  "postgresql+asyncpg://postgres:postgres@localhost:5432/sturdy_potato",
-);
+await server.withEnvironment("DATABASE_URL", DATABASE_URL);
 await server.withEnvironment("REDIS_URL", "redis://localhost:6379/0");
 await server.withHttpEndpoint({ port: 8000, targetPort: 8000, isProxied: false });
 await server.withExternalHttpEndpoints();
 await server.waitFor(postgres);
 await server.waitFor(redis);
+await server.waitForCompletion(migrations);
 
 const client = await builder.addViteApp("client", "../client");
 await client.withHttpEndpoint({ port: 5173, targetPort: 5173, isProxied: false });
