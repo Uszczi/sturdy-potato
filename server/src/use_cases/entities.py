@@ -8,6 +8,8 @@ Keeping them framework-free is what lets use cases stay framework-agnostic.
 from dataclasses import dataclass
 from datetime import date, datetime
 
+from use_cases.task_status import TaskStatus
+
 
 @dataclass(frozen=True)
 class User:
@@ -25,7 +27,7 @@ class Task:
     project_id: int | None
     title: str
     description: str
-    completed: bool
+    status: TaskStatus
     position: int
     due_date: date | None
     created_at: datetime

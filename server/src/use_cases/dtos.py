@@ -10,6 +10,8 @@ from datetime import date
 from enum import Enum
 from typing import Any
 
+from use_cases.task_status import TaskStatus
+
 
 class _Unset(Enum):
     """Singleton sentinel for "field not provided" in partial updates.
@@ -35,7 +37,7 @@ class IssuedTokens:
 class TaskCreateData:
     title: str
     description: str
-    completed: bool
+    status: TaskStatus
     project_id: int | None
     due_date: date | None
 
@@ -44,7 +46,7 @@ class TaskCreateData:
 class TaskUpdateData:
     title: str | Unset = UNSET
     description: str | Unset = UNSET
-    completed: bool | Unset = UNSET
+    status: TaskStatus | Unset = UNSET
     project_id: int | None | Unset = UNSET
     due_date: date | None | Unset = UNSET
 

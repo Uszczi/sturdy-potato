@@ -12,6 +12,7 @@ from typing import Any, Protocol
 
 from use_cases.dtos import ProjectCreateData, TaskCreateData
 from use_cases.entities import Project, Task, User
+from use_cases.task_status import TaskStatus
 
 
 class UserRepository(Protocol):
@@ -49,7 +50,7 @@ class TaskRepository(Protocol):
 
     async def list_open(self, user_id: int, *, limit: int | None) -> list[Task]: ...
 
-    async def count(self, user_id: int, *, completed: bool | None) -> int: ...
+    async def count(self, user_id: int, *, status: TaskStatus | None) -> int: ...
 
     async def get(self, user_id: int, task_id: int) -> Task | None: ...
 

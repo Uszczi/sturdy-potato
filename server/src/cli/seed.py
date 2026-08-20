@@ -8,6 +8,7 @@ from sqlmodel import select
 from infrastructure.db import async_session_maker
 from infrastructure.models import Project, Task, User
 from infrastructure.security import password_hasher
+from use_cases.task_status import TaskStatus
 
 DEMO_USERNAME = os.environ.get("SEEDDB_DEMO_USERNAME", "demo")
 DEMO_PASSWORD = os.environ.get("SEEDDB_DEMO_PASSWORD", "demo-password-123")
@@ -143,7 +144,7 @@ async def _seed_projects_and_todos(session: AsyncSession, user: User) -> None:
                         project_id=project.id,
                         title=title,
                         description=description,
-                        completed=completed,
+                        status=TaskStatus.DONE if completed else TaskStatus.OPEN,
                         position=task_position,
                     )
                 )
@@ -226,7 +227,7 @@ async def seed_heavy(
                         project_id=project.id,
                         title=f"Task {number + 1}",
                         position=number,
-                        completed=completed,
+                        status=TaskStatus.DONE if completed else TaskStatus.OPEN,
                         due_date=_random_due_date(rng, today),
                     )
                 )

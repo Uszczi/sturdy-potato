@@ -12,6 +12,7 @@ from typing import Any
 from use_cases.dtos import ProjectCreateData, TaskCreateData
 from use_cases.entities import Project, Task, User
 from use_cases.exceptions import InvalidToken
+from use_cases.task_status import TaskStatus
 
 
 def _now() -> datetime:
@@ -78,7 +79,8 @@ class FakeTaskRepository:
 
     async def list_all(self, user_id: int) -> list[Task]:
         return sorted(
-            self._owned(user_id), key=lambda t: (t.completed, t.position, -t.id)
+            self._owned(user_id),
+            key=lambda t: (t.status.is_done, t.position, -t.id),
         )
 
     async def list_for_view(
@@ -95,21 +97,23 @@ class FakeTaskRepository:
             tasks = [
                 t
                 for t in tasks
-                if t.due_date is not None and t.due_date > today and not t.completed
+                if t.due_date is not None
+                and t.due_date > today
+                and not t.status.is_done
             ]
         return sorted(tasks, key=lambda t: (t.position, -t.id))
 
     async def list_open(self, user_id: int, *, limit: int | None) -> list[Task]:
         owned = sorted(
-            (t for t in self._owned(user_id) if not t.completed),
+            (t for t in self._owned(user_id) if not t.status.is_done),
             key=lambda t: (t.position, -t.id),
         )
         return owned[:limit] if limit is not None else owned
 
-    async def count(self, user_id: int, *, completed: bool | None) -> int:
+    async def count(self, user_id: int, *, status: TaskStatus | None) -> int:
         tasks = self._owned(user_id)
-        if completed is not None:
-            tasks = [t for t in tasks if t.completed == completed]
+        if status is not None:
+            tasks = [t for t in tasks if t.status == status]
         return len(tasks)
 
     async def get(self, user_id: int, task_id: int) -> Task | None:
@@ -124,7 +128,7 @@ class FakeTaskRepository:
             project_id=data.project_id,
             title=data.title,
             description=data.description,
-            completed=data.completed,
+            status=data.status,
             position=position,
             due_date=data.due_date,
             created_at=_now(),

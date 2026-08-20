@@ -63,7 +63,7 @@ class TaskAdmin(ModelView, model=Task):
     name = "Task"
     name_plural = "Tasks"
     icon = "fa-solid fa-list-check"
-    column_list: ClassVar = ["id", "user_id", "title", "completed", "due_date"]
+    column_list: ClassVar = ["id", "user_id", "title", "status", "due_date"]
 
 
 def setup_admin(app: FastAPI) -> Admin:

@@ -13,6 +13,14 @@
  */
 
 import { mapValues } from '../runtime';
+import type { TaskStatus } from './TaskStatus';
+import {
+    TaskStatusFromJSON,
+    TaskStatusFromJSONTyped,
+    TaskStatusToJSON,
+    TaskStatusToJSONTyped,
+} from './TaskStatus';
+
 /**
  * 
  * @export
@@ -33,10 +41,10 @@ export interface TaskCreateInput {
     description?: string;
     /**
      * 
-     * @type {boolean}
+     * @type {TaskStatus}
      * @memberof TaskCreateInput
      */
-    completed?: boolean;
+    status?: TaskStatus;
     /**
      * 
      * @type {number}
@@ -50,6 +58,8 @@ export interface TaskCreateInput {
      */
     dueDate?: Date | null;
 }
+
+
 
 /**
  * Check if a given object implements the TaskCreateInput interface.
@@ -71,7 +81,7 @@ export function TaskCreateInputFromJSONTyped(json: any, ignoreDiscriminator: boo
         
         'title': json['title'],
         'description': json['description'] == null ? undefined : json['description'],
-        'completed': json['completed'] == null ? undefined : json['completed'],
+        'status': json['status'] == null ? undefined : TaskStatusFromJSON(json['status']),
         'projectId': json['project_id'] === undefined ? undefined : json['project_id'] === null ? null : json['project_id'],
         'dueDate': json['due_date'] === undefined ? undefined : json['due_date'] === null ? null : (new Date(json['due_date'])),
     };
@@ -90,7 +100,7 @@ export function TaskCreateInputToJSONTyped(value?: TaskCreateInput | null, ignor
         
         'title': value['title'],
         'description': value['description'],
-        'completed': value['completed'],
+        'status': TaskStatusToJSON(value['status']),
         'project_id': value['projectId'],
         'due_date': value['dueDate'] == null ? value['dueDate'] : value['dueDate'].toISOString().substring(0,10),
     };

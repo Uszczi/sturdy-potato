@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from infrastructure.models import Project, Task, User
 from infrastructure.security import password_hasher, token_service
+from use_cases.task_status import TaskStatus
 
 _user_counter = count(1)
 _project_counter = count(1)
@@ -57,7 +58,7 @@ async def create_task(
     *,
     title: str | None = None,
     description: str = "",
-    completed: bool = False,
+    status: TaskStatus = TaskStatus.OPEN,
     position: int = 0,
     project: Project | None = None,
     due_date: date | None = None,
@@ -67,7 +68,7 @@ async def create_task(
         project_id=project.id if project is not None else None,
         title=title or f"Task {next(_task_counter)}",
         description=description,
-        completed=completed,
+        status=status,
         position=position,
         due_date=due_date,
     )

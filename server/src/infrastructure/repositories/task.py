@@ -10,6 +10,7 @@ from infrastructure.models import Task, utcnow
 from infrastructure.repositories._positioning import next_position_subquery
 from use_cases.dtos import TaskCreateData
 from use_cases.entities import Task as TaskEntity
+from use_cases.task_status import TaskStatus
 
 
 def _to_entity(task: Task) -> TaskEntity:
@@ -20,7 +21,7 @@ def _to_entity(task: Task) -> TaskEntity:
         project_id=task.project_id,
         title=task.title,
         description=task.description,
-        completed=task.completed,
+        status=TaskStatus(task.status),
         position=task.position,
         due_date=task.due_date,
         created_at=task.created_at,
@@ -28,13 +29,16 @@ def _to_entity(task: Task) -> TaskEntity:
     )
 
 
-# Open tasks come first (completed False < True), open tasks keep their manual
-# position order, and completed tasks show most-recently-completed first so a
-# freshly ticked task lands at the top of the completed group.
-_OPEN_POSITION = case((col(Task.completed).is_(False), col(Task.position)))
-_COMPLETED_RECENCY = case((col(Task.completed).is_(True), col(Task.updated_at)))
+# "Done" is the terminal status; everything else counts as still-open work.
+_IS_DONE = case((col(Task.status) == TaskStatus.DONE, 1), else_=0)
+
+# Open tasks come first (not-done sorts before done), open tasks keep their
+# manual position order, and done tasks show most-recently-completed first so a
+# freshly ticked task lands at the top of the closed group.
+_OPEN_POSITION = case((col(Task.status) != TaskStatus.DONE, col(Task.position)))
+_COMPLETED_RECENCY = case((col(Task.status) == TaskStatus.DONE, col(Task.updated_at)))
 _LIST_ORDER = (
-    col(Task.completed).asc(),
+    _IS_DONE.asc(),
     _OPEN_POSITION.asc(),
     _COMPLETED_RECENCY.desc(),
     col(Task.created_at).desc(),
@@ -85,11 +89,11 @@ class TaskRepository:
         elif view == "upcoming":
             statement = statement.where(
                 col(Task.due_date) > today,
-                col(Task.completed).is_(False),
+                col(Task.status) != TaskStatus.DONE,
             )
         statement = statement.order_by(
             col(Task.position),
-            col(Task.completed),
+            _IS_DONE,
             col(Task.due_date),
             col(Task.created_at).desc(),
             col(Task.id).desc(),
@@ -99,19 +103,19 @@ class TaskRepository:
     async def list_open(self, user_id: int, *, limit: int | None) -> list[TaskEntity]:
         statement = (
             select(Task)
-            .where(col(Task.user_id) == user_id, col(Task.completed).is_(False))
+            .where(col(Task.user_id) == user_id, col(Task.status) != TaskStatus.DONE)
             .order_by(*_POSITION_ORDER)
         )
         if limit is not None:
             statement = statement.limit(limit)
         return [_to_entity(task) for task in await self._session.scalars(statement)]
 
-    async def count(self, user_id: int, *, completed: bool | None) -> int:
+    async def count(self, user_id: int, *, status: TaskStatus | None) -> int:
         statement = (
             select(func.count()).select_from(Task).where(col(Task.user_id) == user_id)
         )
-        if completed is not None:
-            statement = statement.where(col(Task.completed) == completed)
+        if status is not None:
+            statement = statement.where(col(Task.status) == status)
         total: int | None = await self._session.scalar(statement)
         return total or 0
 
@@ -130,7 +134,7 @@ class TaskRepository:
                 project_id=data.project_id,
                 title=data.title,
                 description=data.description,
-                completed=data.completed,
+                status=data.status,
                 due_date=data.due_date,
                 position=next_position_subquery(
                     col(Task.position), col(Task.user_id), user_id

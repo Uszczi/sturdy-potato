@@ -11,6 +11,7 @@ export * from './ReorderInput';
 export * from './TaskCountSchema';
 export * from './TaskCreateInput';
 export * from './TaskSchema';
+export * from './TaskStatus';
 export * from './TaskUpdateInput';
 export * from './TokenObtainPair';
 export * from './TokenPair';

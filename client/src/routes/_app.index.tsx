@@ -2,6 +2,7 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 import MenuButton from "../components/MenuButton";
 import { getUsername } from "../services/auth";
 import { formatToday } from "../services/format";
+import { isTaskDone } from "../services/tasks";
 import { useAppStore } from "../stores/app-store";
 
 export const Route = createFileRoute("/_app/")({
@@ -20,7 +21,7 @@ function Overview() {
   const projects = useAppStore((state) => state.projects);
   const tasks = useAppStore((state) => state.tasks);
 
-  const openTasks = tasks.filter((task) => !task.completed);
+  const openTasks = tasks.filter((task) => !isTaskDone(task));
   const completedCount = tasks.length - openTasks.length;
   const username = getUsername();
   const projectName = (id: number | null) =>

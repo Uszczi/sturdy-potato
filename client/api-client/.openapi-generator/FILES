@@ -15,6 +15,7 @@ docs/ReorderInput.md
 docs/TaskCountSchema.md
 docs/TaskCreateInput.md
 docs/TaskSchema.md
+docs/TaskStatus.md
 docs/TaskUpdateInput.md
 docs/TasksApi.md
 docs/TokenObtainPair.md
@@ -34,6 +35,7 @@ models/ReorderInput.ts
 models/TaskCountSchema.ts
 models/TaskCreateInput.ts
 models/TaskSchema.ts
+models/TaskStatus.ts
 models/TaskUpdateInput.ts
 models/TokenObtainPair.ts
 models/TokenPair.ts

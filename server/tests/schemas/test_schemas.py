@@ -33,7 +33,7 @@ def test_todo_create_rejects_a_blank_title() -> None:
         TaskCreateInput(title="   ")
 
 
-@pytest.mark.parametrize("field", ["title", "description", "completed"])
+@pytest.mark.parametrize("field", ["title", "description", "status"])
 def test_todo_update_rejects_null_fields(field: str) -> None:
     with pytest.raises(ValidationError):
         TaskUpdateInput(**{field: None})

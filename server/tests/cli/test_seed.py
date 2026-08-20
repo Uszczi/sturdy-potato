@@ -4,6 +4,7 @@ from sqlmodel import select
 from cli import seed as seed_module
 from infrastructure.models import Project, Task, User
 from tests.factories import create_user
+from use_cases.task_status import TaskStatus
 
 _EXPECTED_TODOS = sum(len(todos) for _, todos in seed_module.SEEDED_PROJECTS)
 
@@ -70,7 +71,7 @@ async def test_seed_heavy_creates_projects_with_growing_tasks(
     assert len(todos) == sum(seed_module._heavy_task_counts(3, 5))
     assert len(todos) == 9
     # completed_ratio=1.0 marks every task complete.
-    assert all(todo.completed for todo in todos)
+    assert all(todo.status == TaskStatus.DONE for todo in todos)
 
 
 async def test_seed_heavy_completed_ratio_zero_leaves_tasks_open(
@@ -82,7 +83,7 @@ async def test_seed_heavy_completed_ratio_zero_leaves_tasks_open(
 
     todos = list(await session.scalars(select(Task)))
     assert todos
-    assert not any(todo.completed for todo in todos)
+    assert all(todo.status == TaskStatus.OPEN for todo in todos)
     # A reproducible seed spreads some tasks across due dates.
     assert any(todo.due_date is not None for todo in todos)
 

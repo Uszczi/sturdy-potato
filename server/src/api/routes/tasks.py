@@ -21,6 +21,7 @@ from schemas.task import (
     TaskSchema,
     TaskUpdateInput,
 )
+from use_cases.task_status import TaskStatus
 
 router = APIRouter(prefix="/tasks", tags=["tasks"])
 
@@ -69,9 +70,9 @@ async def open_tasks(
 async def count_tasks(
     user_id: CurrentUserId,
     use_case: CountTasksDep,
-    completed: bool | None = None,
+    status: TaskStatus | None = None,
 ) -> TaskCountSchema:
-    total = await use_case.execute(user_id, completed=completed)
+    total = await use_case.execute(user_id, status=status)
     return TaskCountSchema(count=total)
 
 

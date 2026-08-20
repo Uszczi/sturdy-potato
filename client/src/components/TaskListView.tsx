@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { TaskStatus } from "@api-client";
 import type { ProjectSchema, TaskSchema } from "@api-client";
 import { Link } from "@tanstack/react-router";
 import { useAppStore } from "@/stores/app-store";
@@ -7,6 +8,7 @@ import {
   formatDueShort,
   formatTimestamp,
 } from "@/services/format";
+import { isTaskDone } from "@/services/tasks";
 import MenuButton from "./MenuButton";
 import ProjectColorPicker from "./ProjectColorPicker";
 
@@ -48,12 +50,12 @@ function TaskListView({
     setItems((current) => {
       const from = current.findIndex((task) => task.id === sourceId);
       const to = current.findIndex((task) => task.id === targetId);
-      // Only reorder among open tasks; completed rows keep their spot.
+      // Only reorder among open tasks; done rows keep their spot.
       if (
         from === -1 ||
         to === -1 ||
-        current[from].completed ||
-        current[to].completed
+        isTaskDone(current[from]) ||
+        isTaskDone(current[to])
       ) {
         return current;
       }
@@ -70,10 +72,10 @@ function TaskListView({
     setActiveId(null);
     if (!dropped) return;
     const openIds = items
-      .filter((task) => !task.completed)
+      .filter((task) => !isTaskDone(task))
       .map((task) => task.id);
     const originalIds = tasks
-      .filter((task) => !task.completed)
+      .filter((task) => !isTaskDone(task))
       .map((task) => task.id);
     if (openIds.some((id, index) => id !== originalIds[index])) {
       void reorderTasks(openIds);
@@ -359,10 +361,11 @@ function TaskRow({
   onDragEnd: () => void;
 }) {
   const projects = useAppStore((state) => state.projects);
-  const toggleTask = useAppStore((state) => state.toggleTask);
+  const updateTask = useAppStore((state) => state.updateTask);
   const assignTaskProject = useAppStore((state) => state.assignTaskProject);
-  // Completed tasks are ordered by completion time, so only open rows drag.
-  const draggable = !task.completed;
+  const done = isTaskDone(task);
+  // Done tasks are ordered by completion time, so only open rows drag.
+  const draggable = !done;
 
   function activate(event: React.KeyboardEvent) {
     if (event.key === "Enter" || event.key === " ") {
@@ -409,16 +412,18 @@ function TaskRow({
           type="button"
           onClick={(event) => {
             event.stopPropagation();
-            void toggleTask(task);
+            void updateTask(task.id, {
+              status: done ? TaskStatus.Open : TaskStatus.Done,
+            });
           }}
           className={`${
-            task.completed
+            done
               ? "border-success bg-success text-success-content"
               : "border-base-content/30 hover:border-primary hover:text-primary text-transparent"
           } mt-0.5 grid size-5 shrink-0 place-items-center rounded-full border-2 transition-colors`}
-          aria-pressed={task.completed}
+          aria-pressed={done}
           aria-label={
-            task.completed
+            done
               ? `Mark ${task.title} as open`
               : `Mark ${task.title} as complete`
           }
@@ -441,7 +446,7 @@ function TaskRow({
         <div className="min-w-0 flex-1">
           <h2
             className={`${
-              task.completed ? "text-base-content/45 line-through" : ""
+              done ? "text-base-content/45 line-through" : ""
             } text-sm font-medium break-words`}
           >
             {task.title}
@@ -564,7 +569,7 @@ function TaskModal({
         <dl className="border-base-300 mt-6 grid grid-cols-2 gap-4 border-t pt-5 text-sm">
           <Detail label="Status">
             <span className="badge badge-outline">
-              {task.completed ? "Completed" : "Open"}
+              {isTaskDone(task) ? "Completed" : "Open"}
             </span>
           </Detail>
           <Detail label="Project">{projectName}</Detail>

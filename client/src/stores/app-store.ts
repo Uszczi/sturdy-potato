@@ -1,5 +1,10 @@
 import { create } from "zustand";
-import type { ProjectSchema, TaskSchema, TaskCreateInput } from "@api-client";
+import type {
+  ProjectSchema,
+  TaskSchema,
+  TaskCreateInput,
+  TaskUpdateInput,
+} from "@api-client";
 import { ResponseError } from "@api-client";
 import { logout } from "@/services/auth";
 import {
@@ -9,11 +14,11 @@ import {
   updateProject,
 } from "@/services/projects";
 import {
-  assignTaskProject,
   createTask,
+  isTaskDone,
   listTasks,
   reorderTasks,
-  toggleTask,
+  updateTask,
 } from "@/services/tasks";
 
 type AppState = {
@@ -41,7 +46,7 @@ type AppState = {
   ) => Promise<void>;
   reorderProjects: (orderedIds: number[]) => Promise<void>;
   addTask: (input: TaskCreateInput) => Promise<void>;
-  toggleTask: (task: TaskSchema) => Promise<void>;
+  updateTask: (id: number, input: TaskUpdateInput) => Promise<void>;
   assignTaskProject: (
     taskId: number,
     projectId: number | null,
@@ -50,8 +55,10 @@ type AppState = {
 };
 
 function compareTasks(a: TaskSchema, b: TaskSchema): number {
-  if (a.completed !== b.completed) return a.completed ? 1 : -1;
-  if (!a.completed) {
+  const aDone = isTaskDone(a);
+  const bDone = isTaskDone(b);
+  if (aDone !== bDone) return aDone ? 1 : -1;
+  if (!aDone) {
     if (a.position !== b.position) return a.position - b.position;
   } else if (a.updatedAt.getTime() !== b.updatedAt.getTime()) {
     return b.updatedAt.getTime() - a.updatedAt.getTime();
@@ -152,11 +159,11 @@ export const useAppStore = create<AppState>((set, get) => ({
     if (ok) await get().refresh();
   },
 
-  toggleTask: async (task) => {
-    // Toggling completion never changes project task counts, so update just the
+  updateTask: async (id, input) => {
+    // Field edits like status never change project task counts, so patch the
     // affected task in place and re-sort instead of refetching everything.
     await guard(set, async () => {
-      const updated = await toggleTask(task);
+      const updated = await updateTask(id, input);
       const tasks = get()
         .tasks.map((existing) =>
           existing.id === updated.id ? updated : existing,
@@ -167,8 +174,10 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
 
   assignTaskProject: async (taskId, projectId) => {
+    // Reassigning a project shifts task counts on both projects, so refetch the
+    // workspace rather than patching a single task in place.
     const ok = await guard(set, () =>
-      assignTaskProject(taskId, projectId).then(() => undefined),
+      updateTask(taskId, { projectId }).then(() => undefined),
     );
     if (ok) await get().refresh();
   },

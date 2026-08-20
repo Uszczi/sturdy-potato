@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from infrastructure.models import utcnow
 from tests.factories import auth_headers, create_project, create_task, create_user
+from use_cases.task_status import TaskStatus
 
 
 async def test_list_returns_only_the_authenticated_users_tasks(
@@ -41,8 +42,8 @@ async def test_list_sinks_completed_below_open_ignoring_position(
     client: AsyncClient, session: AsyncSession
 ) -> None:
     user = await create_user(session)
-    # The completed task has the lower position, yet must still sort last.
-    await create_task(session, user, title="Done", completed=True, position=0)
+    # The done task has the lower position, yet must still sort last.
+    await create_task(session, user, title="Done", status=TaskStatus.DONE, position=0)
     await create_task(session, user, title="Open", position=1)
 
     response = await client.get("/api/tasks/", headers=auth_headers(user))
@@ -55,9 +56,11 @@ async def test_completed_tasks_sort_most_recently_completed_first(
 ) -> None:
     user = await create_user(session)
     earlier = await create_task(
-        session, user, title="Earlier", completed=True, position=0
+        session, user, title="Earlier", status=TaskStatus.DONE, position=0
     )
-    later = await create_task(session, user, title="Later", completed=True, position=1)
+    later = await create_task(
+        session, user, title="Later", status=TaskStatus.DONE, position=1
+    )
     # `later` was created last, but `earlier` was ticked most recently, so its
     # newer updated_at should lead the completed group (top of closed).
     earlier.updated_at = datetime(2024, 2, 1, tzinfo=UTC)
@@ -75,12 +78,12 @@ async def test_reopening_a_task_returns_it_to_the_open_group(
     user = await create_user(session)
     await create_task(session, user, title="Open", position=0)
     done = await create_task(
-        session, user, title="Reopened", completed=True, position=1
+        session, user, title="Reopened", status=TaskStatus.DONE, position=1
     )
     headers = auth_headers(user)
 
     await client.patch(
-        f"/api/tasks/{done.id}/", headers=headers, json={"completed": False}
+        f"/api/tasks/{done.id}/", headers=headers, json={"status": "open"}
     )
 
     response = await client.get("/api/tasks/", headers=headers)
@@ -167,18 +170,18 @@ async def test_retrieve_missing_task_returns_404(
 
 async def test_update_task_fields(client: AsyncClient, session: AsyncSession) -> None:
     user = await create_user(session)
-    task = await create_task(session, user, title="Old", completed=False)
+    task = await create_task(session, user, title="Old", status=TaskStatus.OPEN)
 
     response = await client.patch(
         f"/api/tasks/{task.id}/",
         headers=auth_headers(user),
-        json={"title": "New", "completed": True},
+        json={"title": "New", "status": "done"},
     )
 
     assert response.status_code == 200
     body = response.json()
     assert body["title"] == "New"
-    assert body["completed"] is True
+    assert body["status"] == "done"
 
 
 async def test_update_task_rejects_null_title(
@@ -433,7 +436,7 @@ async def test_open_tasks_with_limit(
     user = await create_user(session)
     await create_task(session, user, title="Open 1", position=0)
     await create_task(session, user, title="Open 2", position=1)
-    await create_task(session, user, title="Done", completed=True, position=2)
+    await create_task(session, user, title="Done", status=TaskStatus.DONE, position=2)
 
     unlimited = await client.get("/api/tasks/open/", headers=auth_headers(user))
     limited = await client.get(
@@ -446,12 +449,12 @@ async def test_open_tasks_with_limit(
 
 async def test_count_tasks(client: AsyncClient, session: AsyncSession) -> None:
     user = await create_user(session)
-    await create_task(session, user, completed=False)
-    await create_task(session, user, completed=True)
+    await create_task(session, user, status=TaskStatus.OPEN)
+    await create_task(session, user, status=TaskStatus.DONE)
 
     total = await client.get("/api/tasks/count/", headers=auth_headers(user))
     open_only = await client.get(
-        "/api/tasks/count/", headers=auth_headers(user), params={"completed": "false"}
+        "/api/tasks/count/", headers=auth_headers(user), params={"status": "open"}
     )
 
     assert total.json() == {"count": 2}

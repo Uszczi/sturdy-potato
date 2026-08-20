@@ -8,7 +8,7 @@ Name | Type
 ------------ | -------------
 `title` | string
 `description` | string
-`completed` | boolean
+`status` | [TaskStatus](TaskStatus.md)
 `projectId` | number
 `dueDate` | Date
 
@@ -21,7 +21,7 @@ import type { TaskCreateInput } from ''
 const example = {
   "title": null,
   "description": null,
-  "completed": null,
+  "status": null,
   "projectId": null,
   "dueDate": null,
 } satisfies TaskCreateInput

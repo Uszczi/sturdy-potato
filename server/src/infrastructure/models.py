@@ -4,6 +4,8 @@ from typing import Any
 from sqlalchemy import Column, DateTime, Index, UniqueConstraint
 from sqlmodel import Field, SQLModel
 
+from use_cases.task_status import TaskStatus
+
 
 def utcnow() -> datetime:
     return datetime.now(UTC)
@@ -59,9 +61,9 @@ class Task(SQLModel, table=True):
     __tablename__ = "todos"
     __table_args__ = (
         # Matches the repository access patterns: list-all (user, position) and
-        # the open-tasks view (user, completed, position).
+        # the open-tasks view (user, status, position).
         Index("ix_todo_user_position", "user_id", "position"),
-        Index("ix_todo_user_completed_position", "user_id", "completed", "position"),
+        Index("ix_todo_user_status_position", "user_id", "status", "position"),
     )
 
     id: int | None = Field(default=None, primary_key=True)
@@ -69,7 +71,10 @@ class Task(SQLModel, table=True):
     project_id: int | None = Field(default=None, foreign_key="projects.id")
     title: str = Field(max_length=200)
     description: str = ""
-    completed: bool = False
+    # Stored as a plain string (not a DB enum) so a future per-project status
+    # setting can introduce new values without a schema migration. The domain's
+    # TaskStatus is the source of truth for which values are valid.
+    status: str = Field(default=TaskStatus.OPEN, max_length=20)
     position: int = 0
     due_date: date | None = None
     created_at: datetime = _created_at_field()

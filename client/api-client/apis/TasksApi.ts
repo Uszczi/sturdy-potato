@@ -39,13 +39,18 @@ import {
     TaskSchemaToJSON,
 } from '../models/TaskSchema';
 import {
+    type TaskStatus,
+    TaskStatusFromJSON,
+    TaskStatusToJSON,
+} from '../models/TaskStatus';
+import {
     type TaskUpdateInput,
     TaskUpdateInputFromJSON,
     TaskUpdateInputToJSON,
 } from '../models/TaskUpdateInput';
 
 export interface ApiTasksCountRetrieveRequest {
-    completed?: boolean | null;
+    status?: TaskStatus | null;
 }
 
 export interface ApiTasksCreateRequest {
@@ -90,8 +95,8 @@ export class TasksApi extends runtime.BaseAPI {
     async apiTasksCountRetrieveRequestOpts(requestParameters: ApiTasksCountRetrieveRequest): Promise<runtime.RequestOpts> {
         const queryParameters: any = {};
 
-        if (requestParameters['completed'] != null) {
-            queryParameters['completed'] = requestParameters['completed'];
+        if (requestParameters['status'] != null) {
+            queryParameters['status'] = requestParameters['status'];
         }
 
         const headerParameters: runtime.HTTPHeaders = {};

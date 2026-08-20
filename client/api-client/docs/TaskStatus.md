@@ -1,38 +1,20 @@
 
-# TaskSchema
+# TaskStatus
 
 
 ## Properties
 
 Name | Type
 ------------ | -------------
-`id` | number
-`title` | string
-`description` | string
-`status` | [TaskStatus](TaskStatus.md)
-`position` | number
-`projectId` | number
-`dueDate` | Date
-`createdAt` | Date
-`updatedAt` | Date
 
 ## Example
 
 ```typescript
-import type { TaskSchema } from ''
+import type { TaskStatus } from ''
 
 // TODO: Update the object below with actual values
 const example = {
-  "id": null,
-  "title": null,
-  "description": null,
-  "status": null,
-  "position": null,
-  "projectId": null,
-  "dueDate": null,
-  "createdAt": null,
-  "updatedAt": null,
-} satisfies TaskSchema
+} satisfies TaskStatus
 
 console.log(example)
 
@@ -41,7 +23,7 @@ const exampleJSON: string = JSON.stringify(example)
 console.log(exampleJSON)
 
 // Parse the JSON string back to an object
-const exampleParsed = JSON.parse(exampleJSON) as TaskSchema
+const exampleParsed = JSON.parse(exampleJSON) as TaskStatus
 console.log(exampleParsed)
 ```
 

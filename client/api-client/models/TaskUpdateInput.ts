@@ -13,6 +13,14 @@
  */
 
 import { mapValues } from '../runtime';
+import type { TaskStatus } from './TaskStatus';
+import {
+    TaskStatusFromJSON,
+    TaskStatusFromJSONTyped,
+    TaskStatusToJSON,
+    TaskStatusToJSONTyped,
+} from './TaskStatus';
+
 /**
  * 
  * @export
@@ -33,10 +41,10 @@ export interface TaskUpdateInput {
     description?: string | null;
     /**
      * 
-     * @type {boolean}
+     * @type {TaskStatus}
      * @memberof TaskUpdateInput
      */
-    completed?: boolean | null;
+    status?: TaskStatus | null;
     /**
      * 
      * @type {number}
@@ -50,6 +58,8 @@ export interface TaskUpdateInput {
      */
     dueDate?: Date | null;
 }
+
+
 
 /**
  * Check if a given object implements the TaskUpdateInput interface.
@@ -70,7 +80,7 @@ export function TaskUpdateInputFromJSONTyped(json: any, ignoreDiscriminator: boo
         
         'title': json['title'] === undefined ? undefined : json['title'] === null ? null : json['title'],
         'description': json['description'] === undefined ? undefined : json['description'] === null ? null : json['description'],
-        'completed': json['completed'] === undefined ? undefined : json['completed'] === null ? null : json['completed'],
+        'status': json['status'] === undefined ? undefined : json['status'] === null ? null : TaskStatusFromJSON(json['status']),
         'projectId': json['project_id'] === undefined ? undefined : json['project_id'] === null ? null : json['project_id'],
         'dueDate': json['due_date'] === undefined ? undefined : json['due_date'] === null ? null : (new Date(json['due_date'])),
     };
@@ -89,7 +99,7 @@ export function TaskUpdateInputToJSONTyped(value?: TaskUpdateInput | null, ignor
         
         'title': value['title'],
         'description': value['description'],
-        'completed': value['completed'],
+        'status': TaskStatusToJSON(value['status']),
         'project_id': value['projectId'],
         'due_date': value['dueDate'] == null ? value['dueDate'] : value['dueDate'].toISOString().substring(0,10),
     };

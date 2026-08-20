@@ -4,6 +4,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from schemas._coercions import empty_to_none, reject_null, strip_if_str
 from use_cases.dtos import TaskCreateData, TaskUpdateData
+from use_cases.task_status import TaskStatus
 
 
 class TaskCreateInput(BaseModel):
@@ -11,7 +12,7 @@ class TaskCreateInput(BaseModel):
 
     title: str = Field(min_length=1, max_length=200)
     description: str = ""
-    completed: bool = False
+    status: TaskStatus = TaskStatus.OPEN
     project_id: int | None = None
     due_date: date | None = None
 
@@ -19,7 +20,7 @@ class TaskCreateInput(BaseModel):
         return TaskCreateData(
             title=self.title,
             description=self.description,
-            completed=self.completed,
+            status=self.status,
             project_id=self.project_id,
             due_date=self.due_date,
         )
@@ -40,18 +41,18 @@ class TaskUpdateInput(BaseModel):
 
     title: str | None = Field(default=None, max_length=200)
     description: str | None = None
-    completed: bool | None = None
+    status: TaskStatus | None = None
     project_id: int | None = None
     due_date: date | None = None
 
     def to_domain(self) -> TaskUpdateData:
         # Pass only the fields the client actually sent; the rest keep their
         # UNSET default and so become non-changes (exclude_unset). Provided
-        # title/description/completed are non-null thanks to the validator below.
+        # title/description/status are non-null thanks to the validator below.
         provided = {name: getattr(self, name) for name in self.model_fields_set}
         return TaskUpdateData(**provided)
 
-    @field_validator("title", "description", "completed", mode="before")
+    @field_validator("title", "description", "status", mode="before")
     @classmethod
     def disallow_null(cls, value: object) -> object:
         return reject_null(value)
@@ -72,7 +73,7 @@ class TaskSchema(BaseModel):
     id: int
     title: str
     description: str
-    completed: bool
+    status: TaskStatus
     position: int
     project_id: int | None
     due_date: date | None

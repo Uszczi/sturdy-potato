@@ -36,6 +36,7 @@ from use_cases.exceptions import (
     UsernameConflict,
 )
 from use_cases.projects.create_project import CreateProject
+from use_cases.task_status import TaskStatus
 from use_cases.tasks.create_task import CreateTask
 from use_cases.tasks.delete_task import DeleteTask
 from use_cases.tasks.reorder_tasks import ReorderTasks
@@ -67,7 +68,7 @@ def _task(task_id: int, *, position: int, project_id: int | None = None) -> Task
         project_id=project_id,
         title=f"Task {task_id}",
         description="",
-        completed=False,
+        status=TaskStatus.OPEN,
         position=position,
         due_date=None,
         created_at=now,
@@ -93,7 +94,7 @@ def _create_data(*, project_id: int | None = None) -> TaskCreateData:
     return TaskCreateData(
         title="Write tests",
         description="",
-        completed=False,
+        status=TaskStatus.OPEN,
         project_id=project_id,
         due_date=None,
     )
@@ -122,11 +123,11 @@ async def test_update_task_only_touches_provided_fields() -> None:
     projects = FakeProjectRepository()
 
     updated = await UpdateTask(tasks, projects).execute(
-        USER, 1, TaskUpdateData(completed=True)
+        USER, 1, TaskUpdateData(status=TaskStatus.DONE)
     )
 
-    # exclude_unset: title left alone, only completed changed.
-    assert updated.completed is True
+    # exclude_unset: title left alone, only status changed.
+    assert updated.status is TaskStatus.DONE
     assert updated.title == "Task 1"
 
 
