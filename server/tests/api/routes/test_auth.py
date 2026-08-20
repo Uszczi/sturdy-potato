@@ -71,6 +71,18 @@ async def test_obtain_token_returns_access_and_refresh(
     assert body["access"] and body["refresh"]
 
 
+async def test_obtain_token_as_demo_logs_in_the_demo_user(
+    client: AsyncClient, session: AsyncSession
+) -> None:
+    await create_user(session, username="demo", password=DEMO_PASSWORD)
+
+    response = await client.post("/api/token/as-demo")
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["access"] and body["refresh"]
+
+
 async def test_obtain_token_rejects_wrong_password(
     client: AsyncClient, session: AsyncSession
 ) -> None:

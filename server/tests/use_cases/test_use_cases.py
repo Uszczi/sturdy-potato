@@ -32,6 +32,7 @@ from use_cases.exceptions import (
     ProjectNameConflict,
     ProjectNotFound,
     TaskNotFound,
+    UseCaseError,
     UsernameConflict,
 )
 from use_cases.projects.create_project import CreateProject
@@ -187,6 +188,18 @@ async def test_authenticate_rejects_an_unknown_user() -> None:
 async def test_authenticate_rejects_an_inactive_user() -> None:
     with pytest.raises(InvalidCredentials):
         await _authenticate(_user(is_active=False)).execute("demo", "secret")
+
+
+async def test_authenticate_as_demo_issues_a_token_pair() -> None:
+    tokens = await _authenticate(_user()).execute_for_demo()
+
+    assert tokens.access == f"access:{USER}"
+    assert tokens.refresh == f"refresh:{USER}"
+
+
+async def test_authenticate_as_demo_fails_when_the_demo_user_is_missing() -> None:
+    with pytest.raises(UseCaseError):
+        await _authenticate(None).execute_for_demo()
 
 
 def _register(existing: User | None = None) -> tuple[RegisterUser, FakeUserRepository]:
