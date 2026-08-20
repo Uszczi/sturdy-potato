@@ -66,7 +66,7 @@ async def test_login_endpoint_is_rate_limited(client: AsyncClient) -> None:
 
     blocked = await client.post("/api/token/", json=payload)
     assert blocked.status_code == 429
-    assert blocked.headers["Retry-After"] == TooManyRequests.headers["Retry-After"]
+    assert blocked.headers["Retry-After"] == "60"
 
 
 def test_too_many_requests_carries_a_retry_after_header() -> None:

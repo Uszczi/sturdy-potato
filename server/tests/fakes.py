@@ -6,7 +6,7 @@ repositories. They keep only the behaviour the use cases rely on.
 """
 
 from collections.abc import Mapping
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 from typing import Any
 
 from use_cases.dtos import ProjectCreateData, TaskCreateData
@@ -62,6 +62,42 @@ class FakeTaskRepository:
     def __init__(self, tasks: list[Task] | None = None) -> None:
         self._tasks: dict[int, Task] = {t.id: t for t in tasks or []}
         self._next_id = max(self._tasks, default=0) + 1
+
+    async def list_all(self, user_id: int) -> list[Task]:
+        return sorted(
+            self._owned(user_id), key=lambda t: (t.completed, t.position, -t.id)
+        )
+
+    async def list_for_view(
+        self, user_id: int, *, view: str, project_id: int | None, today: date
+    ) -> list[Task]:
+        tasks = self._owned(user_id)
+        if project_id is not None:
+            tasks = [t for t in tasks if t.project_id == project_id]
+        elif view == "inbox":
+            tasks = [t for t in tasks if t.project_id is None]
+        elif view == "today":
+            tasks = [t for t in tasks if t.due_date == today]
+        elif view == "upcoming":
+            tasks = [
+                t
+                for t in tasks
+                if t.due_date is not None and t.due_date > today and not t.completed
+            ]
+        return sorted(tasks, key=lambda t: (t.position, -t.id))
+
+    async def list_open(self, user_id: int, *, limit: int | None) -> list[Task]:
+        owned = sorted(
+            (t for t in self._owned(user_id) if not t.completed),
+            key=lambda t: (t.position, -t.id),
+        )
+        return owned[:limit] if limit is not None else owned
+
+    async def count(self, user_id: int, *, completed: bool | None) -> int:
+        tasks = self._owned(user_id)
+        if completed is not None:
+            tasks = [t for t in tasks if t.completed == completed]
+        return len(tasks)
 
     async def get(self, user_id: int, task_id: int) -> Task | None:
         task = self._tasks.get(task_id)
@@ -121,6 +157,9 @@ class FakeProjectRepository:
         self._projects: dict[int, Project] = {p.id: p for p in projects or []}
         self._next_id = max(self._projects, default=0) + 1
 
+    async def list_all(self, user_id: int) -> list[Project]:
+        return sorted(self._owned(user_id), key=lambda p: (p.position, p.id))
+
     async def get(self, user_id: int, project_id: int) -> Project | None:
         project = self._projects.get(project_id)
         return project if project is not None and project.user_id == user_id else None
@@ -150,3 +189,34 @@ class FakeProjectRepository:
         self._projects[project.id] = project
         self._next_id += 1
         return project
+
+    async def update(
+        self, user_id: int, project_id: int, changes: Mapping[str, Any]
+    ) -> Project | None:
+        existing = await self.get(user_id, project_id)
+        if existing is None:
+            return None
+        fields = {**existing.__dict__, **changes, "updated_at": _now()}
+        updated = Project(**fields)
+        self._projects[project_id] = updated
+        return updated
+
+    async def delete(self, user_id: int, project_id: int) -> bool:
+        if await self.get(user_id, project_id) is None:
+            return False
+        del self._projects[project_id]
+        return True
+
+    async def ordered_ids(self, user_id: int) -> list[int]:
+        owned = sorted(self._owned(user_id), key=lambda p: (p.position, p.id))
+        return [p.id for p in owned]
+
+    async def set_positions(self, user_id: int, positions: Mapping[int, int]) -> None:
+        for project_id, position in positions.items():
+            project = self._projects[project_id]
+            self._projects[project_id] = Project(
+                **{**project.__dict__, "position": position}
+            )
+
+    def _owned(self, user_id: int) -> list[Project]:
+        return [p for p in self._projects.values() if p.user_id == user_id]
