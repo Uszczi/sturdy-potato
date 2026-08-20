@@ -1,15 +1,15 @@
+prod := "docker compose -f deployment/prod/docker-compose.yml"
+
 all: lint test e2e
 
 start:
 	aspire start
 
-# Run a local PostgreSQL for `just migrate` / `just run` outside of `aspire start`.
 db:
 	docker run --rm --name sturdy-potato-postgres \
 		-e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=sturdy_potato \
 		-p 5432:5432 postgres:17-alpine
 
-# Run a local Redis for `just run` outside of `aspire start`.
 redis:
 	docker run --rm --name sturdy-potato-redis -p 6379:6379 redis:7-alpine
 
@@ -37,7 +37,6 @@ create-heavy username="heavy" password="heavy-password-123" projects="100" max_t
 	cd server && \
 	PYTHONPATH=src uv run python -m cli create-heavy --username "{{username}}" --password "{{password}}" --projects "{{projects}}" --max-tasks "{{max_tasks}}" --completed-ratio "{{completed_ratio}}" --seed "{{seed}}"
 
-# Password is required (no default): e.g. `just create-admin hunter2`.
 create-admin password username="admin":
 	cd server && \
 	PYTHONPATH=src uv run python -m cli create-admin --username "{{username}}" --password "{{password}}"
@@ -72,7 +71,6 @@ e2e-install:
 e2e *args:
 	cd client && npx playwright test {{args}}
 
-# Add `-- --slowmo 500` to slow the actions down enough to watch.
 e2e-headed *args:
 	cd client && npx playwright test --headed {{args}}
 
@@ -86,10 +84,31 @@ e2e-report:
 	cd client && npx playwright show-report
 
 prod-up:
-	docker compose -f deployment/prod/docker-compose.yml up --build
+	{{prod}} up --build
 
 prod-down:
-	docker compose -f deployment/prod/docker-compose.yml down
+	{{prod}} down
 
 prod-logs:
-	docker compose -f deployment/prod/docker-compose.yml logs -f web
+	{{prod}} logs -f web
+
+prod-migrate:
+	{{prod}} exec web alembic -c src/infrastructure/alembic/alembic.ini upgrade head
+
+prod-seed:
+	{{prod}} exec web python -m cli seed
+
+prod-create-demo username="demo" password="demo-password-123":
+	{{prod}} exec web python -m cli create-demo --username "{{username}}" --password "{{password}}"
+
+prod-create-heavy username="heavy" password="heavy-password-123" projects="100" max_tasks="1000" completed_ratio="0.3" seed="0":
+	{{prod}} exec web python -m cli create-heavy --username "{{username}}" --password "{{password}}" --projects "{{projects}}" --max-tasks "{{max_tasks}}" --completed-ratio "{{completed_ratio}}" --seed "{{seed}}"
+
+prod-create-admin password username="admin":
+	{{prod}} exec web python -m cli create-admin --username "{{username}}" --password "{{password}}"
+
+prod-cli *args:
+	{{prod}} exec web python -m cli {{args}}
+
+prod-shell:
+	{{prod}} exec web sh
