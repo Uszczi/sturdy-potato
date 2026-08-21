@@ -1,8 +1,11 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
 [project]
 name = "sturdy-potato"
 version = "0.1.0"
 description = "Add your description here"
-readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "alembic>=1.14.0",
@@ -10,6 +13,9 @@ dependencies = [
     "asyncpg>=0.30.0",
     "click>=8.4.2",
     "fastapi[standard]>=0.115.0",
+    # The chat route: MCP client (task tools) + Ollama runtime (the model).
+    "fastmcp>=3.0",
+    "ollama>=0.4",
     "itsdangerous>=2.2.0",
     "pwdlib[argon2]>=0.2.1",
     "pydantic>=2.13.4",
@@ -39,6 +45,15 @@ dev = [
 
 [tool.fastapi]
 entrypoint = "main:app"
+
+# Flat "src as root" layout: modules live directly under src/ (main.py, auth.py,
+# use_cases/, infrastructure/, ...). Map src/ to the wheel root so an install
+# exposes them as top-level imports (``import use_cases``), matching how the app
+# already runs under pythonpath=["src"]. This is what lets the mcp/ workspace
+# member import the use-case layer in-process.
+[tool.hatch.build.targets.wheel]
+only-include = ["src"]
+sources = ["src"]
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]

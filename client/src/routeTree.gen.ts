@@ -14,6 +14,7 @@ import { Route as LoggedOutRouteImport } from './routes/logged-out'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as AppIndexRouteImport } from './routes/_app.index'
+import { Route as AppAssistantRouteImport } from './routes/_app.assistant'
 import { Route as AppTasksRouteImport } from './routes/_app.tasks'
 import { Route as KanbanIndexRouteImport } from './routes/kanban/index'
 import { Route as AppProjectsIndexRouteImport } from './routes/_app.projects.index'
@@ -43,6 +44,11 @@ const AppIndexRoute = AppIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AppRoute,
 } as any)
+const AppAssistantRoute = AppAssistantRouteImport.update({
+  id: '/assistant',
+  path: '/assistant',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppTasksRoute = AppTasksRouteImport.update({
   id: '/tasks',
   path: '/tasks',
@@ -69,6 +75,7 @@ export interface FileRoutesByFullPath {
   '/logged-out': typeof LoggedOutRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/assistant': typeof AppAssistantRoute
   '/tasks': typeof AppTasksRoute
   '/kanban/': typeof KanbanIndexRoute
   '/projects/$projectId': typeof AppProjectsProjectIdRoute
@@ -78,6 +85,7 @@ export interface FileRoutesByTo {
   '/logged-out': typeof LoggedOutRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/assistant': typeof AppAssistantRoute
   '/tasks': typeof AppTasksRoute
   '/': typeof AppIndexRoute
   '/kanban': typeof KanbanIndexRoute
@@ -90,6 +98,7 @@ export interface FileRoutesById {
   '/logged-out': typeof LoggedOutRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/_app/assistant': typeof AppAssistantRoute
   '/_app/tasks': typeof AppTasksRoute
   '/_app/': typeof AppIndexRoute
   '/kanban/': typeof KanbanIndexRoute
@@ -103,6 +112,7 @@ export interface FileRouteTypes {
     | '/logged-out'
     | '/login'
     | '/register'
+    | '/assistant'
     | '/tasks'
     | '/kanban/'
     | '/projects/$projectId'
@@ -112,6 +122,7 @@ export interface FileRouteTypes {
     | '/logged-out'
     | '/login'
     | '/register'
+    | '/assistant'
     | '/tasks'
     | '/'
     | '/kanban'
@@ -123,6 +134,7 @@ export interface FileRouteTypes {
     | '/logged-out'
     | '/login'
     | '/register'
+    | '/_app/assistant'
     | '/_app/tasks'
     | '/_app/'
     | '/kanban/'
@@ -175,6 +187,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppIndexRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/assistant': {
+      id: '/_app/assistant'
+      path: '/assistant'
+      fullPath: '/assistant'
+      preLoaderRoute: typeof AppAssistantRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/tasks': {
       id: '/_app/tasks'
       path: '/tasks'
@@ -207,6 +226,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AppRouteChildren {
+  AppAssistantRoute: typeof AppAssistantRoute
   AppTasksRoute: typeof AppTasksRoute
   AppIndexRoute: typeof AppIndexRoute
   AppProjectsProjectIdRoute: typeof AppProjectsProjectIdRoute
@@ -214,6 +234,7 @@ interface AppRouteChildren {
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppAssistantRoute: AppAssistantRoute,
   AppTasksRoute: AppTasksRoute,
   AppIndexRoute: AppIndexRoute,
   AppProjectsProjectIdRoute: AppProjectsProjectIdRoute,

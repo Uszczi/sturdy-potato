@@ -17,6 +17,26 @@ run:
 	cd server && \
 	uv run fastapi dev src/main.py
 
+# Serve the task tools over streamable HTTP at http://127.0.0.1:8001/mcp.
+# Reuses the server's use cases in-process, so it needs the same running
+# Postgres (and matching SECRET_KEY/DATABASE_URL) as the API.
+mcp:
+	cd mcp && \
+	uv run potato-mcp
+
+# Serve the task tools over stdio, so a client can launch the process directly.
+# Credentials come from MCP_ACCESS_TOKEN and MCP_WORKSPACE_ID instead of headers.
+mcp-stdio:
+	cd mcp && \
+	MCP_TRANSPORT=stdio uv run potato-mcp
+
+# Chat with a local Ollama model that can call the task tools via the MCP server.
+# Needs `just mcp` running, Ollama up (`docker compose up ollama`), and
+# MCP_ACCESS_TOKEN / MCP_WORKSPACE_ID exported.
+chat:
+	cd mcp && \
+	uv run potato-chat
+
 migrate:
 	cd server && \
 	uv run alembic -c src/infrastructure/alembic/alembic.ini upgrade head

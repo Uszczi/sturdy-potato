@@ -1,0 +1,29 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "potato-mcp"
+version = "0.1.0"
+description = "FastMCP server exposing sturdy-potato task tools over streamable HTTP."
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    # The server's use-case layer, repositories, config and security, reused
+    # in-process (see the workspace source below).
+    "sturdy-potato",
+    "fastmcp>=3.0",
+    # The Ollama <-> MCP chat bridge (potato-chat).
+    "ollama>=0.4",
+]
+
+[project.scripts]
+potato-mcp = "potato_mcp.__main__:main"
+potato-chat = "potato_mcp.bridge:main"
+
+# Resolve `sturdy-potato` from the sibling workspace member instead of PyPI.
+[tool.uv.sources]
+sturdy-potato = { workspace = true }
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/potato_mcp"]

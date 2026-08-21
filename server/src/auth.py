@@ -40,6 +40,25 @@ async def get_current_user(
 CurrentUser = Annotated[User, Depends(get_current_user)]
 
 
+async def get_access_token(
+    credentials: Annotated[
+        HTTPAuthorizationCredentials | None, Depends(_bearer_scheme)
+    ],
+) -> str:
+    """The caller's raw bearer JWT, for forwarding to the MCP server.
+
+    The chat route re-presents this token to the MCP server (which runs the task
+    tools), so the model can only touch what the caller could. A missing token is
+    the same InvalidToken (401) failure as everywhere else.
+    """
+    if credentials is None:
+        raise InvalidToken()
+    return credentials.credentials
+
+
+AccessToken = Annotated[str, Depends(get_access_token)]
+
+
 async def get_current_user_id(user: CurrentUser) -> int:
     return user.id
 

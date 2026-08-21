@@ -40,6 +40,15 @@ class Settings(BaseSettings):
 
     cors_origins: str = "http://localhost:5173,http://127.0.0.1:5173"
 
+    # The local Ollama runtime and the model it serves for the chat assistant.
+    ollama_url: str = "http://localhost:11434"
+    ollama_model: str = "qwen2.5:3b"
+
+    # The MCP server (a separate process) exposing the task tools over HTTP. The
+    # chat route forwards the caller's token to it, so the model's tool access is
+    # scoped to exactly what that user could do.
+    mcp_url: str = "http://localhost:8001/mcp"
+
     # The SQLAdmin database UI is a powerful, full-table editor. It is off by
     # default and must be explicitly enabled (behind staff login) per deployment
     # so it is never exposed just by shipping the image.

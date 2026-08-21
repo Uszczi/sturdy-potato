@@ -20,6 +20,7 @@ function Sidebar() {
   const view = (search as { view?: string }).view;
   const onTasks = pathname === "/tasks";
   const onKanban = pathname === "/kanban";
+  const onAssistant = pathname === "/assistant";
   const activeProjectId = matchProjectId(pathname);
 
   function handleLogout() {
@@ -156,6 +157,23 @@ function Sidebar() {
                 <path strokeLinecap="round" d="M5 5h5v14H5zM14 5h5v8h-5z" />
               </svg>
               Kanban
+            </Link>
+            <Link to="/assistant" className={navClass(onAssistant)}>
+              <svg
+                aria-hidden="true"
+                className="size-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth="1.8"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M8 10h8M8 14h5m-9 6 3.5-3H17a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3H7a3 3 0 0 0-3 3v13Z"
+                />
+              </svg>
+              Assistant
             </Link>
           </nav>
         </div>
