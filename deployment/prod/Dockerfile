@@ -19,8 +19,14 @@ WORKDIR /app
 ENV UV_COMPILE_BYTECODE=1 \
     UV_LINK_MODE=copy
 
-COPY server/pyproject.toml server/uv.lock ./
-RUN uv sync --frozen --no-dev --no-install-project
+# Resolve from the frozen workspace lock (root pyproject.toml + root uv.lock).
+# --no-install-workspace installs every member's third-party deps but not the
+# member packages themselves; the first-party source comes in below on
+# PYTHONPATH. The member pyproject files let uv see the workspace layout.
+COPY pyproject.toml uv.lock ./
+COPY server/pyproject.toml ./server/pyproject.toml
+COPY mcp/pyproject.toml ./mcp/pyproject.toml
+RUN uv sync --frozen --no-dev --no-install-workspace
 
 
 FROM python:3.13-slim-bookworm
