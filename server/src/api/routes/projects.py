@@ -8,18 +8,18 @@ from api.dependencies import (
     ReorderProjectsDep,
     UpdateProjectDep,
 )
-from auth import CurrentUserId
+from auth import WorkspaceId
 from schemas.order import ReorderInput
 from schemas.project import ProjectCreateInput, ProjectSchema, ProjectUpdateInput
 
-router = APIRouter(prefix="/projects", tags=["projects"])
+router = APIRouter(prefix="/workspaces/{workspace_id}/projects", tags=["projects"])
 
 
 @router.get("/", operation_id="api_projects_list")
 async def list_projects(
-    user_id: CurrentUserId, use_case: ListProjectsDep
+    workspace_id: WorkspaceId, use_case: ListProjectsDep
 ) -> list[ProjectSchema]:
-    projects = await use_case.execute(user_id)
+    projects = await use_case.execute(workspace_id)
     return [ProjectSchema.model_validate(project) for project in projects]
 
 
@@ -27,9 +27,9 @@ async def list_projects(
     "/", status_code=status.HTTP_201_CREATED, operation_id="api_projects_create"
 )
 async def create_project(
-    body: ProjectCreateInput, user_id: CurrentUserId, use_case: CreateProjectDep
+    body: ProjectCreateInput, workspace_id: WorkspaceId, use_case: CreateProjectDep
 ) -> ProjectSchema:
-    project = await use_case.execute(user_id, body.to_domain())
+    project = await use_case.execute(workspace_id, body.to_domain())
     return ProjectSchema.model_validate(project)
 
 
@@ -39,16 +39,16 @@ async def create_project(
     operation_id="api_projects_reorder_create",
 )
 async def reorder_projects(
-    body: ReorderInput, user_id: CurrentUserId, use_case: ReorderProjectsDep
+    body: ReorderInput, workspace_id: WorkspaceId, use_case: ReorderProjectsDep
 ) -> None:
-    await use_case.execute(user_id, body.order)
+    await use_case.execute(workspace_id, body.order)
 
 
 @router.get("/{id}/", operation_id="api_projects_retrieve")
 async def retrieve_project(
-    id: int, user_id: CurrentUserId, use_case: GetProjectDep
+    id: int, workspace_id: WorkspaceId, use_case: GetProjectDep
 ) -> ProjectSchema:
-    project = await use_case.execute(user_id, id)
+    project = await use_case.execute(workspace_id, id)
     return ProjectSchema.model_validate(project)
 
 
@@ -56,10 +56,10 @@ async def retrieve_project(
 async def update_project(
     id: int,
     body: ProjectUpdateInput,
-    user_id: CurrentUserId,
+    workspace_id: WorkspaceId,
     use_case: UpdateProjectDep,
 ) -> ProjectSchema:
-    project = await use_case.execute(user_id, id, body.to_domain())
+    project = await use_case.execute(workspace_id, id, body.to_domain())
     return ProjectSchema.model_validate(project)
 
 
@@ -69,6 +69,6 @@ async def update_project(
     operation_id="api_projects_destroy",
 )
 async def delete_project(
-    id: int, user_id: CurrentUserId, use_case: DeleteProjectDep
+    id: int, workspace_id: WorkspaceId, use_case: DeleteProjectDep
 ) -> None:
-    await use_case.execute(user_id, id)
+    await use_case.execute(workspace_id, id)

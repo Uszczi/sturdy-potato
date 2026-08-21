@@ -8,7 +8,14 @@ from starlette.requests import Request
 
 from config import settings
 from infrastructure.db import async_session_maker, engine
-from infrastructure.models import Comment, Project, Task, User
+from infrastructure.models import (
+    Comment,
+    Project,
+    Task,
+    User,
+    Workspace,
+    WorkspaceMembership,
+)
 from infrastructure.security import password_hasher
 
 
@@ -52,25 +59,39 @@ class UserAdmin(ModelView, model=User):
     form_excluded_columns: ClassVar = ["hashed_password"]
 
 
+class WorkspaceAdmin(ModelView, model=Workspace):
+    name = "Workspace"
+    name_plural = "Workspaces"
+    icon = "fa-solid fa-users-rectangle"
+    column_list: ClassVar = ["id", "name", "is_personal", "created_at"]
+
+
+class WorkspaceMembershipAdmin(ModelView, model=WorkspaceMembership):
+    name = "Membership"
+    name_plural = "Memberships"
+    icon = "fa-solid fa-user-group"
+    column_list: ClassVar = ["id", "workspace_id", "user_id", "role"]
+
+
 class ProjectAdmin(ModelView, model=Project):
     name = "Project"
     name_plural = "Projects"
     icon = "fa-solid fa-folder"
-    column_list: ClassVar = ["id", "user_id", "name", "color", "position"]
+    column_list: ClassVar = ["id", "workspace_id", "name", "color", "position"]
 
 
 class TaskAdmin(ModelView, model=Task):
     name = "Task"
     name_plural = "Tasks"
     icon = "fa-solid fa-list-check"
-    column_list: ClassVar = ["id", "user_id", "title", "status", "due_date"]
+    column_list: ClassVar = ["id", "workspace_id", "title", "status", "due_date"]
 
 
 class CommentAdmin(ModelView, model=Comment):
     name = "Comment"
     name_plural = "Comments"
     icon = "fa-solid fa-comment"
-    column_list: ClassVar = ["id", "task_id", "user_id", "created_at"]
+    column_list: ClassVar = ["id", "task_id", "workspace_id", "created_at"]
 
 
 def setup_admin(app: FastAPI) -> Admin:
@@ -80,6 +101,8 @@ def setup_admin(app: FastAPI) -> Admin:
         authentication_backend=AdminAuth(secret_key=settings.admin_session_secret),
     )
     admin.add_view(UserAdmin)
+    admin.add_view(WorkspaceAdmin)
+    admin.add_view(WorkspaceMembershipAdmin)
     admin.add_view(ProjectAdmin)
     admin.add_view(TaskAdmin)
     admin.add_view(CommentAdmin)

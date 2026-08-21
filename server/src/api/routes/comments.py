@@ -6,18 +6,20 @@ from api.dependencies import (
     ListCommentsDep,
     UpdateCommentDep,
 )
-from auth import CurrentUserId
+from auth import CurrentUserId, WorkspaceId
 from schemas.comment import CommentCreateInput, CommentSchema, CommentUpdateInput
 
 # Comments hang off a task, so the whole router is nested under its id.
-router = APIRouter(prefix="/tasks/{task_id}/comments", tags=["comments"])
+router = APIRouter(
+    prefix="/workspaces/{workspace_id}/tasks/{task_id}/comments", tags=["comments"]
+)
 
 
 @router.get("/", operation_id="api_task_comments_list")
 async def list_comments(
-    task_id: int, user_id: CurrentUserId, use_case: ListCommentsDep
+    task_id: int, workspace_id: WorkspaceId, use_case: ListCommentsDep
 ) -> list[CommentSchema]:
-    comments = await use_case.execute(user_id, task_id)
+    comments = await use_case.execute(workspace_id, task_id)
     return [CommentSchema.model_validate(comment) for comment in comments]
 
 
@@ -29,10 +31,11 @@ async def list_comments(
 async def create_comment(
     task_id: int,
     body: CommentCreateInput,
+    workspace_id: WorkspaceId,
     user_id: CurrentUserId,
     use_case: CreateCommentDep,
 ) -> CommentSchema:
-    comment = await use_case.execute(user_id, task_id, body.to_domain())
+    comment = await use_case.execute(workspace_id, user_id, task_id, body.to_domain())
     return CommentSchema.model_validate(comment)
 
 
@@ -41,10 +44,12 @@ async def update_comment(
     task_id: int,
     comment_id: int,
     body: CommentUpdateInput,
-    user_id: CurrentUserId,
+    workspace_id: WorkspaceId,
     use_case: UpdateCommentDep,
 ) -> CommentSchema:
-    comment = await use_case.execute(user_id, task_id, comment_id, body.to_domain())
+    comment = await use_case.execute(
+        workspace_id, task_id, comment_id, body.to_domain()
+    )
     return CommentSchema.model_validate(comment)
 
 
@@ -56,7 +61,7 @@ async def update_comment(
 async def delete_comment(
     task_id: int,
     comment_id: int,
-    user_id: CurrentUserId,
+    workspace_id: WorkspaceId,
     use_case: DeleteCommentDep,
 ) -> None:
-    await use_case.execute(user_id, task_id, comment_id)
+    await use_case.execute(workspace_id, task_id, comment_id)

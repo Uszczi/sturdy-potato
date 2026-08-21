@@ -23,10 +23,10 @@ class ViewTasks:
         self._projects = projects
 
     async def execute(
-        self, user_id: int, *, view: str, project_id: int | None, tz: str = "UTC"
+        self, workspace_id: int, *, view: str, project_id: int | None, tz: str = "UTC"
     ) -> list[Task]:
-        await ensure_project(self._projects, user_id, project_id)
+        await ensure_project(self._projects, workspace_id, project_id)
         today = _today_in(tz)
         return await self._tasks.list_for_view(
-            user_id, view=view, project_id=project_id, today=today
+            workspace_id, view=view, project_id=project_id, today=today
         )

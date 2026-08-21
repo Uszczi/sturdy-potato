@@ -6,5 +6,5 @@ class CountTasks:
     def __init__(self, tasks: TaskRepository) -> None:
         self._tasks = tasks
 
-    async def execute(self, user_id: int, *, status: TaskStatus | None) -> int:
-        return await self._tasks.count(user_id, status=status)
+    async def execute(self, workspace_id: int, *, status: TaskStatus | None) -> int:
+        return await self._tasks.count(workspace_id, status=status)

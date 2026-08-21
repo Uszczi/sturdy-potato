@@ -6,5 +6,5 @@ class ListProjects:
     def __init__(self, projects: ProjectRepository) -> None:
         self._projects = projects
 
-    async def execute(self, user_id: int) -> list[Project]:
-        return await self._projects.list_all(user_id)
+    async def execute(self, workspace_id: int) -> list[Project]:
+        return await self._projects.list_all(workspace_id)

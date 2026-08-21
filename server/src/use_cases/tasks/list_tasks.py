@@ -6,5 +6,5 @@ class ListTasks:
     def __init__(self, tasks: TaskRepository) -> None:
         self._tasks = tasks
 
-    async def execute(self, user_id: int) -> list[Task]:
-        return await self._tasks.list_all(user_id)
+    async def execute(self, workspace_id: int) -> list[Task]:
+        return await self._tasks.list_all(workspace_id)

@@ -10,7 +10,7 @@ class CreateComment:
         self._tasks = tasks
 
     async def execute(
-        self, user_id: int, task_id: int, data: CommentCreateData
+        self, workspace_id: int, user_id: int, task_id: int, data: CommentCreateData
     ) -> Comment:
-        await get_task_or_404(self._tasks, user_id, task_id)
-        return await self._comments.create(user_id, task_id, data)
+        await get_task_or_404(self._tasks, workspace_id, task_id)
+        return await self._comments.create(workspace_id, task_id, user_id, data)

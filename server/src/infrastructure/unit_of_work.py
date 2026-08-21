@@ -12,6 +12,7 @@ from infrastructure.repositories import (
     ProjectRepository,
     TaskRepository,
     UserRepository,
+    WorkspaceRepository,
 )
 
 
@@ -22,6 +23,7 @@ class UnitOfWork:
         self.projects = ProjectRepository(session)
         self.comments = CommentRepository(session)
         self.users = UserRepository(session)
+        self.workspaces = WorkspaceRepository(session)
 
     async def commit(self) -> None:
         await self._session.commit()

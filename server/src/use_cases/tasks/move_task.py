@@ -18,22 +18,22 @@ class MoveTask:
         self._tasks = tasks
 
     async def execute(
-        self, user_id: int, task_id: int, status: TaskStatus, position: int
+        self, workspace_id: int, task_id: int, status: TaskStatus, position: int
     ) -> None:
-        task = await get_task_or_404(self._tasks, user_id, task_id)
+        task = await get_task_or_404(self._tasks, workspace_id, task_id)
         if task.status != status:
-            await self._tasks.update(user_id, task_id, {"status": status})
+            await self._tasks.update(workspace_id, task_id, {"status": status})
         # The destination column (same project, target status) in its current
         # order, minus the moved task, with the card spliced back in at the
         # requested index (clamped to the end).
         column = [
             other.id
-            for other in await self._tasks.list_all(user_id)
+            for other in await self._tasks.list_all(workspace_id)
             if other.project_id == task.project_id
             and other.status == status
             and other.id != task_id
         ]
         column.insert(min(position, len(column)), task_id)
         await self._tasks.set_positions(
-            user_id, {task_id: slot for slot, task_id in enumerate(column)}
+            workspace_id, {task_id: slot for slot, task_id in enumerate(column)}
         )

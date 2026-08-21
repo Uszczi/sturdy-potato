@@ -14,11 +14,11 @@ from fastapi import Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from infrastructure.db import SessionDep
-from infrastructure.repositories import UserRepository
+from infrastructure.repositories import UserRepository, WorkspaceRepository
 from infrastructure.security import token_service
 from use_cases.auth import GetCurrentUser
 from use_cases.entities import User
-from use_cases.exceptions import InvalidToken
+from use_cases.exceptions import InvalidToken, WorkspaceNotFound
 
 # auto_error=False so a missing Authorization header reaches us as ``None`` and
 # is reported as an InvalidToken (401), rather than the scheme's own 403.
@@ -45,3 +45,22 @@ async def get_current_user_id(user: CurrentUser) -> int:
 
 
 CurrentUserId = Annotated[int, Depends(get_current_user_id)]
+
+
+async def get_current_workspace_id(
+    workspace_id: int, user_id: CurrentUserId, session: SessionDep
+) -> int:
+    """Authorize the ``{workspace_id}`` path segment against membership.
+
+    Resource routers are nested under ``/workspaces/{workspace_id}``; this reads
+    that segment and confirms the caller belongs to the workspace. A non-member
+    (or unknown workspace) 404s so membership never leaks a workspace's
+    existence.
+    """
+    if not await WorkspaceRepository(session).is_member(user_id, workspace_id):
+        raise WorkspaceNotFound()
+    return workspace_id
+
+
+# The authorized workspace id for a nested resource route.
+WorkspaceId = Annotated[int, Depends(get_current_workspace_id)]

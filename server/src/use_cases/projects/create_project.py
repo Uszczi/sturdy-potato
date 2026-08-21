@@ -8,7 +8,7 @@ class CreateProject:
     def __init__(self, projects: ProjectRepository) -> None:
         self._projects = projects
 
-    async def execute(self, user_id: int, data: ProjectCreateData) -> Project:
-        if await self._projects.name_exists(user_id, data.name):
+    async def execute(self, workspace_id: int, data: ProjectCreateData) -> Project:
+        if await self._projects.name_exists(workspace_id, data.name):
             raise ProjectNameConflict()
-        return await self._projects.create(user_id, data)
+        return await self._projects.create(workspace_id, data)

@@ -9,9 +9,11 @@ class UpdateComment:
         self._comments = comments
 
     async def execute(
-        self, user_id: int, task_id: int, comment_id: int, data: CommentUpdateData
+        self, workspace_id: int, task_id: int, comment_id: int, data: CommentUpdateData
     ) -> Comment:
-        await get_comment_or_404(self._comments, user_id, task_id, comment_id)
-        comment = await self._comments.update(user_id, comment_id, {"body": data.body})
+        await get_comment_or_404(self._comments, workspace_id, task_id, comment_id)
+        comment = await self._comments.update(
+            workspace_id, comment_id, {"body": data.body}
+        )
         assert comment is not None  # existence checked above, same transaction
         return comment

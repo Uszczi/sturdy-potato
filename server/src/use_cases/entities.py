@@ -21,9 +21,20 @@ class User:
 
 
 @dataclass(frozen=True)
+class Workspace:
+    id: int
+    name: str
+    # True for the workspace auto-created for a user at registration; the client
+    # picks this one as the default when no other is selected.
+    is_personal: bool
+    created_at: datetime
+    updated_at: datetime
+
+
+@dataclass(frozen=True)
 class Task:
     id: int
-    user_id: int
+    workspace_id: int
     project_id: int | None
     title: str
     description: str
@@ -38,6 +49,8 @@ class Task:
 class Comment:
     id: int
     task_id: int
+    workspace_id: int
+    # The member who authored the comment.
     user_id: int
     body: str
     created_at: datetime
@@ -47,7 +60,7 @@ class Comment:
 @dataclass(frozen=True)
 class Project:
     id: int
-    user_id: int
+    workspace_id: int
     name: str
     color: str | None
     position: int

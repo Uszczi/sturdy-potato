@@ -9,6 +9,6 @@ class CreateTask:
         self._tasks = tasks
         self._projects = projects
 
-    async def execute(self, user_id: int, data: TaskCreateData) -> Task:
-        await ensure_project(self._projects, user_id, data.project_id)
-        return await self._tasks.create(user_id, data)
+    async def execute(self, workspace_id: int, data: TaskCreateData) -> Task:
+        await ensure_project(self._projects, workspace_id, data.project_id)
+        return await self._tasks.create(workspace_id, data)

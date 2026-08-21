@@ -3,7 +3,7 @@ from typing import Annotated
 
 from fastapi import Depends
 
-from auth import CurrentUser, CurrentUserId
+from auth import CurrentUser, CurrentUserId, WorkspaceId
 from infrastructure.db import SessionDep
 from infrastructure.repositories import UserRepository
 from infrastructure.security import password_hasher, token_service
@@ -12,6 +12,7 @@ from use_cases import auth as auth_use_cases
 from use_cases import comments as comment_use_cases
 from use_cases import projects as project_use_cases
 from use_cases import tasks as task_use_cases
+from use_cases import workspaces as workspace_use_cases
 
 
 async def get_unit_of_work(session: SessionDep) -> AsyncGenerator[UnitOfWork]:
@@ -70,10 +71,19 @@ RegisterUserDep = Annotated[
     Depends(
         _use_case(
             lambda uow: auth_use_cases.RegisterUser(
-                uow.users, password_hasher, token_service
+                uow.users, uow.workspaces, password_hasher, token_service
             )
         )
     ),
+]
+
+ListWorkspacesDep = Annotated[
+    workspace_use_cases.ListWorkspaces,
+    Depends(_use_case(lambda uow: workspace_use_cases.ListWorkspaces(uow.workspaces))),
+]
+CreateWorkspaceDep = Annotated[
+    workspace_use_cases.CreateWorkspace,
+    Depends(_use_case(lambda uow: workspace_use_cases.CreateWorkspace(uow.workspaces))),
 ]
 
 ListTasksDep = Annotated[
@@ -165,6 +175,7 @@ __all__ = [
     "CreateCommentDep",
     "CreateProjectDep",
     "CreateTaskDep",
+    "CreateWorkspaceDep",
     "CurrentUser",
     "CurrentUserId",
     "DeleteCommentDep",
@@ -176,6 +187,7 @@ __all__ = [
     "ListOpenTasksDep",
     "ListProjectsDep",
     "ListTasksDep",
+    "ListWorkspacesDep",
     "MoveTaskDep",
     "RefreshAccessTokenDep",
     "RegisterUserDep",
@@ -187,4 +199,5 @@ __all__ = [
     "UpdateTaskDep",
     "UserRepositoryDep",
     "ViewTasksDep",
+    "WorkspaceId",
 ]

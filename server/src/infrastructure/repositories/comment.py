@@ -18,6 +18,7 @@ def _to_entity(comment: Comment) -> CommentEntity:
     return CommentEntity(
         id=comment.id,
         task_id=comment.task_id,
+        workspace_id=comment.workspace_id,
         user_id=comment.user_id,
         body=comment.body,
         created_at=comment.created_at,
@@ -35,33 +36,39 @@ class CommentRepository:
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
 
-    async def _get_orm(self, user_id: int, comment_id: int) -> Comment | None:
+    async def _get_orm(self, workspace_id: int, comment_id: int) -> Comment | None:
         statement = select(Comment).where(
-            col(Comment.user_id) == user_id, col(Comment.id) == comment_id
+            col(Comment.workspace_id) == workspace_id, col(Comment.id) == comment_id
         )
         comment: Comment | None = await self._session.scalar(statement)
         return comment
 
-    async def list_for_task(self, user_id: int, task_id: int) -> list[CommentEntity]:
+    async def list_for_task(
+        self, workspace_id: int, task_id: int
+    ) -> list[CommentEntity]:
         statement = (
             select(Comment)
-            .where(col(Comment.user_id) == user_id, col(Comment.task_id) == task_id)
+            .where(
+                col(Comment.workspace_id) == workspace_id,
+                col(Comment.task_id) == task_id,
+            )
             .order_by(*_THREAD_ORDER)
         )
         return [_to_entity(c) for c in await self._session.scalars(statement)]
 
-    async def get(self, user_id: int, comment_id: int) -> CommentEntity | None:
-        comment = await self._get_orm(user_id, comment_id)
+    async def get(self, workspace_id: int, comment_id: int) -> CommentEntity | None:
+        comment = await self._get_orm(workspace_id, comment_id)
         return _to_entity(comment) if comment is not None else None
 
     async def create(
-        self, user_id: int, task_id: int, data: CommentCreateData
+        self, workspace_id: int, task_id: int, user_id: int, data: CommentCreateData
     ) -> CommentEntity:
         now = utcnow()
         statement = (
             insert(Comment)
             .values(
                 task_id=task_id,
+                workspace_id=workspace_id,
                 user_id=user_id,
                 body=data.body,
                 created_at=now,
@@ -73,9 +80,9 @@ class CommentRepository:
         return _to_entity(comment)
 
     async def update(
-        self, user_id: int, comment_id: int, changes: Mapping[str, Any]
+        self, workspace_id: int, comment_id: int, changes: Mapping[str, Any]
     ) -> CommentEntity | None:
-        comment = await self._get_orm(user_id, comment_id)
+        comment = await self._get_orm(workspace_id, comment_id)
         if comment is None:
             return None
         for field, value in changes.items():
@@ -85,8 +92,8 @@ class CommentRepository:
         await self._session.refresh(comment)
         return _to_entity(comment)
 
-    async def delete(self, user_id: int, comment_id: int) -> bool:
-        comment = await self._get_orm(user_id, comment_id)
+    async def delete(self, workspace_id: int, comment_id: int) -> bool:
+        comment = await self._get_orm(workspace_id, comment_id)
         if comment is None:
             return False
         await self._session.delete(comment)

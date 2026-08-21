@@ -6,5 +6,5 @@ class ReorderProjects:
     def __init__(self, projects: ProjectRepository) -> None:
         self._projects = projects
 
-    async def execute(self, user_id: int, order: list[int]) -> None:
-        await apply_reorder(self._projects, user_id, order, noun="projects")
+    async def execute(self, workspace_id: int, order: list[int]) -> None:
+        await apply_reorder(self._projects, workspace_id, order, noun="projects")

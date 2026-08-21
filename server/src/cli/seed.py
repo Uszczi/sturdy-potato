@@ -3,10 +3,16 @@ import random
 from datetime import UTC, date, datetime, timedelta
 
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
-from sqlmodel import select
+from sqlmodel import col, select
 
 from infrastructure.db import async_session_maker
-from infrastructure.models import Project, Task, User
+from infrastructure.models import (
+    Project,
+    Task,
+    User,
+    Workspace,
+    WorkspaceMembership,
+)
 from infrastructure.security import password_hasher
 from use_cases.task_status import TaskStatus
 
@@ -112,16 +118,47 @@ async def _get_or_create_demo_user(
     return user, True
 
 
-async def _seed_projects_and_todos(session: AsyncSession, user: User) -> None:
+async def _get_or_create_personal_workspace(
+    session: AsyncSession, user: User
+) -> Workspace:
+    """The user's personal workspace, creating it (+ owner membership) if absent.
+
+    Mirrors what registration does so seeded users behave like real ones.
+    """
+    workspace = await session.scalar(
+        select(Workspace)
+        .join(
+            WorkspaceMembership,
+            col(WorkspaceMembership.workspace_id) == col(Workspace.id),
+        )
+        .where(
+            col(WorkspaceMembership.user_id) == user.id,
+            col(Workspace.is_personal).is_(True),
+        )
+    )
+    if workspace is not None:
+        return workspace
+    workspace = Workspace(name="Personal", is_personal=True)
+    session.add(workspace)
+    await session.commit()
+    await session.refresh(workspace)
+    session.add(
+        WorkspaceMembership(workspace_id=workspace.id, user_id=user.id, role="owner")
+    )
+    await session.commit()
+    return workspace
+
+
+async def _seed_projects_and_todos(session: AsyncSession, workspace: Workspace) -> None:
     for project_position, (project_name, todos) in enumerate(SEEDED_PROJECTS):
         project = await session.scalar(
             select(Project).where(
-                Project.user_id == user.id, Project.name == project_name
+                Project.workspace_id == workspace.id, Project.name == project_name
             )
         )
         if project is None:
             project = Project(
-                user_id=user.id,
+                workspace_id=workspace.id,
                 name=project_name,
                 color=_SEED_COLORS[project_position % len(_SEED_COLORS)],
                 position=project_position,
@@ -132,7 +169,7 @@ async def _seed_projects_and_todos(session: AsyncSession, user: User) -> None:
         for task_position, (title, description, completed) in enumerate(todos):
             existing = await session.scalar(
                 select(Task).where(
-                    Task.user_id == user.id,
+                    Task.workspace_id == workspace.id,
                     Task.project_id == project.id,
                     Task.title == title,
                 )
@@ -140,7 +177,7 @@ async def _seed_projects_and_todos(session: AsyncSession, user: User) -> None:
             if existing is None:
                 session.add(
                     Task(
-                        user_id=user.id,
+                        workspace_id=workspace.id,
                         project_id=project.id,
                         title=title,
                         description=description,
@@ -158,6 +195,7 @@ async def seed_demo_user(
 ) -> None:
     async with session_maker() as session:
         user, created = await _get_or_create_demo_user(session, username, password)
+        await _get_or_create_personal_workspace(session, user)
         status = "Created" if created else "Found"
         print(f"{status} demo user '{user.username}'.")
 
@@ -167,7 +205,8 @@ async def seed(
 ) -> None:
     async with session_maker() as session:
         user, created = await _get_or_create_demo_user(session)
-        await _seed_projects_and_todos(session, user)
+        workspace = await _get_or_create_personal_workspace(session, user)
+        await _seed_projects_and_todos(session, workspace)
         status = "Created" if created else "Found"
         print(f"{status} demo user '{user.username}'.")
 
@@ -204,15 +243,18 @@ async def seed_heavy(
     completed_total = 0
     async with session_maker() as session:
         user, _ = await _get_or_create_demo_user(session, username, password)
+        workspace = await _get_or_create_personal_workspace(session, user)
         already_seeded = await session.scalar(
-            select(Project.id).where(Project.user_id == user.id)
+            select(Project.id).where(Project.workspace_id == workspace.id)
         )
         if already_seeded is not None:
             print(f"Heavy user '{user.username}' already has projects; skipping.")
             return
         for position, task_count in enumerate(counts):
             project = Project(
-                user_id=user.id, name=f"Project {position + 1}", position=position
+                workspace_id=workspace.id,
+                name=f"Project {position + 1}",
+                position=position,
             )
             session.add(project)
             await session.commit()
@@ -223,7 +265,7 @@ async def seed_heavy(
                 completed_total += completed
                 tasks.append(
                     Task(
-                        user_id=user.id,
+                        workspace_id=workspace.id,
                         project_id=project.id,
                         title=f"Task {number + 1}",
                         position=number,
@@ -261,4 +303,6 @@ async def seed_admin(
             status = "Promoted"
         session.add(user)
         await session.commit()
+        await session.refresh(user)
+        await _get_or_create_personal_workspace(session, user)
         print(f"{status} admin user '{username}'.")

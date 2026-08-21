@@ -15,6 +15,7 @@ from tests.fakes import (
     FakeTaskRepository,
     FakeTokenIssuer,
     FakeUserRepository,
+    FakeWorkspaceRepository,
 )
 from use_cases.auth.authenticate_user import AuthenticateUser
 from use_cases.auth.get_current_user import GetCurrentUser
@@ -51,6 +52,8 @@ from use_cases.tasks.move_task import MoveTask
 from use_cases.tasks.update_task import UpdateTask
 
 USER = 1
+# The workspace the acting user operates in; use-case scope args take this.
+WORKSPACE = 1
 
 
 def _user(*, is_active: bool = True) -> User:
@@ -72,7 +75,7 @@ def _task(task_id: int, *, position: int, project_id: int | None = None) -> Task
     now = datetime(2024, 1, 1, tzinfo=UTC)
     return Task(
         id=task_id,
-        user_id=USER,
+        workspace_id=WORKSPACE,
         project_id=project_id,
         title=f"Task {task_id}",
         description="",
@@ -88,7 +91,7 @@ def _project(project_id: int, *, name: str = "Work") -> Project:
     now = datetime(2024, 1, 1, tzinfo=UTC)
     return Project(
         id=project_id,
-        user_id=USER,
+        workspace_id=WORKSPACE,
         name=name,
         color=None,
         position=0,
@@ -113,6 +116,7 @@ def _comment(comment_id: int, *, task_id: int) -> Comment:
     return Comment(
         id=comment_id,
         task_id=task_id,
+        workspace_id=WORKSPACE,
         user_id=USER,
         body=f"Comment {comment_id}",
         created_at=now,
@@ -125,14 +129,14 @@ async def test_create_task_rejects_project_owned_by_nobody() -> None:
     projects = FakeProjectRepository()  # no projects exist
 
     with pytest.raises(ProjectNotFound):
-        await CreateTask(tasks, projects).execute(USER, _create_data(project_id=99))
+        await CreateTask(tasks, projects).execute(WORKSPACE, _create_data(project_id=99))
 
 
 async def test_create_task_accepts_an_owned_project() -> None:
     tasks = FakeTaskRepository()
     projects = FakeProjectRepository([_project(5)])
 
-    task = await CreateTask(tasks, projects).execute(USER, _create_data(project_id=5))
+    task = await CreateTask(tasks, projects).execute(WORKSPACE, _create_data(project_id=5))
 
     assert task.project_id == 5
     assert task.id is not None
@@ -143,7 +147,7 @@ async def test_update_task_only_touches_provided_fields() -> None:
     projects = FakeProjectRepository()
 
     updated = await UpdateTask(tasks, projects).execute(
-        USER, 1, TaskUpdateData(status=TaskStatus.DONE)
+        WORKSPACE, 1, TaskUpdateData(status=TaskStatus.DONE)
     )
 
     # exclude_unset: title left alone, only status changed.
@@ -156,12 +160,12 @@ async def test_update_task_missing_raises_not_found() -> None:
     projects = FakeProjectRepository()
 
     with pytest.raises(TaskNotFound):
-        await UpdateTask(tasks, projects).execute(USER, 1, TaskUpdateData(title="x"))
+        await UpdateTask(tasks, projects).execute(WORKSPACE, 1, TaskUpdateData(title="x"))
 
 
 async def test_delete_task_missing_raises_not_found() -> None:
     with pytest.raises(TaskNotFound):
-        await DeleteTask(FakeTaskRepository()).execute(USER, 1)
+        await DeleteTask(FakeTaskRepository()).execute(WORKSPACE, 1)
 
 
 async def test_list_open_excludes_done_tasks() -> None:
@@ -169,7 +173,7 @@ async def test_list_open_excludes_done_tasks() -> None:
     done = Task(**{**done.__dict__, "status": TaskStatus.DONE})
     tasks = FakeTaskRepository([done, _task(2, position=1)])
 
-    listed = await ListOpenTasks(tasks).execute(USER, limit=None)
+    listed = await ListOpenTasks(tasks).execute(WORKSPACE, limit=None)
 
     # The done task is filtered out; only the still-open one remains.
     assert [t.id for t in listed] == [2]
@@ -177,13 +181,13 @@ async def test_list_open_excludes_done_tasks() -> None:
 
 async def _open_order(tasks: FakeTaskRepository) -> list[int]:
     """Ids of the inbox open column in board order (a test read-back helper)."""
-    listed = await tasks.list_all(USER)
+    listed = await tasks.list_all(WORKSPACE)
     return [t.id for t in listed if not t.status.is_done]
 
 
 async def test_move_task_missing_raises_not_found() -> None:
     with pytest.raises(TaskNotFound):
-        await MoveTask(FakeTaskRepository()).execute(USER, 1, TaskStatus.DONE, 0)
+        await MoveTask(FakeTaskRepository()).execute(WORKSPACE, 1, TaskStatus.DONE, 0)
 
 
 async def test_move_task_reorders_within_a_column() -> None:
@@ -192,7 +196,7 @@ async def test_move_task_reorders_within_a_column() -> None:
     )
 
     # Same status, so this is a pure reorder: drop task 3 at the top.
-    await MoveTask(tasks).execute(USER, 3, TaskStatus.OPEN, 0)
+    await MoveTask(tasks).execute(WORKSPACE, 3, TaskStatus.OPEN, 0)
 
     assert await _open_order(tasks) == [3, 1, 2]
 
@@ -202,11 +206,11 @@ async def test_move_task_changes_status_and_slots_into_the_column() -> None:
     tasks = FakeTaskRepository([_task(1, position=0), _task(2, position=1), done])
 
     # Send task 1 to the done column at the top; it should sit above task 3.
-    await MoveTask(tasks).execute(USER, 1, TaskStatus.DONE, 0)
+    await MoveTask(tasks).execute(WORKSPACE, 1, TaskStatus.DONE, 0)
 
-    moved = await tasks.get(USER, 1)
+    moved = await tasks.get(WORKSPACE, 1)
     assert moved is not None and moved.status is TaskStatus.DONE
-    done_ids = [t.id for t in await tasks.list_all(USER) if t.status.is_done]
+    done_ids = [t.id for t in await tasks.list_all(WORKSPACE) if t.status.is_done]
     assert done_ids == [1, 3]
 
 
@@ -218,9 +222,9 @@ async def test_move_task_only_renumbers_its_own_project_column() -> None:
     tasks = FakeTaskRepository([a1, a2, b1])
 
     # Reorder project 10's column; project 20 must be untouched.
-    await MoveTask(tasks).execute(USER, 2, TaskStatus.OPEN, 0)
+    await MoveTask(tasks).execute(WORKSPACE, 2, TaskStatus.OPEN, 0)
 
-    listed = {t.id: t.position for t in await tasks.list_all(USER)}
+    listed = {t.id: t.position for t in await tasks.list_all(WORKSPACE)}
     assert (listed[2], listed[1]) == (0, 1)  # project 10 reordered
     assert listed[3] == 0  # project 20 still at its own slot 0
 
@@ -229,7 +233,7 @@ async def test_move_task_clamps_position_past_the_end() -> None:
     tasks = FakeTaskRepository([_task(1, position=0), _task(2, position=1)])
 
     # An out-of-range index lands the task at the bottom of the column.
-    await MoveTask(tasks).execute(USER, 1, TaskStatus.OPEN, 99)
+    await MoveTask(tasks).execute(WORKSPACE, 1, TaskStatus.OPEN, 99)
 
     assert await _open_order(tasks) == [2, 1]
 
@@ -240,7 +244,7 @@ async def test_create_comment_requires_an_existing_task() -> None:
 
     with pytest.raises(TaskNotFound):
         await CreateComment(comments, tasks).execute(
-            USER, 1, CommentCreateData(body="hi")
+            WORKSPACE, USER, 1, CommentCreateData(body="hi")
         )
 
 
@@ -249,7 +253,7 @@ async def test_create_comment_on_an_owned_task_succeeds() -> None:
     tasks = FakeTaskRepository([_task(1, position=0)])
 
     comment = await CreateComment(comments, tasks).execute(
-        USER, 1, CommentCreateData(body="hi")
+        WORKSPACE, USER, 1, CommentCreateData(body="hi")
     )
 
     assert comment.task_id == 1
@@ -261,14 +265,14 @@ async def test_list_comments_requires_an_existing_task() -> None:
     tasks = FakeTaskRepository()
 
     with pytest.raises(TaskNotFound):
-        await ListComments(comments, tasks).execute(USER, 1)
+        await ListComments(comments, tasks).execute(WORKSPACE, 1)
 
 
 async def test_list_comments_returns_the_tasks_thread() -> None:
     comments = FakeCommentRepository([_comment(1, task_id=1), _comment(2, task_id=2)])
     tasks = FakeTaskRepository([_task(1, position=0)])
 
-    listed = await ListComments(comments, tasks).execute(USER, 1)
+    listed = await ListComments(comments, tasks).execute(WORKSPACE, 1)
 
     assert [c.id for c in listed] == [1]
 
@@ -277,7 +281,7 @@ async def test_update_comment_changes_the_body() -> None:
     comments = FakeCommentRepository([_comment(1, task_id=1)])
 
     updated = await UpdateComment(comments).execute(
-        USER, 1, 1, CommentUpdateData(body="edited")
+        WORKSPACE, 1, 1, CommentUpdateData(body="edited")
     )
 
     assert updated.body == "edited"
@@ -286,7 +290,7 @@ async def test_update_comment_changes_the_body() -> None:
 async def test_update_comment_missing_raises_not_found() -> None:
     with pytest.raises(CommentNotFound):
         await UpdateComment(FakeCommentRepository()).execute(
-            USER, 1, 1, CommentUpdateData(body="x")
+            WORKSPACE, 1, 1, CommentUpdateData(body="x")
         )
 
 
@@ -294,27 +298,27 @@ async def test_update_comment_under_the_wrong_task_raises_not_found() -> None:
     comments = FakeCommentRepository([_comment(1, task_id=1)])
 
     with pytest.raises(CommentNotFound):
-        await UpdateComment(comments).execute(USER, 2, 1, CommentUpdateData(body="x"))
+        await UpdateComment(comments).execute(WORKSPACE, 2, 1, CommentUpdateData(body="x"))
 
 
 async def test_delete_comment_missing_raises_not_found() -> None:
     with pytest.raises(CommentNotFound):
-        await DeleteComment(FakeCommentRepository()).execute(USER, 1, 1)
+        await DeleteComment(FakeCommentRepository()).execute(WORKSPACE, 1, 1)
 
 
 async def test_delete_comment_removes_it() -> None:
     comments = FakeCommentRepository([_comment(1, task_id=1)])
 
-    await DeleteComment(comments).execute(USER, 1, 1)
+    await DeleteComment(comments).execute(WORKSPACE, 1, 1)
 
-    assert await comments.get(USER, 1) is None
+    assert await comments.get(WORKSPACE, 1) is None
 
 
 async def test_create_project_rejects_duplicate_name() -> None:
     projects = FakeProjectRepository([_project(1, name="Work")])
 
     with pytest.raises(ProjectNameConflict):
-        await CreateProject(projects).execute(USER, ProjectCreateData("Work", None))
+        await CreateProject(projects).execute(WORKSPACE, ProjectCreateData("Work", None))
 
 
 async def test_authenticate_issues_a_token_pair_for_valid_credentials() -> None:
@@ -353,7 +357,11 @@ async def test_authenticate_as_demo_fails_when_the_demo_user_is_missing() -> Non
 
 def _register(existing: User | None = None) -> tuple[RegisterUser, FakeUserRepository]:
     users = FakeUserRepository([existing] if existing is not None else [])
-    return RegisterUser(users, FakePasswordHasher(), FakeTokenIssuer()), users
+    workspaces = FakeWorkspaceRepository()
+    return (
+        RegisterUser(users, workspaces, FakePasswordHasher(), FakeTokenIssuer()),
+        users,
+    )
 
 
 async def test_register_creates_the_user_and_issues_tokens() -> None:

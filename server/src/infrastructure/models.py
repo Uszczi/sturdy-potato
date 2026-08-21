@@ -36,16 +36,59 @@ class User(SQLModel, table=True):
     is_staff: bool = False
 
 
-class Project(SQLModel, table=True):
-    __tablename__ = "projects"
+class Workspace(SQLModel, table=True):
+    __tablename__ = "workspaces"
+
+    id: int | None = Field(default=None, primary_key=True)
+    name: str = Field(max_length=100)
+    # True for the workspace minted for a user at registration. Lets the client
+    # single out a user's default workspace without inspecting memberships.
+    is_personal: bool = False
+    created_at: datetime = _created_at_field()
+    updated_at: datetime = _updated_at_field()
+
+
+class WorkspaceMembership(SQLModel, table=True):
+    __tablename__ = "workspace_memberships"
     __table_args__ = (
-        UniqueConstraint("user_id", "name", name="unique_project_name_per_user"),
-        # Every project query filters by user then orders by position.
-        Index("ix_project_user_position", "user_id", "position"),
+        # A user joins a workspace at most once.
+        UniqueConstraint("workspace_id", "user_id", name="unique_membership_per_user"),
+        # Listing a user's workspaces filters by user_id.
+        Index("ix_membership_user", "user_id"),
     )
 
     id: int | None = Field(default=None, primary_key=True)
-    user_id: int = Field(foreign_key="users.id")
+    workspace_id: int = Field(
+        sa_column=Column(
+            Integer,
+            ForeignKey("workspaces.id", ondelete="CASCADE"),
+            nullable=False,
+        )
+    )
+    user_id: int = Field(
+        sa_column=Column(
+            Integer,
+            ForeignKey("users.id", ondelete="CASCADE"),
+            nullable=False,
+        )
+    )
+    # "owner" for the creator; "member" for anyone later invited.
+    role: str = Field(default="member", max_length=20)
+    created_at: datetime = _created_at_field()
+
+
+class Project(SQLModel, table=True):
+    __tablename__ = "projects"
+    __table_args__ = (
+        UniqueConstraint(
+            "workspace_id", "name", name="unique_project_name_per_workspace"
+        ),
+        # Every project query filters by workspace then orders by position.
+        Index("ix_project_workspace_position", "workspace_id", "position"),
+    )
+
+    id: int | None = Field(default=None, primary_key=True)
+    workspace_id: int = Field(foreign_key="workspaces.id")
     name: str = Field(max_length=100)
     # Optional accent colour as a "#rrggbb" hex string; null falls back to the
     # theme's primary colour in the UI.
@@ -60,14 +103,19 @@ class Task(SQLModel, table=True):
     # table keeps its original name so no data migration is needed.
     __tablename__ = "todos"
     __table_args__ = (
-        # Matches the repository access patterns: list-all (user, position) and
-        # the open-tasks view (user, status, position).
-        Index("ix_todo_user_position", "user_id", "position"),
-        Index("ix_todo_user_status_position", "user_id", "status", "position"),
+        # Matches the repository access patterns: list-all (workspace, position)
+        # and the open-tasks view (workspace, status, position).
+        Index("ix_todo_workspace_position", "workspace_id", "position"),
+        Index(
+            "ix_todo_workspace_status_position",
+            "workspace_id",
+            "status",
+            "position",
+        ),
     )
 
     id: int | None = Field(default=None, primary_key=True)
-    user_id: int = Field(foreign_key="users.id")
+    workspace_id: int = Field(foreign_key="workspaces.id")
     project_id: int | None = Field(default=None, foreign_key="projects.id")
     title: str = Field(max_length=200)
     description: str = ""
@@ -98,7 +146,11 @@ class Comment(SQLModel, table=True):
             nullable=False,
         )
     )
-    # The author; always the task owner today, kept explicit for future sharing.
+    # Scopes the comment to a workspace so access checks match tasks/projects;
+    # a comment always shares its task's workspace.
+    workspace_id: int = Field(foreign_key="workspaces.id")
+    # The author. Access is by workspace, but we still record which member wrote
+    # the comment (in a shared workspace this is no longer just the task owner).
     user_id: int = Field(foreign_key="users.id")
     body: str = Field(max_length=2000)
     created_at: datetime = _created_at_field()

@@ -3,11 +3,19 @@ from itertools import count
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from infrastructure.models import Comment, Project, Task, User
+from infrastructure.models import (
+    Comment,
+    Project,
+    Task,
+    User,
+    Workspace,
+    WorkspaceMembership,
+)
 from infrastructure.security import password_hasher, token_service
 from use_cases.task_status import TaskStatus
 
 _user_counter = count(1)
+_workspace_counter = count(1)
 _project_counter = count(1)
 _task_counter = count(1)
 _comment_counter = count(1)
@@ -33,16 +41,61 @@ async def create_user(
     return user
 
 
-async def create_project(
+async def create_workspace(
     session: AsyncSession,
     user: User,
+    *,
+    name: str | None = None,
+    is_personal: bool = True,
+) -> Workspace:
+    """A workspace owned by ``user`` (workspace + owner membership).
+
+    Mirrors what registration mints for every new user, so seeded data behaves
+    like the real thing.
+    """
+    workspace = Workspace(
+        name=name or f"Workspace {next(_workspace_counter)}",
+        is_personal=is_personal,
+    )
+    session.add(workspace)
+    await session.commit()
+    await session.refresh(workspace)
+    session.add(
+        WorkspaceMembership(workspace_id=workspace.id, user_id=user.id, role="owner")
+    )
+    await session.commit()
+    return workspace
+
+
+async def create_user_with_workspace(
+    session: AsyncSession, **kwargs: object
+) -> tuple[User, Workspace]:
+    """A user together with their personal workspace, the common setup."""
+    user = await create_user(session, **kwargs)  # type: ignore[arg-type]
+    workspace = await create_workspace(session, user)
+    return user, workspace
+
+
+async def add_member(
+    session: AsyncSession, workspace: Workspace, user: User, *, role: str = "member"
+) -> None:
+    """Place an existing user into an existing workspace."""
+    session.add(
+        WorkspaceMembership(workspace_id=workspace.id, user_id=user.id, role=role)
+    )
+    await session.commit()
+
+
+async def create_project(
+    session: AsyncSession,
+    workspace: Workspace,
     *,
     name: str | None = None,
     color: str | None = None,
     position: int = 0,
 ) -> Project:
     project = Project(
-        user_id=user.id,
+        workspace_id=workspace.id,
         name=name or f"Project {next(_project_counter)}",
         color=color,
         position=position,
@@ -55,7 +108,7 @@ async def create_project(
 
 async def create_task(
     session: AsyncSession,
-    user: User,
+    workspace: Workspace,
     *,
     title: str | None = None,
     description: str = "",
@@ -65,7 +118,7 @@ async def create_task(
     due_date: date | None = None,
 ) -> Task:
     task = Task(
-        user_id=user.id,
+        workspace_id=workspace.id,
         project_id=project.id if project is not None else None,
         title=title or f"Task {next(_task_counter)}",
         description=description,
@@ -81,6 +134,7 @@ async def create_task(
 
 async def create_comment(
     session: AsyncSession,
+    workspace: Workspace,
     user: User,
     task: Task,
     *,
@@ -88,6 +142,7 @@ async def create_comment(
 ) -> Comment:
     comment = Comment(
         task_id=task.id,
+        workspace_id=workspace.id,
         user_id=user.id,
         body=body or f"Comment {next(_comment_counter)}",
     )

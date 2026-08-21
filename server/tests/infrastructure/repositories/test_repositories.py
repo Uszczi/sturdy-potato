@@ -13,7 +13,9 @@ from infrastructure.repositories import CommentRepository, TaskRepository
 async def test_update_returns_none_for_a_missing_task(session: AsyncSession) -> None:
     repository = TaskRepository(session)
 
-    result = await repository.update(user_id=1, task_id=999, changes={"title": "x"})
+    result = await repository.update(
+        workspace_id=1, task_id=999, changes={"title": "x"}
+    )
 
     assert result is None
 
@@ -25,7 +27,7 @@ async def test_set_positions_with_an_empty_map_is_a_noop(
     # is unreachable through the API; exercise it directly.
     repository = TaskRepository(session)
 
-    await repository.set_positions(user_id=1, positions={})
+    await repository.set_positions(workspace_id=1, positions={})
 
 
 async def test_comment_update_returns_none_for_a_missing_comment(
@@ -33,7 +35,9 @@ async def test_comment_update_returns_none_for_a_missing_comment(
 ) -> None:
     repository = CommentRepository(session)
 
-    result = await repository.update(user_id=1, comment_id=999, changes={"body": "x"})
+    result = await repository.update(
+        workspace_id=1, comment_id=999, changes={"body": "x"}
+    )
 
     assert result is None
 
@@ -43,4 +47,4 @@ async def test_comment_delete_returns_false_for_a_missing_comment(
 ) -> None:
     repository = CommentRepository(session)
 
-    assert await repository.delete(user_id=1, comment_id=999) is False
+    assert await repository.delete(workspace_id=1, comment_id=999) is False

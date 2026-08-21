@@ -41,6 +41,8 @@ class CommentSchema(BaseModel):
 
     id: int
     task_id: int
+    # The author's user id, so a shared workspace can show who wrote each comment.
+    user_id: int
     body: str
     created_at: datetime
     updated_at: datetime

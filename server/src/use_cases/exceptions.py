@@ -45,6 +45,10 @@ class ProjectNotFound(NotFoundError):
     detail = "Project not found."
 
 
+class WorkspaceNotFound(NotFoundError):
+    detail = "Workspace not found."
+
+
 class CommentNotFound(NotFoundError):
     detail = "Not found."
 
@@ -59,7 +63,7 @@ class UsernameConflict(ConflictError):
 
 class InvalidReorder(UseCaseError):
     status_code = 400
-    detail = "Order contains items outside this user."
+    detail = "Order contains items outside this workspace."
 
 
 class InvalidTimezone(UseCaseError):
