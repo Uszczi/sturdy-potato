@@ -13,6 +13,7 @@ export * from "./ProjectUpdateInput";
 export * from "./ReorderInput";
 export * from "./TaskCountSchema";
 export * from "./TaskCreateInput";
+export * from "./TaskMoveInput";
 export * from "./TaskSchema";
 export * from "./TaskStatus";
 export * from "./TaskUpdateInput";

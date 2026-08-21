@@ -1,8 +1,8 @@
 import { test, expect, type Locator, type Page } from "@playwright/test";
 
 // Exercises the drag-and-drop reordering wired up in TaskListView and the
-// projects list. Both persist through the API's /reorder/ endpoints, so each
-// test reloads to prove the new order survived the round-trip.
+// projects list. Tasks use their per-column move endpoint; projects retain
+// their reorder endpoint. Each test reloads to prove the order persisted.
 
 /** Index of the first row whose text contains `needle`, or -1. */
 async function indexOf(rows: Locator, needle: string): Promise<number> {

@@ -35,7 +35,6 @@ from use_cases.entities import Comment, Project, Task, User
 from use_cases.exceptions import (
     CommentNotFound,
     InvalidCredentials,
-    InvalidReorder,
     InvalidToken,
     ProjectNameConflict,
     ProjectNotFound,
@@ -48,7 +47,7 @@ from use_cases.task_status import TaskStatus
 from use_cases.tasks.create_task import CreateTask
 from use_cases.tasks.delete_task import DeleteTask
 from use_cases.tasks.list_open_tasks import ListOpenTasks
-from use_cases.tasks.reorder_tasks import ReorderTasks
+from use_cases.tasks.move_task import MoveTask
 from use_cases.tasks.update_task import UpdateTask
 
 USER = 1
@@ -176,22 +175,63 @@ async def test_list_open_excludes_done_tasks() -> None:
     assert [t.id for t in listed] == [2]
 
 
-async def test_reorder_rejects_ids_outside_the_user() -> None:
-    tasks = FakeTaskRepository([_task(1, position=0), _task(2, position=1)])
+async def _open_order(tasks: FakeTaskRepository) -> list[int]:
+    """Ids of the inbox open column in board order (a test read-back helper)."""
+    listed = await tasks.list_all(USER)
+    return [t.id for t in listed if not t.status.is_done]
 
-    with pytest.raises(InvalidReorder):
-        await ReorderTasks(tasks).execute(USER, [1, 999])
+
+async def test_move_task_missing_raises_not_found() -> None:
+    with pytest.raises(TaskNotFound):
+        await MoveTask(FakeTaskRepository()).execute(USER, 1, TaskStatus.DONE, 0)
 
 
-async def test_reorder_swaps_positions_of_the_subset() -> None:
+async def test_move_task_reorders_within_a_column() -> None:
     tasks = FakeTaskRepository(
         [_task(1, position=0), _task(2, position=1), _task(3, position=2)]
     )
 
-    # Move task 3 ahead of task 1 within the slots they occupy.
-    await ReorderTasks(tasks).execute(USER, [3, 1])
+    # Same status, so this is a pure reorder: drop task 3 at the top.
+    await MoveTask(tasks).execute(USER, 3, TaskStatus.OPEN, 0)
 
-    assert await tasks.ordered_ids(USER) == [3, 2, 1]
+    assert await _open_order(tasks) == [3, 1, 2]
+
+
+async def test_move_task_changes_status_and_slots_into_the_column() -> None:
+    done = Task(**{**_task(3, position=0).__dict__, "status": TaskStatus.DONE})
+    tasks = FakeTaskRepository([_task(1, position=0), _task(2, position=1), done])
+
+    # Send task 1 to the done column at the top; it should sit above task 3.
+    await MoveTask(tasks).execute(USER, 1, TaskStatus.DONE, 0)
+
+    moved = await tasks.get(USER, 1)
+    assert moved is not None and moved.status is TaskStatus.DONE
+    done_ids = [t.id for t in await tasks.list_all(USER) if t.status.is_done]
+    assert done_ids == [1, 3]
+
+
+async def test_move_task_only_renumbers_its_own_project_column() -> None:
+    # Two projects, each with its own open column numbered from 0.
+    a1 = _task(1, position=0, project_id=10)
+    a2 = _task(2, position=1, project_id=10)
+    b1 = _task(3, position=0, project_id=20)
+    tasks = FakeTaskRepository([a1, a2, b1])
+
+    # Reorder project 10's column; project 20 must be untouched.
+    await MoveTask(tasks).execute(USER, 2, TaskStatus.OPEN, 0)
+
+    listed = {t.id: t.position for t in await tasks.list_all(USER)}
+    assert (listed[2], listed[1]) == (0, 1)  # project 10 reordered
+    assert listed[3] == 0  # project 20 still at its own slot 0
+
+
+async def test_move_task_clamps_position_past_the_end() -> None:
+    tasks = FakeTaskRepository([_task(1, position=0), _task(2, position=1)])
+
+    # An out-of-range index lands the task at the bottom of the column.
+    await MoveTask(tasks).execute(USER, 1, TaskStatus.OPEN, 99)
+
+    assert await _open_order(tasks) == [2, 1]
 
 
 async def test_create_comment_requires_an_existing_task() -> None:

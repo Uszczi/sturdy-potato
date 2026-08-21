@@ -83,7 +83,7 @@ test.describe("tasks", () => {
       .poll(async () => rowIndex(rows, second))
       .toBeLessThan(await rowIndex(rows, first));
 
-    // The order sticks across a reload (the client sent it to /reorder).
+    // The order sticks across a reload (the client sent a column move).
     await page.reload();
     const reloaded = page.locator("#task-list > li");
     await expect(reloaded.getByText(second, { exact: true })).toBeVisible();

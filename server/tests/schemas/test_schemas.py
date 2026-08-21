@@ -6,7 +6,8 @@ from pydantic import ValidationError
 from schemas.comment import CommentCreateInput, CommentUpdateInput
 from schemas.order import ReorderInput
 from schemas.project import ProjectCreateInput, ProjectUpdateInput
-from schemas.task import TaskCreateInput, TaskUpdateInput
+from schemas.task import TaskCreateInput, TaskMoveInput, TaskUpdateInput
+from use_cases.task_status import TaskStatus
 
 
 def test_todo_create_strips_title_and_blanks_optionals() -> None:
@@ -98,3 +99,15 @@ def test_reorder_accepts_unique_ids() -> None:
 def test_reorder_rejects_duplicate_ids() -> None:
     with pytest.raises(ValidationError):
         ReorderInput(order=[1, 1])
+
+
+def test_move_accepts_status_and_position() -> None:
+    model = TaskMoveInput(status=TaskStatus.DONE, position=2)
+
+    assert model.status is TaskStatus.DONE
+    assert model.position == 2
+
+
+def test_move_rejects_negative_position() -> None:
+    with pytest.raises(ValidationError):
+        TaskMoveInput(status=TaskStatus.OPEN, position=-1)

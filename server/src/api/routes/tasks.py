@@ -9,15 +9,15 @@ from api.dependencies import (
     GetTaskDep,
     ListOpenTasksDep,
     ListTasksDep,
-    ReorderTasksDep,
+    MoveTaskDep,
     UpdateTaskDep,
     ViewTasksDep,
 )
 from auth import CurrentUserId
-from schemas.order import ReorderInput
 from schemas.task import (
     TaskCountSchema,
     TaskCreateInput,
+    TaskMoveInput,
     TaskSchema,
     TaskUpdateInput,
 )
@@ -77,14 +77,14 @@ async def count_tasks(
 
 
 @router.post(
-    "/reorder/",
+    "/{id}/move/",
     status_code=status.HTTP_204_NO_CONTENT,
-    operation_id="api_tasks_reorder_create",
+    operation_id="api_tasks_move_create",
 )
-async def reorder_tasks(
-    body: ReorderInput, user_id: CurrentUserId, use_case: ReorderTasksDep
+async def move_task(
+    id: int, body: TaskMoveInput, user_id: CurrentUserId, use_case: MoveTaskDep
 ) -> None:
-    await use_case.execute(user_id, body.order)
+    await use_case.execute(user_id, id, body.status, body.position)
 
 
 @router.get("/{id}/", operation_id="api_tasks_retrieve")

@@ -19,11 +19,6 @@ import {
   HTTPValidationErrorToJSON,
 } from "../models/HTTPValidationError";
 import {
-  type ReorderInput,
-  ReorderInputFromJSON,
-  ReorderInputToJSON,
-} from "../models/ReorderInput";
-import {
   type TaskCountSchema,
   TaskCountSchemaFromJSON,
   TaskCountSchemaToJSON,
@@ -33,6 +28,11 @@ import {
   TaskCreateInputFromJSON,
   TaskCreateInputToJSON,
 } from "../models/TaskCreateInput";
+import {
+  type TaskMoveInput,
+  TaskMoveInputFromJSON,
+  TaskMoveInputToJSON,
+} from "../models/TaskMoveInput";
 import {
   type TaskSchema,
   TaskSchemaFromJSON,
@@ -61,6 +61,11 @@ export interface ApiTasksDestroyRequest {
   id: number;
 }
 
+export interface ApiTasksMoveCreateRequest {
+  id: number;
+  taskMoveInput: TaskMoveInput;
+}
+
 export interface ApiTasksOpenListRequest {
   limit?: number | null;
 }
@@ -68,10 +73,6 @@ export interface ApiTasksOpenListRequest {
 export interface ApiTasksPartialUpdateRequest {
   id: number;
   taskUpdateInput: TaskUpdateInput;
-}
-
-export interface ApiTasksReorderCreateRequest {
-  reorderInput: ReorderInput;
 }
 
 export interface ApiTasksRetrieveRequest {
@@ -336,6 +337,80 @@ export class TasksApi extends runtime.BaseAPI {
   }
 
   /**
+   * Creates request options for apiTasksMoveCreate without sending the request
+   */
+  async apiTasksMoveCreateRequestOpts(
+    requestParameters: ApiTasksMoveCreateRequest,
+  ): Promise<runtime.RequestOpts> {
+    if (requestParameters["id"] == null) {
+      throw new runtime.RequiredError(
+        "id",
+        'Required parameter "id" was null or undefined when calling apiTasksMoveCreate().',
+      );
+    }
+
+    if (requestParameters["taskMoveInput"] == null) {
+      throw new runtime.RequiredError(
+        "taskMoveInput",
+        'Required parameter "taskMoveInput" was null or undefined when calling apiTasksMoveCreate().',
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    headerParameters["Content-Type"] = "application/json";
+
+    if (this.configuration && this.configuration.accessToken) {
+      const token = this.configuration.accessToken;
+      const tokenString = await token("HTTPBearer", []);
+
+      if (tokenString) {
+        headerParameters["Authorization"] = `Bearer ${tokenString}`;
+      }
+    }
+
+    let urlPath = `/api/tasks/{id}/move/`;
+    urlPath = urlPath.replace(
+      "{id}",
+      encodeURIComponent(String(requestParameters["id"])),
+    );
+
+    return {
+      path: urlPath,
+      method: "POST",
+      headers: headerParameters,
+      query: queryParameters,
+      body: TaskMoveInputToJSON(requestParameters["taskMoveInput"]),
+    };
+  }
+
+  /**
+   * Move Task
+   */
+  async apiTasksMoveCreateRaw(
+    requestParameters: ApiTasksMoveCreateRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<runtime.ApiResponse<void>> {
+    const requestOptions =
+      await this.apiTasksMoveCreateRequestOpts(requestParameters);
+    const response = await this.request(requestOptions, initOverrides);
+
+    return new runtime.VoidApiResponse(response);
+  }
+
+  /**
+   * Move Task
+   */
+  async apiTasksMoveCreate(
+    requestParameters: ApiTasksMoveCreateRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<void> {
+    await this.apiTasksMoveCreateRaw(requestParameters, initOverrides);
+  }
+
+  /**
    * Creates request options for apiTasksOpenList without sending the request
    */
   async apiTasksOpenListRequestOpts(
@@ -476,69 +551,6 @@ export class TasksApi extends runtime.BaseAPI {
       initOverrides,
     );
     return await response.value();
-  }
-
-  /**
-   * Creates request options for apiTasksReorderCreate without sending the request
-   */
-  async apiTasksReorderCreateRequestOpts(
-    requestParameters: ApiTasksReorderCreateRequest,
-  ): Promise<runtime.RequestOpts> {
-    if (requestParameters["reorderInput"] == null) {
-      throw new runtime.RequiredError(
-        "reorderInput",
-        'Required parameter "reorderInput" was null or undefined when calling apiTasksReorderCreate().',
-      );
-    }
-
-    const queryParameters: any = {};
-
-    const headerParameters: runtime.HTTPHeaders = {};
-
-    headerParameters["Content-Type"] = "application/json";
-
-    if (this.configuration && this.configuration.accessToken) {
-      const token = this.configuration.accessToken;
-      const tokenString = await token("HTTPBearer", []);
-
-      if (tokenString) {
-        headerParameters["Authorization"] = `Bearer ${tokenString}`;
-      }
-    }
-
-    let urlPath = `/api/tasks/reorder/`;
-
-    return {
-      path: urlPath,
-      method: "POST",
-      headers: headerParameters,
-      query: queryParameters,
-      body: ReorderInputToJSON(requestParameters["reorderInput"]),
-    };
-  }
-
-  /**
-   * Reorder Tasks
-   */
-  async apiTasksReorderCreateRaw(
-    requestParameters: ApiTasksReorderCreateRequest,
-    initOverrides?: RequestInit | runtime.InitOverrideFunction,
-  ): Promise<runtime.ApiResponse<void>> {
-    const requestOptions =
-      await this.apiTasksReorderCreateRequestOpts(requestParameters);
-    const response = await this.request(requestOptions, initOverrides);
-
-    return new runtime.VoidApiResponse(response);
-  }
-
-  /**
-   * Reorder Tasks
-   */
-  async apiTasksReorderCreate(
-    requestParameters: ApiTasksReorderCreateRequest,
-    initOverrides?: RequestInit | runtime.InitOverrideFunction,
-  ): Promise<void> {
-    await this.apiTasksReorderCreateRaw(requestParameters, initOverrides);
   }
 
   /**

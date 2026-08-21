@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import TaskListView from "../components/TaskListView";
 import { useAppStore } from "../stores/app-store";
@@ -14,11 +14,13 @@ function ProjectDetail() {
   const project = useAppStore((state) =>
     state.projects.find((candidate) => candidate.id === id),
   );
-  const allTasks = useAppStore((state) => state.tasks);
-  const tasks = useMemo(
-    () => allTasks.filter((task) => task.projectId === id),
-    [allTasks, id],
-  );
+  const ensureBoard = useAppStore((state) => state.ensureBoard);
+  const tasks = useAppStore((state) => state.getBoard(id));
+
+  // Load just this project's board.
+  useEffect(() => {
+    void ensureBoard(id);
+  }, [id, ensureBoard]);
 
   if (!project) {
     return (
@@ -38,6 +40,7 @@ function ProjectDetail() {
       heading={project.name}
       tasks={tasks}
       project={project}
+      reorderable
     />
   );
 }

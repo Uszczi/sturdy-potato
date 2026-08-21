@@ -20,7 +20,7 @@ export default function ProjectSelector() {
         </svg>
       </div>
       <ul
-        tabIndex="-1"
+        tabIndex={-1}
         className="dropdown-content bg-base-300 rounded-box z-1 w-52 p-2 shadow-2xl"
       >
         {projects.map((project) => (

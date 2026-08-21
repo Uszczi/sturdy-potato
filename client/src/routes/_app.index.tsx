@@ -1,28 +1,42 @@
+import { useEffect, useState } from "react";
 import { Link, createFileRoute } from "@tanstack/react-router";
+import type { TaskSchema } from "@api-client";
+import { TaskStatus } from "@api-client";
 import MenuButton from "../components/MenuButton";
 import { getUsername } from "../services/auth";
 import { formatToday } from "../services/format";
-import { isTaskDone } from "../services/tasks";
+import { countTasks, fetchOpenTasks } from "../services/tasks";
 import { useAppStore } from "../stores/app-store";
 
 export const Route = createFileRoute("/_app/")({
   component: Overview,
 });
 
-/** Short "Aug 17" label for a timestamp, in local time. */
-function shortDate(date: Date): string {
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-  }).format(date);
-}
-
 function Overview() {
   const projects = useAppStore((state) => state.projects);
-  const tasks = useAppStore((state) => state.tasks);
+  // The overview spans every board, so it reads aggregate counts and a small
+  // "next up" preview straight from the API rather than any cached board.
+  const [openTasks, setOpenTasks] = useState<TaskSchema[]>([]);
+  const [openCount, setOpenCount] = useState(0);
+  const [completedCount, setCompletedCount] = useState(0);
 
-  const openTasks = tasks.filter((task) => !isTaskDone(task));
-  const completedCount = tasks.length - openTasks.length;
+  useEffect(() => {
+    let active = true;
+    void Promise.all([
+      fetchOpenTasks(6),
+      countTasks(TaskStatus.Open),
+      countTasks(TaskStatus.Done),
+    ]).then(([preview, open, done]) => {
+      if (!active) return;
+      setOpenTasks(preview);
+      setOpenCount(open);
+      setCompletedCount(done);
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
+
   const username = getUsername();
   const projectName = (id: number | null) =>
     projects.find((project) => project.id === id)?.name ?? "No project";
@@ -81,7 +95,7 @@ function Overview() {
         className="border-base-300 mt-8 grid border-y sm:grid-cols-3"
         aria-label="Workspace summary"
       >
-        <SummaryCard label="Open tasks" value={openTasks.length} bordered />
+        <SummaryCard label="Open tasks" value={openCount} bordered />
         <SummaryCard label="Completed" value={completedCount} bordered />
         <SummaryCard label="Projects" value={projects.length} />
       </section>

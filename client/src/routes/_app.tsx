@@ -22,11 +22,11 @@ function AppLayout() {
   const open = useAppStore((state) => state.sidebarOpen);
   const setSidebarOpen = useAppStore((state) => state.setSidebarOpen);
   const unauthorized = useAppStore((state) => state.unauthorized);
-  const refresh = useAppStore((state) => state.refresh);
+  const loadProjects = useAppStore((state) => state.loadProjects);
 
   useEffect(() => {
-    void refresh();
-  }, [refresh]);
+    void loadProjects();
+  }, [loadProjects]);
 
   // Escape closes the mobile drawer, matching the base template.
   useEffect(() => {

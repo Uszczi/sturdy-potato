@@ -78,15 +78,24 @@ class FakeTaskRepository:
         self._next_id = max(self._tasks, default=0) + 1
 
     async def list_all(self, user_id: int) -> list[Task]:
+        # Group by project (inbox last, matching SQL NULLS LAST), then board
+        # order within each project group.
         return sorted(
             self._owned(user_id),
-            key=lambda t: (t.status.is_done, t.position, -t.id),
+            key=lambda t: (
+                t.project_id is None,
+                t.project_id or 0,
+                t.status.is_done,
+                t.position,
+                -t.id,
+            ),
         )
 
     async def list_for_view(
         self, user_id: int, *, view: str, project_id: int | None, today: date
     ) -> list[Task]:
         tasks = self._owned(user_id)
+        scoped_to_one_board = project_id is not None or view == "inbox"
         if project_id is not None:
             tasks = [t for t in tasks if t.project_id == project_id]
         elif view == "inbox":
@@ -101,7 +110,18 @@ class FakeTaskRepository:
                 and t.due_date > today
                 and not t.status.is_done
             ]
-        return sorted(tasks, key=lambda t: (t.position, -t.id))
+        if scoped_to_one_board:
+            return sorted(tasks, key=lambda t: (t.status.is_done, t.position, -t.id))
+        return sorted(
+            tasks,
+            key=lambda t: (
+                t.status.is_done,
+                t.due_date is None,
+                t.due_date or date.min,
+                -t.created_at.timestamp(),
+                -t.id,
+            ),
+        )
 
     async def list_open(self, user_id: int, *, limit: int | None) -> list[Task]:
         owned = sorted(
@@ -121,7 +141,7 @@ class FakeTaskRepository:
         return task if task is not None and task.user_id == user_id else None
 
     async def create(self, user_id: int, data: TaskCreateData) -> Task:
-        position = max((t.position for t in self._owned(user_id)), default=-1) + 1
+        position = self._next_position(user_id, data.project_id, data.status)
         task = Task(
             id=self._next_id,
             user_id=user_id,
@@ -146,6 +166,14 @@ class FakeTaskRepository:
             return None
         # Entities are frozen; a change produces a new value.
         fields = {**existing.__dict__, **changes, "updated_at": _now()}
+        # A project/status change moves the task to a new column; append it there
+        # unless the caller pinned an explicit slot.
+        if (
+            "project_id" in changes or "status" in changes
+        ) and "position" not in changes:
+            fields["position"] = self._next_position(
+                user_id, fields["project_id"], fields["status"], exclude_id=task_id
+            )
         updated = Task(**fields)
         self._tasks[task_id] = updated
         return updated
@@ -156,14 +184,25 @@ class FakeTaskRepository:
         del self._tasks[task_id]
         return True
 
-    async def ordered_ids(self, user_id: int) -> list[int]:
-        owned = sorted(self._owned(user_id), key=lambda t: (t.position, -t.id))
-        return [t.id for t in owned]
-
     async def set_positions(self, user_id: int, positions: Mapping[int, int]) -> None:
         for task_id, position in positions.items():
             task = self._tasks[task_id]
             self._tasks[task_id] = Task(**{**task.__dict__, "position": position})
+
+    def _next_position(
+        self,
+        user_id: int,
+        project_id: int | None,
+        status: TaskStatus,
+        *,
+        exclude_id: int | None = None,
+    ) -> int:
+        column = [
+            t
+            for t in self._owned(user_id)
+            if t.project_id == project_id and t.status == status and t.id != exclude_id
+        ]
+        return max((t.position for t in column), default=-1) + 1
 
     def _owned(self, user_id: int) -> list[Task]:
         return [t for t in self._tasks.values() if t.user_id == user_id]

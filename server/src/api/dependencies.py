@@ -108,9 +108,9 @@ DeleteTaskDep = Annotated[
     task_use_cases.DeleteTask,
     Depends(_use_case(lambda uow: task_use_cases.DeleteTask(uow.tasks))),
 ]
-ReorderTasksDep = Annotated[
-    task_use_cases.ReorderTasks,
-    Depends(_use_case(lambda uow: task_use_cases.ReorderTasks(uow.tasks))),
+MoveTaskDep = Annotated[
+    task_use_cases.MoveTask,
+    Depends(_use_case(lambda uow: task_use_cases.MoveTask(uow.tasks))),
 ]
 
 ListCommentsDep = Annotated[
@@ -176,10 +176,10 @@ __all__ = [
     "ListOpenTasksDep",
     "ListProjectsDep",
     "ListTasksDep",
+    "MoveTaskDep",
     "RefreshAccessTokenDep",
     "RegisterUserDep",
     "ReorderProjectsDep",
-    "ReorderTasksDep",
     "SessionDep",
     "UnitOfWorkDep",
     "UpdateCommentDep",

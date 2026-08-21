@@ -2,17 +2,17 @@
 
 All URIs are relative to *http://localhost*
 
-| Method                                                         | HTTP request                 | Description   |
-| -------------------------------------------------------------- | ---------------------------- | ------------- |
-| [**apiTasksCountRetrieve**](TasksApi.md#apitaskscountretrieve) | **GET** /api/tasks/count/    | Count Tasks   |
-| [**apiTasksCreate**](TasksApi.md#apitaskscreate)               | **POST** /api/tasks/         | Create Task   |
-| [**apiTasksDestroy**](TasksApi.md#apitasksdestroy)             | **DELETE** /api/tasks/{id}/  | Delete Task   |
-| [**apiTasksList**](TasksApi.md#apitaskslist)                   | **GET** /api/tasks/          | List Tasks    |
-| [**apiTasksOpenList**](TasksApi.md#apitasksopenlist)           | **GET** /api/tasks/open/     | Open Tasks    |
-| [**apiTasksPartialUpdate**](TasksApi.md#apitaskspartialupdate) | **PATCH** /api/tasks/{id}/   | Update Task   |
-| [**apiTasksReorderCreate**](TasksApi.md#apitasksreordercreate) | **POST** /api/tasks/reorder/ | Reorder Tasks |
-| [**apiTasksRetrieve**](TasksApi.md#apitasksretrieve)           | **GET** /api/tasks/{id}/     | Retrieve Task |
-| [**apiTasksViewList**](TasksApi.md#apitasksviewlist)           | **GET** /api/tasks/view/     | View Tasks    |
+| Method                                                         | HTTP request                   | Description   |
+| -------------------------------------------------------------- | ------------------------------ | ------------- |
+| [**apiTasksCountRetrieve**](TasksApi.md#apitaskscountretrieve) | **GET** /api/tasks/count/      | Count Tasks   |
+| [**apiTasksCreate**](TasksApi.md#apitaskscreate)               | **POST** /api/tasks/           | Create Task   |
+| [**apiTasksDestroy**](TasksApi.md#apitasksdestroy)             | **DELETE** /api/tasks/{id}/    | Delete Task   |
+| [**apiTasksList**](TasksApi.md#apitaskslist)                   | **GET** /api/tasks/            | List Tasks    |
+| [**apiTasksMoveCreate**](TasksApi.md#apitasksmovecreate)       | **POST** /api/tasks/{id}/move/ | Move Task     |
+| [**apiTasksOpenList**](TasksApi.md#apitasksopenlist)           | **GET** /api/tasks/open/       | Open Tasks    |
+| [**apiTasksPartialUpdate**](TasksApi.md#apitaskspartialupdate) | **PATCH** /api/tasks/{id}/     | Update Task   |
+| [**apiTasksRetrieve**](TasksApi.md#apitasksretrieve)           | **GET** /api/tasks/{id}/       | Retrieve Task |
+| [**apiTasksViewList**](TasksApi.md#apitasksviewlist)           | **GET** /api/tasks/view/       | View Tasks    |
 
 ## apiTasksCountRetrieve
 
@@ -272,6 +272,77 @@ This endpoint does not need any parameter.
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
+## apiTasksMoveCreate
+
+> apiTasksMoveCreate(id, taskMoveInput)
+
+Move Task
+
+### Example
+
+```ts
+import {
+  Configuration,
+  TasksApi,
+} from '';
+import type { ApiTasksMoveCreateRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({
+    // Configure HTTP bearer authorization: HTTPBearer
+    accessToken: "YOUR BEARER TOKEN",
+  });
+  const api = new TasksApi(config);
+
+  const body = {
+    // number
+    id: 56,
+    // TaskMoveInput
+    taskMoveInput: ...,
+  } satisfies ApiTasksMoveCreateRequest;
+
+  try {
+    const data = await api.apiTasksMoveCreate(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+| Name              | Type                              | Description | Notes                     |
+| ----------------- | --------------------------------- | ----------- | ------------------------- |
+| **id**            | `number`                          |             | [Defaults to `undefined`] |
+| **taskMoveInput** | [TaskMoveInput](TaskMoveInput.md) |             |                           |
+
+### Return type
+
+`void` (Empty response body)
+
+### Authorization
+
+[HTTPBearer](../README.md#HTTPBearer)
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+### HTTP response details
+
+| Status code | Description         | Response headers |
+| ----------- | ------------------- | ---------------- |
+| **204**     | Successful Response | -                |
+| **422**     | Validation Error    | -                |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
 ## apiTasksOpenList
 
 > Array&lt;TaskSchema&gt; apiTasksOpenList(limit)
@@ -404,74 +475,6 @@ example().catch(console.error);
 | Status code | Description         | Response headers |
 | ----------- | ------------------- | ---------------- |
 | **200**     | Successful Response | -                |
-| **422**     | Validation Error    | -                |
-
-[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
-## apiTasksReorderCreate
-
-> apiTasksReorderCreate(reorderInput)
-
-Reorder Tasks
-
-### Example
-
-```ts
-import {
-  Configuration,
-  TasksApi,
-} from '';
-import type { ApiTasksReorderCreateRequest } from '';
-
-async function example() {
-  console.log("🚀 Testing  SDK...");
-  const config = new Configuration({
-    // Configure HTTP bearer authorization: HTTPBearer
-    accessToken: "YOUR BEARER TOKEN",
-  });
-  const api = new TasksApi(config);
-
-  const body = {
-    // ReorderInput
-    reorderInput: ...,
-  } satisfies ApiTasksReorderCreateRequest;
-
-  try {
-    const data = await api.apiTasksReorderCreate(body);
-    console.log(data);
-  } catch (error) {
-    console.error(error);
-  }
-}
-
-// Run the test
-example().catch(console.error);
-```
-
-### Parameters
-
-| Name             | Type                            | Description | Notes |
-| ---------------- | ------------------------------- | ----------- | ----- |
-| **reorderInput** | [ReorderInput](ReorderInput.md) |             |       |
-
-### Return type
-
-`void` (Empty response body)
-
-### Authorization
-
-[HTTPBearer](../README.md#HTTPBearer)
-
-### HTTP request headers
-
-- **Content-Type**: `application/json`
-- **Accept**: `application/json`
-
-### HTTP response details
-
-| Status code | Description         | Response headers |
-| ----------- | ------------------- | ---------------- |
-| **204**     | Successful Response | -                |
 | **422**     | Validation Error    | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)

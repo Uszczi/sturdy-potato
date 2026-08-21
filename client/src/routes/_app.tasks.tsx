@@ -1,7 +1,9 @@
+import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
+import type { TaskSchema } from "@api-client";
 import TaskListView from "../components/TaskListView";
 import { useAppStore } from "../stores/app-store";
-import { dayKey, todayKey } from "../services/format";
+import { fetchDateView } from "../services/tasks";
 
 type TaskView = "today" | "upcoming";
 
@@ -30,22 +32,51 @@ const HEADINGS: Record<TaskView, string> = {
 
 function Tasks() {
   const { view, compose } = Route.useSearch();
-  const tasks = useAppStore((state) => state.tasks);
+  return view ? (
+    <DateView view={view} />
+  ) : (
+    <Inbox composeDefault={compose} />
+  );
+}
 
-  const today = todayKey();
-  const visible = tasks.filter((task) => {
-    if (!view) return true; // Inbox shows everything.
-    if (!task.dueDate) return false;
-    const key = dayKey(task.dueDate);
-    return view === "today" ? key === today : key > today;
-  });
+/** The inbox is the null-project board: its own column, drag-reorderable. */
+function Inbox({ composeDefault }: { composeDefault?: boolean }) {
+  const ensureBoard = useAppStore((state) => state.ensureBoard);
+  const tasks = useAppStore((state) => state.getBoard(null));
+
+  useEffect(() => {
+    void ensureBoard(null);
+  }, [ensureBoard]);
 
   return (
     <TaskListView
       eyebrow="Tasks"
-      heading={view ? HEADINGS[view] : "Inbox"}
-      tasks={visible}
-      composeDefault={compose}
+      heading="Inbox"
+      tasks={tasks}
+      composeDefault={composeDefault}
+      reorderable
     />
+  );
+}
+
+/**
+ * Today/upcoming span every board, so they're fetched on their own (ordered by
+ * due date + recency on the server) and are read-only — no drag reordering.
+ */
+function DateView({ view }: { view: TaskView }) {
+  const [tasks, setTasks] = useState<TaskSchema[]>([]);
+
+  useEffect(() => {
+    let active = true;
+    void fetchDateView(view).then((result) => {
+      if (active) setTasks(result);
+    });
+    return () => {
+      active = false;
+    };
+  }, [view]);
+
+  return (
+    <TaskListView eyebrow="Tasks" heading={HEADINGS[view]} tasks={tasks} />
   );
 }

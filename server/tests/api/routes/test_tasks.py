@@ -216,6 +216,29 @@ async def test_update_task_can_clear_the_project(
     assert response.json()["project_id"] is None
 
 
+async def test_reassigning_to_a_project_appends_to_its_column(
+    client: AsyncClient, session: AsyncSession
+) -> None:
+    user = await create_user(session)
+    project = await create_project(session, user)
+    # The project already has one open task at slot 0.
+    await create_task(session, user, title="Resident", project=project)
+    loose = await create_task(session, user, title="Loose")
+    headers = auth_headers(user)
+
+    response = await client.patch(
+        f"/api/tasks/{loose.id}/", headers=headers, json={"project_id": project.id}
+    )
+
+    assert response.status_code == 200
+    # It joins the project's open column at the end (slot 1), after the resident.
+    assert response.json()["position"] == 1
+    board = await client.get(
+        "/api/tasks/view/", headers=headers, params={"project": project.id}
+    )
+    assert [task["title"] for task in board.json()] == ["Resident", "Loose"]
+
+
 async def test_update_task_rejects_another_users_project(
     client: AsyncClient, session: AsyncSession
 ) -> None:
@@ -266,49 +289,54 @@ async def test_delete_missing_task_returns_404(
     assert response.status_code == 404
 
 
-async def test_reorder_tasks(client: AsyncClient, session: AsyncSession) -> None:
+async def test_move_task_across_columns_and_persists(
+    client: AsyncClient, session: AsyncSession
+) -> None:
     user = await create_user(session)
     first = await create_task(session, user, title="First", position=0)
     second = await create_task(session, user, title="Second", position=1)
 
     response = await client.post(
-        "/api/tasks/reorder/",
+        f"/api/tasks/{second.id}/move/",
         headers=auth_headers(user),
-        json={"order": [second.id, first.id]},
+        json={"status": TaskStatus.DONE.value, "position": 0},
     )
 
     assert response.status_code == 204
     listed = await client.get("/api/tasks/", headers=auth_headers(user))
-    assert [task["id"] for task in listed.json()] == [second.id, first.id]
+    tasks_by_id = {task["id"]: task for task in listed.json()}
+    assert tasks_by_id[second.id]["status"] == TaskStatus.DONE.value
+    # Open column keeps First; Second now leads the done column.
+    assert [t["id"] for t in listed.json()] == [first.id, second.id]
 
 
-async def test_reorder_rejects_another_users_task(
+async def test_move_missing_task_returns_404(
+    client: AsyncClient, session: AsyncSession
+) -> None:
+    user = await create_user(session)
+
+    response = await client.post(
+        "/api/tasks/999/move/",
+        headers=auth_headers(user),
+        json={"status": TaskStatus.OPEN.value, "position": 0},
+    )
+
+    assert response.status_code == 404
+
+
+async def test_move_rejects_negative_position(
     client: AsyncClient, session: AsyncSession
 ) -> None:
     user = await create_user(session)
     task = await create_task(session, user)
-    other = await create_user(session)
-    foreign = await create_task(session, other)
 
     response = await client.post(
-        "/api/tasks/reorder/",
+        f"/api/tasks/{task.id}/move/",
         headers=auth_headers(user),
-        json={"order": [task.id, foreign.id]},
+        json={"status": TaskStatus.OPEN.value, "position": -1},
     )
 
-    assert response.status_code == 400
-
-
-async def test_reorder_with_an_empty_order_is_a_noop(
-    client: AsyncClient, session: AsyncSession
-) -> None:
-    user = await create_user(session)
-
-    response = await client.post(
-        "/api/tasks/reorder/", headers=auth_headers(user), json={"order": []}
-    )
-
-    assert response.status_code == 204
+    assert response.status_code == 422
 
 
 async def test_view_inbox_returns_unassigned_tasks(

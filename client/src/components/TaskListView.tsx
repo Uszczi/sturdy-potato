@@ -18,6 +18,10 @@ type TaskListViewProps = {
   tasks: TaskSchema[];
   project?: ProjectSchema;
   composeDefault?: boolean;
+  // Single-board lists (inbox, a project) can drag-reorder their open column;
+  // cross-project date views (today/upcoming) can't, since positions are scoped
+  // per board.
+  reorderable?: boolean;
 };
 
 function TaskListView({
@@ -26,10 +30,11 @@ function TaskListView({
   tasks,
   project,
   composeDefault = false,
+  reorderable = false,
 }: TaskListViewProps) {
   const [selected, setSelected] = useState<TaskSchema | null>(null);
   const updateProject = useAppStore((state) => state.updateProject);
-  const reorderTasks = useAppStore((state) => state.reorderTasks);
+  const moveTask = useAppStore((state) => state.moveTask);
 
   const [items, setItems] = useState(tasks);
   const draggingId = useRef<number | null>(null);
@@ -67,18 +72,17 @@ function TaskListView({
   }
 
   function handleDragEnd() {
-    const dropped = draggingId.current !== null;
+    const movedId = draggingId.current;
     draggingId.current = null;
     setActiveId(null);
-    if (!dropped) return;
-    const openIds = items
-      .filter((task) => !isTaskDone(task))
-      .map((task) => task.id);
-    const originalIds = tasks
-      .filter((task) => !isTaskDone(task))
-      .map((task) => task.id);
-    if (openIds.some((id, index) => id !== originalIds[index])) {
-      void reorderTasks(openIds);
+    if (movedId === null) return;
+    // Persist the moved card's new index within this board's open column.
+    const openItems = items.filter((task) => !isTaskDone(task));
+    const originalOpen = tasks.filter((task) => !isTaskDone(task));
+    const newIndex = openItems.findIndex((task) => task.id === movedId);
+    const oldIndex = originalOpen.findIndex((task) => task.id === movedId);
+    if (newIndex !== -1 && newIndex !== oldIndex) {
+      void moveTask(movedId, TaskStatus.Open, newIndex);
     }
   }
 
@@ -153,6 +157,7 @@ function TaskListView({
                 <TaskRow
                   key={task.id}
                   task={task}
+                  reorderable={reorderable}
                   onOpen={() => setSelected(task)}
                   dragging={activeId === task.id}
                   onDragStart={() => handleDragStart(task.id)}
@@ -347,6 +352,7 @@ function TaskComposer({
 /** A single task row with completion toggle and inline project assignment. */
 function TaskRow({
   task,
+  reorderable,
   onOpen,
   dragging,
   onDragStart,
@@ -354,6 +360,7 @@ function TaskRow({
   onDragEnd,
 }: {
   task: TaskSchema;
+  reorderable: boolean;
   onOpen: () => void;
   dragging: boolean;
   onDragStart: () => void;
@@ -361,13 +368,14 @@ function TaskRow({
   onDragEnd: () => void;
 }) {
   const projects = useAppStore((state) => state.projects);
-  const updateTask = useAppStore((state) => state.updateTask);
+  const moveTask = useAppStore((state) => state.moveTask);
   const markTaskDone = useAppStore((state) => state.markTaskDone);
   const assignTaskProject = useAppStore((state) => state.assignTaskProject);
   const done = isTaskDone(task);
-  // The list views don't reorder the done group (that's the kanban's job); only
-  // open rows drag here. Completing a task floats it to the top of done.
-  const draggable = !done;
+  // Only open rows on a reorderable board drag; the done group and the
+  // cross-project date views stay put. Completing floats a card to the top of
+  // its done column.
+  const draggable = !done && reorderable;
 
   function activate(event: React.KeyboardEvent) {
     if (event.key === "Enter" || event.key === " ") {
@@ -415,9 +423,9 @@ function TaskRow({
           onClick={(event) => {
             event.stopPropagation();
             // Completing floats the task to the top of the done group; reopening
-            // just returns it to the open group at its manual position.
+            // returns it to the end of the open group.
             if (done) {
-              void updateTask(task.id, { status: TaskStatus.Open });
+              void moveTask(task.id, TaskStatus.Open, Number.MAX_SAFE_INTEGER);
             } else {
               void markTaskDone(task.id);
             }

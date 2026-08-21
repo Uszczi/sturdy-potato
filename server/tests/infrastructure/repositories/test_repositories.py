@@ -18,6 +18,16 @@ async def test_update_returns_none_for_a_missing_task(session: AsyncSession) -> 
     assert result is None
 
 
+async def test_set_positions_with_an_empty_map_is_a_noop(
+    session: AsyncSession,
+) -> None:
+    # MoveTask always renumbers at least the moved card, so the empty short-cut
+    # is unreachable through the API; exercise it directly.
+    repository = TaskRepository(session)
+
+    await repository.set_positions(user_id=1, positions={})
+
+
 async def test_comment_update_returns_none_for_a_missing_comment(
     session: AsyncSession,
 ) -> None:

@@ -63,6 +63,14 @@ class TaskUpdateInput(BaseModel):
         return empty_to_none(value)
 
 
+class TaskMoveInput(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    # The column the card lands in and its index within that column (0 = top).
+    status: TaskStatus
+    position: int = Field(ge=0)
+
+
 class TaskCountSchema(BaseModel):
     count: int
 

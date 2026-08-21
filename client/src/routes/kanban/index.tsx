@@ -20,10 +20,10 @@ export const Route = createFileRoute("/kanban/")({
 
 function Kanban() {
   const selectedProject = useAppStore((state) => state.kanbanSelectedProject);
-  const storeTasks = useAppStore((state) => state.tasks);
-  const refresh = useAppStore((state) => state.refresh);
-  const getTasksForProject = useAppStore((state) => state.getTasksForProject);
-  const reorderTasks = useAppStore((state) => state.reorderTasks);
+  const projectId = selectedProject?.id ?? null;
+  const loadProjects = useAppStore((state) => state.loadProjects);
+  const ensureBoard = useAppStore((state) => state.ensureBoard);
+  const storeTasks = useAppStore((state) => state.getBoard(projectId));
   const moveTask = useAppStore((state) => state.moveTask);
   const [tasks, setTasks] = useState<TaskSchema[]>([]);
   const [activeTaskId, setActiveTaskId] = useState<number | null>(null);
@@ -35,12 +35,17 @@ function Kanban() {
       : (tasks.find((task) => task.id === activeTaskId)?.status ?? null);
 
   useEffect(() => {
-    refresh();
-  }, []);
+    void loadProjects();
+  }, [loadProjects]);
+
+  // Load only the selected board's tasks, the first time it's opened.
+  useEffect(() => {
+    void ensureBoard(projectId);
+  }, [projectId, ensureBoard]);
 
   useEffect(() => {
-    setTasks(getTasksForProject(selectedProject?.id ?? null));
-  }, [selectedProject, storeTasks, getTasksForProject]);
+    setTasks(storeTasks);
+  }, [storeTasks]);
 
   return (
     <main className="grid min-h-screen place-items-center p-4">
@@ -96,7 +101,7 @@ function Kanban() {
             const { source } = event.operation;
             setActiveTaskId(null);
             if (event.canceled) {
-              setTasks(getTasksForProject(selectedProject?.id ?? null));
+              setTasks(storeTasks);
               return;
             }
             if (source?.type !== "item") return;
@@ -105,17 +110,24 @@ function Kanban() {
             const original = storeTasks.find((task) => task.id === source.id);
             if (!moved || !original) return;
 
-            const orderedIds = tasks
-              .filter((task) => task.status === moved.status)
-              .map((task) => task.id);
-            if (moved.status !== original.status) {
-              // Cross-column move: persist the new status and the destination
-              // order together so the card holds the slot it was dropped into.
-              moveTask(moved.id, moved.status, orderedIds);
-            } else {
-              // Same-column reorder: persist the new order of that column.
-              reorderTasks(orderedIds);
+            // Where the card ended up within its (possibly new) column. A move
+            // that changed neither status nor slot is a no-op we can skip.
+            const column = tasks.filter((task) => task.status === moved.status);
+            const position = column.findIndex((task) => task.id === moved.id);
+            const originalColumn = storeTasks.filter(
+              (task) => task.status === moved.status,
+            );
+            const originalPosition = originalColumn.findIndex(
+              (task) => task.id === moved.id,
+            );
+            if (
+              moved.status === original.status &&
+              position === originalPosition
+            ) {
+              return;
             }
+            // One call carries the destination status and slot together.
+            moveTask(moved.id, moved.status, position);
           }}
         >
           <div className="flex flex-1 flex-nowrap gap-4 overflow-x-auto">

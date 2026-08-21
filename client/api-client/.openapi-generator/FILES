@@ -19,6 +19,7 @@ docs/ProjectsApi.md
 docs/ReorderInput.md
 docs/TaskCountSchema.md
 docs/TaskCreateInput.md
+docs/TaskMoveInput.md
 docs/TaskSchema.md
 docs/TaskStatus.md
 docs/TaskUpdateInput.md
@@ -42,6 +43,7 @@ models/ProjectUpdateInput.ts
 models/ReorderInput.ts
 models/TaskCountSchema.ts
 models/TaskCreateInput.ts
+models/TaskMoveInput.ts
 models/TaskSchema.ts
 models/TaskStatus.ts
 models/TaskUpdateInput.ts
