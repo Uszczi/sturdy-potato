@@ -48,6 +48,12 @@ clean:
 	find . -type d -name .ruff_cache -prune -exec rm -rf {} +
 	rm -rf server/htmlcov server/.coverage
 
+client-build:
+	cd client && npm run build
+
+client-lint:
+	cd client && npm run lint
+
 generate-api-client:
 	openapi-generator-cli generate -i http://localhost:8000/openapi.json -g typescript-fetch -o ./client/api-client
 

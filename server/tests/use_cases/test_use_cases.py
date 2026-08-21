@@ -129,14 +129,18 @@ async def test_create_task_rejects_project_owned_by_nobody() -> None:
     projects = FakeProjectRepository()  # no projects exist
 
     with pytest.raises(ProjectNotFound):
-        await CreateTask(tasks, projects).execute(WORKSPACE, _create_data(project_id=99))
+        await CreateTask(tasks, projects).execute(
+            WORKSPACE, _create_data(project_id=99)
+        )
 
 
 async def test_create_task_accepts_an_owned_project() -> None:
     tasks = FakeTaskRepository()
     projects = FakeProjectRepository([_project(5)])
 
-    task = await CreateTask(tasks, projects).execute(WORKSPACE, _create_data(project_id=5))
+    task = await CreateTask(tasks, projects).execute(
+        WORKSPACE, _create_data(project_id=5)
+    )
 
     assert task.project_id == 5
     assert task.id is not None
@@ -160,7 +164,9 @@ async def test_update_task_missing_raises_not_found() -> None:
     projects = FakeProjectRepository()
 
     with pytest.raises(TaskNotFound):
-        await UpdateTask(tasks, projects).execute(WORKSPACE, 1, TaskUpdateData(title="x"))
+        await UpdateTask(tasks, projects).execute(
+            WORKSPACE, 1, TaskUpdateData(title="x")
+        )
 
 
 async def test_delete_task_missing_raises_not_found() -> None:
@@ -298,7 +304,9 @@ async def test_update_comment_under_the_wrong_task_raises_not_found() -> None:
     comments = FakeCommentRepository([_comment(1, task_id=1)])
 
     with pytest.raises(CommentNotFound):
-        await UpdateComment(comments).execute(WORKSPACE, 2, 1, CommentUpdateData(body="x"))
+        await UpdateComment(comments).execute(
+            WORKSPACE, 2, 1, CommentUpdateData(body="x")
+        )
 
 
 async def test_delete_comment_missing_raises_not_found() -> None:
@@ -318,7 +326,9 @@ async def test_create_project_rejects_duplicate_name() -> None:
     projects = FakeProjectRepository([_project(1, name="Work")])
 
     with pytest.raises(ProjectNameConflict):
-        await CreateProject(projects).execute(WORKSPACE, ProjectCreateData("Work", None))
+        await CreateProject(projects).execute(
+            WORKSPACE, ProjectCreateData("Work", None)
+        )
 
 
 async def test_authenticate_issues_a_token_pair_for_valid_credentials() -> None:
