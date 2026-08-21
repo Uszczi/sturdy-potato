@@ -2,6 +2,11 @@ FROM node:22-bookworm-slim AS client-build
 
 WORKDIR /build
 
+# The lockfile is authored with npm 12; node:22 ships npm 10, which resolves
+# the tsconfck optional typescript peer differently and rejects `npm ci`.
+# Pin the same major so the build matches local/dev resolution.
+RUN npm install -g npm@12
+
 # Install deps first so this layer caches unless the lockfile changes.
 COPY client/package.json client/package-lock.json ./
 RUN npm ci
