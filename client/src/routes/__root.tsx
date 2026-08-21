@@ -1,4 +1,8 @@
-import { Outlet, createRootRouteWithContext } from "@tanstack/react-router";
+import {
+  Outlet,
+  createRootRouteWithContext,
+  useLocation,
+} from "@tanstack/react-router";
 import ThemeToggle from "../components/ThemeToggle";
 
 export type RouterContext = {
@@ -10,11 +14,16 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 });
 
 function RootLayout() {
+  const { pathname } = useLocation();
+  const showThemeToggle = pathname === "/login" || pathname === "/register";
+
   return (
     <>
-      <div className="fixed top-4 right-4 z-50">
-        <ThemeToggle />
-      </div>
+      {showThemeToggle && (
+        <div className="fixed top-4 right-4 z-50">
+          <ThemeToggle />
+        </div>
+      )}
       <Outlet />
     </>
   );

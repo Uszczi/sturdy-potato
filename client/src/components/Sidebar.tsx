@@ -19,6 +19,7 @@ function Sidebar() {
   });
   const view = (search as { view?: string }).view;
   const onTasks = pathname === "/tasks";
+  const onKanban = pathname === "/kanban";
   const activeProjectId = matchProjectId(pathname);
 
   function handleLogout() {
@@ -142,6 +143,19 @@ function Sidebar() {
                 />
               </svg>
               Upcoming
+            </Link>
+            <Link to="/kanban" className={navClass(onKanban)}>
+              <svg
+                aria-hidden="true"
+                className="size-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth="1.8"
+              >
+                <path strokeLinecap="round" d="M5 5h5v14H5zM14 5h5v8h-5z" />
+              </svg>
+              Kanban
             </Link>
           </nav>
         </div>

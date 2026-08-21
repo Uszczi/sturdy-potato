@@ -2,9 +2,6 @@ import { useEffect, useState } from "react";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import type { TaskSchema } from "@api-client";
 import { TaskStatus } from "@api-client";
-import MenuButton from "../components/MenuButton";
-import { getUsername } from "../services/auth";
-import { formatToday } from "../services/format";
 import { countTasks, fetchOpenTasks } from "../services/tasks";
 import { useAppStore } from "../stores/app-store";
 
@@ -37,34 +34,11 @@ function Overview() {
     };
   }, []);
 
-  const username = getUsername();
   const projectName = (id: number | null) =>
     projects.find((project) => project.id === id)?.name ?? "No project";
 
   return (
-    <div className="container mx-auto min-h-screen max-w-5xl px-4 py-6 sm:px-6 sm:py-10 lg:px-8">
-      <header className="border-base-300 flex flex-col gap-5 border-b pb-6 sm:flex-row sm:items-start sm:justify-between">
-        <div className="flex items-start gap-3">
-          <MenuButton />
-          <div>
-            <p className="text-base-content/45 text-xs font-bold tracking-[0.18em] uppercase">
-              {formatToday(new Date())}
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-3 sm:pt-1">
-          <span className="hidden text-right sm:block">
-            <span className="block text-sm font-bold">{username}</span>
-            <span className="text-base-content/50 block text-xs">
-              Personal workspace
-            </span>
-          </span>
-          <span className="bg-primary text-primary-content grid size-9 place-items-center rounded-full text-sm font-bold">
-            {username.charAt(0).toUpperCase()}
-          </span>
-        </div>
-      </header>
-
+    <div className="container mx-auto min-h-screen max-w-5xl px-4 pt-4 pb-6 sm:px-6 sm:pt-6 sm:pb-10 lg:px-8">
       <div className="mt-5 flex flex-wrap gap-2">
         <Link
           to="/tasks"

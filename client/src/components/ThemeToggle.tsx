@@ -7,7 +7,12 @@ import {
   type Theme,
 } from "../services/theme";
 
-function ThemeToggle() {
+type ThemeToggleProps = {
+  /** Renders only the theme choices, for use inside another surface. */
+  embedded?: boolean;
+};
+
+function ThemeToggle({ embedded = false }: ThemeToggleProps) {
   const [current, setCurrent] = useState<Theme>(getTheme);
 
   function select(theme: Theme) {
@@ -16,6 +21,34 @@ function ThemeToggle() {
     // Close the dropdown by dropping focus.
     (document.activeElement as HTMLElement | null)?.blur();
   }
+
+  const choices = (
+    <ul
+      className={
+        embedded
+          ? "menu w-full gap-1 p-0"
+          : "dropdown-content menu rounded-box bg-base-200 z-50 mt-2 w-40 p-2 shadow-xl"
+      }
+    >
+      {THEMES.map((theme) => (
+        <li key={theme}>
+          <button
+            type="button"
+            className={theme === current ? "menu-active" : undefined}
+            onClick={() => select(theme)}
+          >
+            <span
+              data-theme={theme}
+              className="border-base-content/20 bg-primary inline-block size-4 rounded-full border"
+            />
+            {THEME_LABELS[theme]}
+          </button>
+        </li>
+      ))}
+    </ul>
+  );
+
+  if (embedded) return choices;
 
   return (
     <div className="dropdown dropdown-end">
@@ -34,26 +67,7 @@ function ThemeToggle() {
         </svg>
       </div>
 
-      <ul
-        tabIndex={0}
-        className="dropdown-content menu rounded-box bg-base-200 z-50 mt-2 w-40 p-2 shadow-xl"
-      >
-        {THEMES.map((theme) => (
-          <li key={theme}>
-            <button
-              type="button"
-              className={theme === current ? "menu-active" : undefined}
-              onClick={() => select(theme)}
-            >
-              <span
-                data-theme={theme}
-                className="border-base-content/20 bg-primary inline-block size-4 rounded-full border"
-              />
-              {THEME_LABELS[theme]}
-            </button>
-          </li>
-        ))}
-      </ul>
+      {choices}
     </div>
   );
 }

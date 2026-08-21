@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, createFileRoute } from "@tanstack/react-router";
-import MenuButton from "../components/MenuButton";
 import ProjectColorPicker from "../components/ProjectColorPicker";
 import { useAppStore } from "../stores/app-store";
 import type { ProjectSchema } from "../../api-client";
@@ -58,10 +57,9 @@ function Projects() {
   }
 
   return (
-    <div className="container mx-auto min-h-screen max-w-5xl px-4 py-6 sm:px-6 sm:py-10 lg:px-8">
+    <div className="container mx-auto min-h-screen max-w-5xl px-4 pt-4 pb-6 sm:px-6 sm:pt-6 sm:pb-10 lg:px-8">
       <header className="mb-7 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex items-start gap-3">
-          <MenuButton />
           <div>
             <p className="text-base-content/45 text-xs font-bold tracking-[0.18em] uppercase">
               Workspace
