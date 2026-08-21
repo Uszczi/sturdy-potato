@@ -362,9 +362,11 @@ function TaskRow({
 }) {
   const projects = useAppStore((state) => state.projects);
   const updateTask = useAppStore((state) => state.updateTask);
+  const markTaskDone = useAppStore((state) => state.markTaskDone);
   const assignTaskProject = useAppStore((state) => state.assignTaskProject);
   const done = isTaskDone(task);
-  // Done tasks are ordered by completion time, so only open rows drag.
+  // The list views don't reorder the done group (that's the kanban's job); only
+  // open rows drag here. Completing a task floats it to the top of done.
   const draggable = !done;
 
   function activate(event: React.KeyboardEvent) {
@@ -412,9 +414,13 @@ function TaskRow({
           type="button"
           onClick={(event) => {
             event.stopPropagation();
-            void updateTask(task.id, {
-              status: done ? TaskStatus.Open : TaskStatus.Done,
-            });
+            // Completing floats the task to the top of the done group; reopening
+            // just returns it to the open group at its manual position.
+            if (done) {
+              void updateTask(task.id, { status: TaskStatus.Open });
+            } else {
+              void markTaskDone(task.id);
+            }
           }}
           className={`${
             done

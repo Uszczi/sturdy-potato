@@ -13,6 +13,7 @@
     "format": "prettier --write ."
   },
   "dependencies": {
+    "@dnd-kit/react": "^0.5.0",
     "@tanstack/react-router": "^1.170.29",
     "daisyui": "^5.7.17",
     "react": "^19.2.8",

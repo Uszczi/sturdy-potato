@@ -32,15 +32,13 @@ def _to_entity(task: Task) -> TaskEntity:
 # "Done" is the terminal status; everything else counts as still-open work.
 _IS_DONE = case((col(Task.status) == TaskStatus.DONE, 1), else_=0)
 
-# Open tasks come first (not-done sorts before done), open tasks keep their
-# manual position order, and done tasks show most-recently-completed first so a
-# freshly ticked task lands at the top of the closed group.
-_OPEN_POSITION = case((col(Task.status) != TaskStatus.DONE, col(Task.position)))
-_COMPLETED_RECENCY = case((col(Task.status) == TaskStatus.DONE, col(Task.updated_at)))
+# Open tasks come first (not-done sorts before done); within each group tasks
+# keep their manual position order, so both the open and the done column can be
+# reordered by drag-and-drop. When a task is completed the client reorders it to
+# the top of the done group, keeping the "freshly ticked floats up" feel.
 _LIST_ORDER = (
     _IS_DONE.asc(),
-    _OPEN_POSITION.asc(),
-    _COMPLETED_RECENCY.desc(),
+    col(Task.position).asc(),
     col(Task.created_at).desc(),
     col(Task.id).desc(),
 )

@@ -6,7 +6,7 @@ import type {
   TaskCreateInput,
   TaskUpdateInput,
 } from "@api-client";
-import { ResponseError } from "@api-client";
+import { ResponseError, TaskStatus } from "@api-client";
 import { logout } from "@/services/auth";
 import {
   createProject,
@@ -53,17 +53,21 @@ type AppState = {
     projectId: number | null,
   ) => Promise<void>;
   reorderTasks: (orderedIds: number[]) => Promise<void>;
+  moveTask: (
+    id: number,
+    status: TaskStatus,
+    orderedIds: number[],
+  ) => Promise<void>;
+  markTaskDone: (id: number) => Promise<void>;
 };
 
 function compareTasks(a: TaskSchema, b: TaskSchema): number {
   const aDone = isTaskDone(a);
   const bDone = isTaskDone(b);
   if (aDone !== bDone) return aDone ? 1 : -1;
-  if (!aDone) {
-    if (a.position !== b.position) return a.position - b.position;
-  } else if (a.updatedAt.getTime() !== b.updatedAt.getTime()) {
-    return b.updatedAt.getTime() - a.updatedAt.getTime();
-  }
+  // Open first, then done; within each group tasks keep their manual position
+  // so both kanban columns can be reordered by drag-and-drop.
+  if (a.position !== b.position) return a.position - b.position;
   if (a.createdAt.getTime() !== b.createdAt.getTime()) {
     return b.createdAt.getTime() - a.createdAt.getTime();
   }
@@ -212,6 +216,57 @@ export const useAppStore = create<AppState>()(
         const ok = await guard(set, () => reorderTasks(orderedIds));
         // Roll back if the server rejected the new order.
         if (!ok) set({ tasks: previous });
+      },
+
+      moveTask: async (id, status, orderedIds) => {
+        const previous = get().tasks;
+        // Redistribute the destination column's position slots in the requested
+        // order (same slot-borrowing rule as reorderTasks) while flipping the
+        // moved task's status, so the card holds the slot it was dropped into
+        // instead of snapping to a default spot after the round-trip.
+        const moved = new Set(orderedIds);
+        const slots = previous
+          .filter((task) => moved.has(task.id))
+          .map((task) => task.position)
+          .sort((a, b) => a - b);
+        const nextPosition = new Map(
+          orderedIds.map((taskId, index) => [taskId, slots[index]]),
+        );
+        const optimistic = previous
+          .map((task) => {
+            if (task.id !== id && !nextPosition.has(task.id)) return task;
+            return {
+              ...task,
+              ...(task.id === id ? { status } : null),
+              ...(nextPosition.has(task.id)
+                ? { position: nextPosition.get(task.id)! }
+                : null),
+            };
+          })
+          .sort(compareTasks);
+        // Apply both changes in one update so the board doesn't flicker between
+        // the status change landing and the reorder landing.
+        set({ tasks: optimistic });
+        // Persist status first so the task belongs to the destination column,
+        // then its order; roll the whole move back if either leg fails.
+        const ok = await guard(set, async () => {
+          await updateTask(id, { status });
+          await reorderTasks(orderedIds);
+        });
+        if (!ok) set({ tasks: previous });
+      },
+
+      markTaskDone: async (id) => {
+        // Completing a task moves it to the (position-ordered) done group; float
+        // it to the top so the list keeps the just-ticked item on top, matching
+        // the recency feel the list views had before done became sortable.
+        const doneIds = [
+          id,
+          ...get()
+            .tasks.filter((task) => isTaskDone(task) && task.id !== id)
+            .map((task) => task.id),
+        ];
+        await get().moveTask(id, TaskStatus.Done, doneIds);
       },
     }),
     {

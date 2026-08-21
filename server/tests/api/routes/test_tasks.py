@@ -51,25 +51,25 @@ async def test_list_sinks_completed_below_open_ignoring_position(
     assert [task["title"] for task in response.json()] == ["Open", "Done"]
 
 
-async def test_completed_tasks_sort_most_recently_completed_first(
+async def test_completed_tasks_sort_by_manual_position(
     client: AsyncClient, session: AsyncSession
 ) -> None:
     user = await create_user(session)
-    earlier = await create_task(
-        session, user, title="Earlier", status=TaskStatus.DONE, position=0
+    # `first` has the lower position but the older updated_at: the done column is
+    # manually sortable, so position wins over completion recency.
+    first = await create_task(
+        session, user, title="First", status=TaskStatus.DONE, position=0
     )
-    later = await create_task(
-        session, user, title="Later", status=TaskStatus.DONE, position=1
+    second = await create_task(
+        session, user, title="Second", status=TaskStatus.DONE, position=1
     )
-    # `later` was created last, but `earlier` was ticked most recently, so its
-    # newer updated_at should lead the completed group (top of closed).
-    earlier.updated_at = datetime(2024, 2, 1, tzinfo=UTC)
-    later.updated_at = datetime(2024, 1, 1, tzinfo=UTC)
-    session.add_all([earlier, later])
+    first.updated_at = datetime(2024, 1, 1, tzinfo=UTC)
+    second.updated_at = datetime(2024, 2, 1, tzinfo=UTC)
+    session.add_all([first, second])
     await session.commit()
 
     response = await client.get("/api/tasks/", headers=auth_headers(user))
-    assert [task["title"] for task in response.json()] == ["Earlier", "Later"]
+    assert [task["title"] for task in response.json()] == ["First", "Second"]
 
 
 async def test_reopening_a_task_returns_it_to_the_open_group(
