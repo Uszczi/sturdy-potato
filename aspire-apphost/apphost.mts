@@ -1,7 +1,18 @@
 // Aspire TypeScript AppHost
 // For more information, see: https://aspire.dev
 
+import { fileURLToPath } from "node:url";
+import { dirname, resolve } from "node:path";
+
 import { createBuilder } from "./.aspire/modules/aspire.mjs";
+
+// `server` and `mcp` are uv workspace members, so uv keeps a single shared
+// virtual environment at the repo root (../.venv), not a per-project one. Point
+// the Python resources at it explicitly; otherwise Aspire defaults to
+// `server/.venv`, a stale pre-workspace venv that lacks fastmcp/ollama and
+// crashes the server on import.
+const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+const workspaceVenv = resolve(repoRoot, ".venv");
 
 const builder = await createBuilder();
 
@@ -33,6 +44,7 @@ const DATABASE_URL =
 // Run Alembic migrations to head before the server starts. This runs to
 // completion and exits (mirrors `just migrate`); the server waits for it below.
 const migrations = await builder.addPythonExecutable("migrations", "../server", "alembic");
+await migrations.withVirtualEnvironment(workspaceVenv);
 await migrations.withUv();
 await migrations.withArgs([
   "-c",
@@ -44,6 +56,7 @@ await migrations.withEnvironment("DATABASE_URL", DATABASE_URL);
 await migrations.waitFor(postgres);
 
 const server = await builder.addUvicornApp("server", "../server/src", "main:app");
+await server.withVirtualEnvironment(workspaceVenv);
 await server.withUv();
 await server.withoutHttpsCertificate();
 await server.withEnvironment("DATABASE_URL", DATABASE_URL);

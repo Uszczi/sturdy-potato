@@ -74,8 +74,13 @@ client-build:
 client-lint:
 	cd client && npm run lint
 
+# Wipes the output dir first so files dropped from the spec don't linger, then
+# formats the result. Needs the API up at http://localhost:8000 (`just run`).
+# Regenerate the typed API client from the running server's OpenAPI schema.
 generate-api-client:
+	rm -rf ./client/api-client
 	openapi-generator-cli generate -i http://localhost:8000/openapi.json -g typescript-fetch -o ./client/api-client
+	cd client && npx prettier --write "api-client/**/*.ts"
 
 lint:
 	cd server && uv run ruff check . --fix

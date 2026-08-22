@@ -8,8 +8,9 @@ ENV UV_COMPILE_BYTECODE=1 \
     UV_LINK_MODE=copy
 
 COPY pyproject.toml uv.lock ./
-RUN uv sync --frozen --no-dev --no-install-project
-
+COPY server/pyproject.toml ./server/pyproject.toml
+COPY mcp/pyproject.toml ./mcp/pyproject.toml
+RUN uv sync --frozen --no-dev --no-install-workspace
 
 FROM python:3.13-slim-bookworm
 
@@ -21,7 +22,7 @@ ENV PATH="/app/.venv/bin:$PATH" \
     PYTHONPATH=/app/src
 
 COPY --from=python-dependencies /app/.venv /app/.venv
-COPY src ./src
+COPY server/src ./src
 
 EXPOSE 8000
 

@@ -64,8 +64,8 @@ services:
 
   web:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: server/Dockerfile
     command:
       - sh
       - -c
