@@ -16,67 +16,56 @@ import { mapValues } from "../runtime";
 /**
  *
  * @export
- * @interface CommentSchema
+ * @interface WorkspaceSchema
  */
-export interface CommentSchema {
+export interface WorkspaceSchema {
   /**
    *
    * @type {number}
-   * @memberof CommentSchema
+   * @memberof WorkspaceSchema
    */
   id: number;
   /**
    *
-   * @type {number}
-   * @memberof CommentSchema
-   */
-  taskId: number;
-  /**
-   *
-   * @type {number}
-   * @memberof CommentSchema
-   */
-  userId: number;
-  /**
-   *
    * @type {string}
-   * @memberof CommentSchema
+   * @memberof WorkspaceSchema
    */
-  body: string;
+  name: string;
+  /**
+   *
+   * @type {boolean}
+   * @memberof WorkspaceSchema
+   */
+  isPersonal: boolean;
   /**
    *
    * @type {Date}
-   * @memberof CommentSchema
+   * @memberof WorkspaceSchema
    */
   createdAt: Date;
   /**
    *
    * @type {Date}
-   * @memberof CommentSchema
+   * @memberof WorkspaceSchema
    */
   updatedAt: Date;
 }
 
 /**
- * Check if a given object implements the CommentSchema interface.
+ * Check if a given object implements the WorkspaceSchema interface.
  */
-export function instanceOfCommentSchema(value: object): value is CommentSchema {
+export function instanceOfWorkspaceSchema(
+  value: object,
+): value is WorkspaceSchema {
   if (!("id" in value) || value["id"] === undefined) return false;
+  if (!("name" in value) || value["name"] === undefined) return false;
   if (
-    (!("taskId" in (value as Record<string, any>)) &&
-      !("task_id" in (value as Record<string, any>))) ||
-    ((value as Record<string, any>)["taskId"] === undefined &&
-      (value as Record<string, any>)["task_id"] === undefined)
+    (!("isPersonal" in (value as Record<string, any>)) &&
+      !("is_personal" in (value as Record<string, any>))) ||
+    ((value as Record<string, any>)["isPersonal"] === undefined &&
+      (value as Record<string, any>)["is_personal"] === undefined)
   )
     return false;
-  if (
-    (!("userId" in (value as Record<string, any>)) &&
-      !("user_id" in (value as Record<string, any>))) ||
-    ((value as Record<string, any>)["userId"] === undefined &&
-      (value as Record<string, any>)["user_id"] === undefined)
-  )
-    return false;
-  if (!("body" in value) || value["body"] === undefined) return false;
   if (
     (!("createdAt" in (value as Record<string, any>)) &&
       !("created_at" in (value as Record<string, any>))) ||
@@ -94,33 +83,32 @@ export function instanceOfCommentSchema(value: object): value is CommentSchema {
   return true;
 }
 
-export function CommentSchemaFromJSON(json: any): CommentSchema {
-  return CommentSchemaFromJSONTyped(json, false);
+export function WorkspaceSchemaFromJSON(json: any): WorkspaceSchema {
+  return WorkspaceSchemaFromJSONTyped(json, false);
 }
 
-export function CommentSchemaFromJSONTyped(
+export function WorkspaceSchemaFromJSONTyped(
   json: any,
   ignoreDiscriminator: boolean,
-): CommentSchema {
+): WorkspaceSchema {
   if (json == null) {
     return json;
   }
   return {
     id: json["id"],
-    taskId: json["task_id"],
-    userId: json["user_id"],
-    body: json["body"],
+    name: json["name"],
+    isPersonal: json["is_personal"],
     createdAt: new Date(json["created_at"]),
     updatedAt: new Date(json["updated_at"]),
   };
 }
 
-export function CommentSchemaToJSON(json: any): CommentSchema {
-  return CommentSchemaToJSONTyped(json, false);
+export function WorkspaceSchemaToJSON(json: any): WorkspaceSchema {
+  return WorkspaceSchemaToJSONTyped(json, false);
 }
 
-export function CommentSchemaToJSONTyped(
-  value?: CommentSchema | null,
+export function WorkspaceSchemaToJSONTyped(
+  value?: WorkspaceSchema | null,
   ignoreDiscriminator: boolean = false,
 ): any {
   if (value == null) {
@@ -129,9 +117,8 @@ export function CommentSchemaToJSONTyped(
 
   return {
     id: value["id"],
-    task_id: value["taskId"],
-    user_id: value["userId"],
-    body: value["body"],
+    name: value["name"],
+    is_personal: value["isPersonal"],
     created_at: value["createdAt"].toISOString(),
     updated_at: value["updatedAt"].toISOString(),
   };

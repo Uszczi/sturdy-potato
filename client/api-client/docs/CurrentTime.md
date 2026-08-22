@@ -1,32 +1,36 @@
+
 # CurrentTime
+
 
 ## Properties
 
-| Name          | Type    |
-| ------------- | ------- |
-| `currentTime` | Date    |
-| `cached`      | boolean |
+Name | Type
+------------ | -------------
+`currentTime` | Date
+`cached` | boolean
 
 ## Example
 
 ```typescript
-import type { CurrentTime } from "";
+import type { CurrentTime } from ''
 
 // TODO: Update the object below with actual values
 const example = {
-  currentTime: null,
-  cached: null,
-} satisfies CurrentTime;
+  "currentTime": null,
+  "cached": null,
+} satisfies CurrentTime
 
-console.log(example);
+console.log(example)
 
 // Convert the instance to a JSON string
-const exampleJSON: string = JSON.stringify(example);
-console.log(exampleJSON);
+const exampleJSON: string = JSON.stringify(example)
+console.log(exampleJSON)
 
 // Parse the JSON string back to an object
-const exampleParsed = JSON.parse(exampleJSON) as CurrentTime;
-console.log(exampleParsed);
+const exampleParsed = JSON.parse(exampleJSON) as CurrentTime
+console.log(exampleParsed)
 ```
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+

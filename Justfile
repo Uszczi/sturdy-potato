@@ -79,7 +79,7 @@ client-lint:
 # Regenerate the typed API client from the running server's OpenAPI schema.
 generate-api-client:
 	rm -rf ./client/api-client
-	openapi-generator-cli generate -i http://localhost:8000/openapi.json -g typescript-fetch -o ./client/api-client
+	openapi-generator-cli generate -i http://localhost:8000/openapi.json -g typescript-fetch -o ./client/api-client --skip-validate-spec
 	cd client && npx prettier --write "api-client/**/*.ts"
 
 lint:

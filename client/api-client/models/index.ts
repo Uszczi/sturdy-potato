@@ -1,6 +1,8 @@
 /* tslint:disable */
 /* eslint-disable */
 export * from "./AccessToken";
+export * from "./ChatMessageInput";
+export * from "./ChatRequest";
 export * from "./CommentCreateInput";
 export * from "./CommentSchema";
 export * from "./CommentUpdateInput";
@@ -22,3 +24,5 @@ export * from "./TokenPair";
 export * from "./TokenRefresh";
 export * from "./UserRegister";
 export * from "./ValidationError";
+export * from "./WorkspaceCreateInput";
+export * from "./WorkspaceSchema";

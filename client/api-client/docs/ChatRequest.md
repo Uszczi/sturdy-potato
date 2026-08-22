@@ -1,38 +1,22 @@
 
-# TaskSchema
+# ChatRequest
 
 
 ## Properties
 
 Name | Type
 ------------ | -------------
-`id` | number
-`title` | string
-`description` | string
-`status` | [TaskStatus](TaskStatus.md)
-`position` | number
-`projectId` | number
-`dueDate` | Date
-`createdAt` | Date
-`updatedAt` | Date
+`messages` | [Array&lt;ChatMessageInput&gt;](ChatMessageInput.md)
 
 ## Example
 
 ```typescript
-import type { TaskSchema } from ''
+import type { ChatRequest } from ''
 
 // TODO: Update the object below with actual values
 const example = {
-  "id": null,
-  "title": null,
-  "description": null,
-  "status": null,
-  "position": null,
-  "projectId": null,
-  "dueDate": null,
-  "createdAt": null,
-  "updatedAt": null,
-} satisfies TaskSchema
+  "messages": null,
+} satisfies ChatRequest
 
 console.log(example)
 
@@ -41,7 +25,7 @@ const exampleJSON: string = JSON.stringify(example)
 console.log(exampleJSON)
 
 // Parse the JSON string back to an object
-const exampleParsed = JSON.parse(exampleJSON) as TaskSchema
+const exampleParsed = JSON.parse(exampleJSON) as ChatRequest
 console.log(exampleParsed)
 ```
 

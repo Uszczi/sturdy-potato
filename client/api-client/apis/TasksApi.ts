@@ -50,36 +50,48 @@ import {
 } from "../models/TaskUpdateInput";
 
 export interface ApiTasksCountRetrieveRequest {
+  workspaceId: number;
   status?: TaskStatus | null;
 }
 
 export interface ApiTasksCreateRequest {
+  workspaceId: number;
   taskCreateInput: TaskCreateInput;
 }
 
 export interface ApiTasksDestroyRequest {
   id: number;
+  workspaceId: number;
+}
+
+export interface ApiTasksListRequest {
+  workspaceId: number;
 }
 
 export interface ApiTasksMoveCreateRequest {
   id: number;
+  workspaceId: number;
   taskMoveInput: TaskMoveInput;
 }
 
 export interface ApiTasksOpenListRequest {
+  workspaceId: number;
   limit?: number | null;
 }
 
 export interface ApiTasksPartialUpdateRequest {
   id: number;
+  workspaceId: number;
   taskUpdateInput: TaskUpdateInput;
 }
 
 export interface ApiTasksRetrieveRequest {
   id: number;
+  workspaceId: number;
 }
 
 export interface ApiTasksViewListRequest {
+  workspaceId: number;
   view?: ApiTasksViewListViewEnum;
   project?: number | null;
   tz?: string;
@@ -95,6 +107,13 @@ export class TasksApi extends runtime.BaseAPI {
   async apiTasksCountRetrieveRequestOpts(
     requestParameters: ApiTasksCountRetrieveRequest,
   ): Promise<runtime.RequestOpts> {
+    if (requestParameters["workspaceId"] == null) {
+      throw new runtime.RequiredError(
+        "workspaceId",
+        'Required parameter "workspaceId" was null or undefined when calling apiTasksCountRetrieve().',
+      );
+    }
+
     const queryParameters: any = {};
 
     if (requestParameters["status"] != null) {
@@ -112,7 +131,11 @@ export class TasksApi extends runtime.BaseAPI {
       }
     }
 
-    let urlPath = `/api/tasks/count/`;
+    let urlPath = `/api/workspaces/{workspace_id}/tasks/count/`;
+    urlPath = urlPath.replace(
+      "{workspace_id}",
+      encodeURIComponent(String(requestParameters["workspaceId"])),
+    );
 
     return {
       path: urlPath,
@@ -142,7 +165,7 @@ export class TasksApi extends runtime.BaseAPI {
    * Count Tasks
    */
   async apiTasksCountRetrieve(
-    requestParameters: ApiTasksCountRetrieveRequest = {},
+    requestParameters: ApiTasksCountRetrieveRequest,
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
   ): Promise<TaskCountSchema> {
     const response = await this.apiTasksCountRetrieveRaw(
@@ -158,6 +181,13 @@ export class TasksApi extends runtime.BaseAPI {
   async apiTasksCreateRequestOpts(
     requestParameters: ApiTasksCreateRequest,
   ): Promise<runtime.RequestOpts> {
+    if (requestParameters["workspaceId"] == null) {
+      throw new runtime.RequiredError(
+        "workspaceId",
+        'Required parameter "workspaceId" was null or undefined when calling apiTasksCreate().',
+      );
+    }
+
     if (requestParameters["taskCreateInput"] == null) {
       throw new runtime.RequiredError(
         "taskCreateInput",
@@ -180,7 +210,11 @@ export class TasksApi extends runtime.BaseAPI {
       }
     }
 
-    let urlPath = `/api/tasks/`;
+    let urlPath = `/api/workspaces/{workspace_id}/tasks/`;
+    urlPath = urlPath.replace(
+      "{workspace_id}",
+      encodeURIComponent(String(requestParameters["workspaceId"])),
+    );
 
     return {
       path: urlPath,
@@ -234,6 +268,13 @@ export class TasksApi extends runtime.BaseAPI {
       );
     }
 
+    if (requestParameters["workspaceId"] == null) {
+      throw new runtime.RequiredError(
+        "workspaceId",
+        'Required parameter "workspaceId" was null or undefined when calling apiTasksDestroy().',
+      );
+    }
+
     const queryParameters: any = {};
 
     const headerParameters: runtime.HTTPHeaders = {};
@@ -247,10 +288,14 @@ export class TasksApi extends runtime.BaseAPI {
       }
     }
 
-    let urlPath = `/api/tasks/{id}/`;
+    let urlPath = `/api/workspaces/{workspace_id}/tasks/{id}/`;
     urlPath = urlPath.replace(
       "{id}",
       encodeURIComponent(String(requestParameters["id"])),
+    );
+    urlPath = urlPath.replace(
+      "{workspace_id}",
+      encodeURIComponent(String(requestParameters["workspaceId"])),
     );
 
     return {
@@ -288,7 +333,16 @@ export class TasksApi extends runtime.BaseAPI {
   /**
    * Creates request options for apiTasksList without sending the request
    */
-  async apiTasksListRequestOpts(): Promise<runtime.RequestOpts> {
+  async apiTasksListRequestOpts(
+    requestParameters: ApiTasksListRequest,
+  ): Promise<runtime.RequestOpts> {
+    if (requestParameters["workspaceId"] == null) {
+      throw new runtime.RequiredError(
+        "workspaceId",
+        'Required parameter "workspaceId" was null or undefined when calling apiTasksList().',
+      );
+    }
+
     const queryParameters: any = {};
 
     const headerParameters: runtime.HTTPHeaders = {};
@@ -302,7 +356,11 @@ export class TasksApi extends runtime.BaseAPI {
       }
     }
 
-    let urlPath = `/api/tasks/`;
+    let urlPath = `/api/workspaces/{workspace_id}/tasks/`;
+    urlPath = urlPath.replace(
+      "{workspace_id}",
+      encodeURIComponent(String(requestParameters["workspaceId"])),
+    );
 
     return {
       path: urlPath,
@@ -316,9 +374,11 @@ export class TasksApi extends runtime.BaseAPI {
    * List Tasks
    */
   async apiTasksListRaw(
+    requestParameters: ApiTasksListRequest,
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
   ): Promise<runtime.ApiResponse<Array<TaskSchema>>> {
-    const requestOptions = await this.apiTasksListRequestOpts();
+    const requestOptions =
+      await this.apiTasksListRequestOpts(requestParameters);
     const response = await this.request(requestOptions, initOverrides);
 
     return new runtime.JSONApiResponse(response, (jsonValue) =>
@@ -330,9 +390,13 @@ export class TasksApi extends runtime.BaseAPI {
    * List Tasks
    */
   async apiTasksList(
+    requestParameters: ApiTasksListRequest,
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
   ): Promise<Array<TaskSchema>> {
-    const response = await this.apiTasksListRaw(initOverrides);
+    const response = await this.apiTasksListRaw(
+      requestParameters,
+      initOverrides,
+    );
     return await response.value();
   }
 
@@ -346,6 +410,13 @@ export class TasksApi extends runtime.BaseAPI {
       throw new runtime.RequiredError(
         "id",
         'Required parameter "id" was null or undefined when calling apiTasksMoveCreate().',
+      );
+    }
+
+    if (requestParameters["workspaceId"] == null) {
+      throw new runtime.RequiredError(
+        "workspaceId",
+        'Required parameter "workspaceId" was null or undefined when calling apiTasksMoveCreate().',
       );
     }
 
@@ -371,10 +442,14 @@ export class TasksApi extends runtime.BaseAPI {
       }
     }
 
-    let urlPath = `/api/tasks/{id}/move/`;
+    let urlPath = `/api/workspaces/{workspace_id}/tasks/{id}/move/`;
     urlPath = urlPath.replace(
       "{id}",
       encodeURIComponent(String(requestParameters["id"])),
+    );
+    urlPath = urlPath.replace(
+      "{workspace_id}",
+      encodeURIComponent(String(requestParameters["workspaceId"])),
     );
 
     return {
@@ -416,6 +491,13 @@ export class TasksApi extends runtime.BaseAPI {
   async apiTasksOpenListRequestOpts(
     requestParameters: ApiTasksOpenListRequest,
   ): Promise<runtime.RequestOpts> {
+    if (requestParameters["workspaceId"] == null) {
+      throw new runtime.RequiredError(
+        "workspaceId",
+        'Required parameter "workspaceId" was null or undefined when calling apiTasksOpenList().',
+      );
+    }
+
     const queryParameters: any = {};
 
     if (requestParameters["limit"] != null) {
@@ -433,7 +515,11 @@ export class TasksApi extends runtime.BaseAPI {
       }
     }
 
-    let urlPath = `/api/tasks/open/`;
+    let urlPath = `/api/workspaces/{workspace_id}/tasks/open/`;
+    urlPath = urlPath.replace(
+      "{workspace_id}",
+      encodeURIComponent(String(requestParameters["workspaceId"])),
+    );
 
     return {
       path: urlPath,
@@ -463,7 +549,7 @@ export class TasksApi extends runtime.BaseAPI {
    * Open Tasks
    */
   async apiTasksOpenList(
-    requestParameters: ApiTasksOpenListRequest = {},
+    requestParameters: ApiTasksOpenListRequest,
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
   ): Promise<Array<TaskSchema>> {
     const response = await this.apiTasksOpenListRaw(
@@ -483,6 +569,13 @@ export class TasksApi extends runtime.BaseAPI {
       throw new runtime.RequiredError(
         "id",
         'Required parameter "id" was null or undefined when calling apiTasksPartialUpdate().',
+      );
+    }
+
+    if (requestParameters["workspaceId"] == null) {
+      throw new runtime.RequiredError(
+        "workspaceId",
+        'Required parameter "workspaceId" was null or undefined when calling apiTasksPartialUpdate().',
       );
     }
 
@@ -508,10 +601,14 @@ export class TasksApi extends runtime.BaseAPI {
       }
     }
 
-    let urlPath = `/api/tasks/{id}/`;
+    let urlPath = `/api/workspaces/{workspace_id}/tasks/{id}/`;
     urlPath = urlPath.replace(
       "{id}",
       encodeURIComponent(String(requestParameters["id"])),
+    );
+    urlPath = urlPath.replace(
+      "{workspace_id}",
+      encodeURIComponent(String(requestParameters["workspaceId"])),
     );
 
     return {
@@ -566,6 +663,13 @@ export class TasksApi extends runtime.BaseAPI {
       );
     }
 
+    if (requestParameters["workspaceId"] == null) {
+      throw new runtime.RequiredError(
+        "workspaceId",
+        'Required parameter "workspaceId" was null or undefined when calling apiTasksRetrieve().',
+      );
+    }
+
     const queryParameters: any = {};
 
     const headerParameters: runtime.HTTPHeaders = {};
@@ -579,10 +683,14 @@ export class TasksApi extends runtime.BaseAPI {
       }
     }
 
-    let urlPath = `/api/tasks/{id}/`;
+    let urlPath = `/api/workspaces/{workspace_id}/tasks/{id}/`;
     urlPath = urlPath.replace(
       "{id}",
       encodeURIComponent(String(requestParameters["id"])),
+    );
+    urlPath = urlPath.replace(
+      "{workspace_id}",
+      encodeURIComponent(String(requestParameters["workspaceId"])),
     );
 
     return {
@@ -629,6 +737,13 @@ export class TasksApi extends runtime.BaseAPI {
   async apiTasksViewListRequestOpts(
     requestParameters: ApiTasksViewListRequest,
   ): Promise<runtime.RequestOpts> {
+    if (requestParameters["workspaceId"] == null) {
+      throw new runtime.RequiredError(
+        "workspaceId",
+        'Required parameter "workspaceId" was null or undefined when calling apiTasksViewList().',
+      );
+    }
+
     const queryParameters: any = {};
 
     if (requestParameters["view"] != null) {
@@ -654,7 +769,11 @@ export class TasksApi extends runtime.BaseAPI {
       }
     }
 
-    let urlPath = `/api/tasks/view/`;
+    let urlPath = `/api/workspaces/{workspace_id}/tasks/view/`;
+    urlPath = urlPath.replace(
+      "{workspace_id}",
+      encodeURIComponent(String(requestParameters["workspaceId"])),
+    );
 
     return {
       path: urlPath,
@@ -684,7 +803,7 @@ export class TasksApi extends runtime.BaseAPI {
    * View Tasks
    */
   async apiTasksViewList(
-    requestParameters: ApiTasksViewListRequest = {},
+    requestParameters: ApiTasksViewListRequest,
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
   ): Promise<Array<TaskSchema>> {
     const response = await this.apiTasksViewListRaw(
