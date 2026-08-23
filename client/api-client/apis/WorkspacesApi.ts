@@ -19,10 +19,20 @@ import {
   HTTPValidationErrorToJSON,
 } from "../models/HTTPValidationError";
 import {
+  type WorkflowInput,
+  WorkflowInputFromJSON,
+  WorkflowInputToJSON,
+} from "../models/WorkflowInput";
+import {
   type WorkspaceCreateInput,
   WorkspaceCreateInputFromJSON,
   WorkspaceCreateInputToJSON,
 } from "../models/WorkspaceCreateInput";
+import {
+  type WorkspaceDetailSchema,
+  WorkspaceDetailSchemaFromJSON,
+  WorkspaceDetailSchemaToJSON,
+} from "../models/WorkspaceDetailSchema";
 import {
   type WorkspaceSchema,
   WorkspaceSchemaFromJSON,
@@ -31,6 +41,15 @@ import {
 
 export interface ApiWorkspacesCreateRequest {
   workspaceCreateInput: WorkspaceCreateInput;
+}
+
+export interface ApiWorkspacesRetrieveRequest {
+  workspaceId: number;
+}
+
+export interface ApiWorkspacesStatusesUpdateRequest {
+  workspaceId: number;
+  workflowInput: WorkflowInput;
 }
 
 /**
@@ -156,6 +175,160 @@ export class WorkspacesApi extends runtime.BaseAPI {
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
   ): Promise<Array<WorkspaceSchema>> {
     const response = await this.apiWorkspacesListRaw(initOverrides);
+    return await response.value();
+  }
+
+  /**
+   * Creates request options for apiWorkspacesRetrieve without sending the request
+   */
+  async apiWorkspacesRetrieveRequestOpts(
+    requestParameters: ApiWorkspacesRetrieveRequest,
+  ): Promise<runtime.RequestOpts> {
+    if (requestParameters["workspaceId"] == null) {
+      throw new runtime.RequiredError(
+        "workspaceId",
+        'Required parameter "workspaceId" was null or undefined when calling apiWorkspacesRetrieve().',
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (this.configuration && this.configuration.accessToken) {
+      const token = this.configuration.accessToken;
+      const tokenString = await token("HTTPBearer", []);
+
+      if (tokenString) {
+        headerParameters["Authorization"] = `Bearer ${tokenString}`;
+      }
+    }
+
+    let urlPath = `/api/workspaces/{workspace_id}/`;
+    urlPath = urlPath.replace(
+      "{workspace_id}",
+      encodeURIComponent(String(requestParameters["workspaceId"])),
+    );
+
+    return {
+      path: urlPath,
+      method: "GET",
+      headers: headerParameters,
+      query: queryParameters,
+    };
+  }
+
+  /**
+   * One workspace, including the workflow the inbox board renders.
+   * Retrieve Workspace
+   */
+  async apiWorkspacesRetrieveRaw(
+    requestParameters: ApiWorkspacesRetrieveRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<runtime.ApiResponse<WorkspaceDetailSchema>> {
+    const requestOptions =
+      await this.apiWorkspacesRetrieveRequestOpts(requestParameters);
+    const response = await this.request(requestOptions, initOverrides);
+
+    return new runtime.JSONApiResponse(response, (jsonValue) =>
+      WorkspaceDetailSchemaFromJSON(jsonValue),
+    );
+  }
+
+  /**
+   * One workspace, including the workflow the inbox board renders.
+   * Retrieve Workspace
+   */
+  async apiWorkspacesRetrieve(
+    requestParameters: ApiWorkspacesRetrieveRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<WorkspaceDetailSchema> {
+    const response = await this.apiWorkspacesRetrieveRaw(
+      requestParameters,
+      initOverrides,
+    );
+    return await response.value();
+  }
+
+  /**
+   * Creates request options for apiWorkspacesStatusesUpdate without sending the request
+   */
+  async apiWorkspacesStatusesUpdateRequestOpts(
+    requestParameters: ApiWorkspacesStatusesUpdateRequest,
+  ): Promise<runtime.RequestOpts> {
+    if (requestParameters["workspaceId"] == null) {
+      throw new runtime.RequiredError(
+        "workspaceId",
+        'Required parameter "workspaceId" was null or undefined when calling apiWorkspacesStatusesUpdate().',
+      );
+    }
+
+    if (requestParameters["workflowInput"] == null) {
+      throw new runtime.RequiredError(
+        "workflowInput",
+        'Required parameter "workflowInput" was null or undefined when calling apiWorkspacesStatusesUpdate().',
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    headerParameters["Content-Type"] = "application/json";
+
+    if (this.configuration && this.configuration.accessToken) {
+      const token = this.configuration.accessToken;
+      const tokenString = await token("HTTPBearer", []);
+
+      if (tokenString) {
+        headerParameters["Authorization"] = `Bearer ${tokenString}`;
+      }
+    }
+
+    let urlPath = `/api/workspaces/{workspace_id}/statuses/`;
+    urlPath = urlPath.replace(
+      "{workspace_id}",
+      encodeURIComponent(String(requestParameters["workspaceId"])),
+    );
+
+    return {
+      path: urlPath,
+      method: "PUT",
+      headers: headerParameters,
+      query: queryParameters,
+      body: WorkflowInputToJSON(requestParameters["workflowInput"]),
+    };
+  }
+
+  /**
+   * Replace the inbox board\'s workflow, and the template new projects copy.  Projects that already exist keep their own snapshot and are untouched.
+   * Set Workspace Workflow
+   */
+  async apiWorkspacesStatusesUpdateRaw(
+    requestParameters: ApiWorkspacesStatusesUpdateRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<runtime.ApiResponse<WorkspaceDetailSchema>> {
+    const requestOptions =
+      await this.apiWorkspacesStatusesUpdateRequestOpts(requestParameters);
+    const response = await this.request(requestOptions, initOverrides);
+
+    return new runtime.JSONApiResponse(response, (jsonValue) =>
+      WorkspaceDetailSchemaFromJSON(jsonValue),
+    );
+  }
+
+  /**
+   * Replace the inbox board\'s workflow, and the template new projects copy.  Projects that already exist keep their own snapshot and are untouched.
+   * Set Workspace Workflow
+   */
+  async apiWorkspacesStatusesUpdate(
+    requestParameters: ApiWorkspacesStatusesUpdateRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<WorkspaceDetailSchema> {
+    const response = await this.apiWorkspacesStatusesUpdateRaw(
+      requestParameters,
+      initOverrides,
+    );
     return await response.value();
   }
 }

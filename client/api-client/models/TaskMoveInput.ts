@@ -13,14 +13,6 @@
  */
 
 import { mapValues } from "../runtime";
-import type { TaskStatus } from "./TaskStatus";
-import {
-  TaskStatusFromJSON,
-  TaskStatusFromJSONTyped,
-  TaskStatusToJSON,
-  TaskStatusToJSONTyped,
-} from "./TaskStatus";
-
 /**
  *
  * @export
@@ -29,10 +21,10 @@ import {
 export interface TaskMoveInput {
   /**
    *
-   * @type {TaskStatus}
+   * @type {string}
    * @memberof TaskMoveInput
    */
-  status: TaskStatus;
+  status: string;
   /**
    *
    * @type {number}
@@ -62,7 +54,7 @@ export function TaskMoveInputFromJSONTyped(
     return json;
   }
   return {
-    status: TaskStatusFromJSON(json["status"]),
+    status: json["status"],
     position: json["position"],
   };
 }
@@ -80,7 +72,7 @@ export function TaskMoveInputToJSONTyped(
   }
 
   return {
-    status: TaskStatusToJSON(value["status"]),
+    status: value["status"],
     position: value["position"],
   };
 }

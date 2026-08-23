@@ -12,7 +12,7 @@ from typing import Any
 from use_cases.dtos import CommentCreateData, ProjectCreateData, TaskCreateData
 from use_cases.entities import Comment, Project, Task, User, Workspace
 from use_cases.exceptions import InvalidToken
-from use_cases.task_status import TaskStatus
+from use_cases.workflow import DEFAULT_WORKFLOW, StatusAssignment, Workflow
 
 
 def _now() -> datetime:
@@ -56,6 +56,7 @@ class FakeWorkspaceRepository:
         workspace = Workspace(
             id=self._next_id,
             name=name,
+            workflow=DEFAULT_WORKFLOW,
             is_personal=is_personal,
             created_at=_now(),
             updated_at=_now(),
@@ -64,6 +65,19 @@ class FakeWorkspaceRepository:
         self._memberships.append((workspace.id, owner_id, "owner"))
         self._next_id += 1
         return workspace
+
+    async def get(self, workspace_id: int) -> Workspace | None:
+        return self._workspaces.get(workspace_id)
+
+    async def set_workflow(
+        self, workspace_id: int, workflow: Workflow
+    ) -> Workspace | None:
+        existing = self._workspaces.get(workspace_id)
+        if existing is None:
+            return None
+        updated = Workspace(**{**existing.__dict__, "workflow": workflow})
+        self._workspaces[workspace_id] = updated
+        return updated
 
     async def list_for_user(self, user_id: int) -> list[Workspace]:
         ids = {ws_id for ws_id, uid, _ in self._memberships if uid == user_id}
@@ -123,7 +137,7 @@ class FakeTaskRepository:
             key=lambda t: (
                 t.project_id is None,
                 t.project_id or 0,
-                t.status.is_done,
+                t.is_done,
                 t.position,
                 -t.id,
             ),
@@ -144,16 +158,14 @@ class FakeTaskRepository:
             tasks = [
                 t
                 for t in tasks
-                if t.due_date is not None
-                and t.due_date > today
-                and not t.status.is_done
+                if t.due_date is not None and t.due_date > today and not t.is_done
             ]
         if scoped_to_one_board:
-            return sorted(tasks, key=lambda t: (t.status.is_done, t.position, -t.id))
+            return sorted(tasks, key=lambda t: (t.is_done, t.position, -t.id))
         return sorted(
             tasks,
             key=lambda t: (
-                t.status.is_done,
+                t.is_done,
                 t.due_date is None,
                 t.due_date or date.min,
                 -t.created_at.timestamp(),
@@ -163,30 +175,33 @@ class FakeTaskRepository:
 
     async def list_open(self, workspace_id: int, *, limit: int | None) -> list[Task]:
         owned = sorted(
-            (t for t in self._owned(workspace_id) if not t.status.is_done),
+            (t for t in self._owned(workspace_id) if not t.is_done),
             key=lambda t: (t.position, -t.id),
         )
         return owned[:limit] if limit is not None else owned
 
-    async def count(self, workspace_id: int, *, status: TaskStatus | None) -> int:
+    async def count(self, workspace_id: int, *, done: bool | None) -> int:
         tasks = self._owned(workspace_id)
-        if status is not None:
-            tasks = [t for t in tasks if t.status == status]
+        if done is not None:
+            tasks = [t for t in tasks if t.is_done is done]
         return len(tasks)
 
     async def get(self, workspace_id: int, task_id: int) -> Task | None:
         task = self._tasks.get(task_id)
         return task if task is not None and task.workspace_id == workspace_id else None
 
-    async def create(self, workspace_id: int, data: TaskCreateData) -> Task:
-        position = self._next_position(workspace_id, data.project_id, data.status)
+    async def create(
+        self, workspace_id: int, data: TaskCreateData, status: StatusAssignment
+    ) -> Task:
+        position = self._next_position(workspace_id, data.project_id, status.key)
         task = Task(
             id=self._next_id,
             workspace_id=workspace_id,
             project_id=data.project_id,
             title=data.title,
             description=data.description,
-            status=data.status,
+            status=status.key,
+            is_done=status.is_done,
             position=position,
             due_date=data.due_date,
             created_at=_now(),
@@ -233,7 +248,7 @@ class FakeTaskRepository:
         self,
         workspace_id: int,
         project_id: int | None,
-        status: TaskStatus,
+        status: str,
         *,
         exclude_id: int | None = None,
     ) -> int:
@@ -330,12 +345,15 @@ class FakeProjectRepository:
             for p in self._projects.values()
         )
 
-    async def create(self, workspace_id: int, data: ProjectCreateData) -> Project:
+    async def create(
+        self, workspace_id: int, data: ProjectCreateData, workflow: Workflow
+    ) -> Project:
         project = Project(
             id=self._next_id,
             workspace_id=workspace_id,
             name=data.name,
             color=data.color,
+            workflow=workflow,
             position=0,
             task_count=0,
             created_at=_now(),
@@ -353,6 +371,16 @@ class FakeProjectRepository:
             return None
         fields = {**existing.__dict__, **changes, "updated_at": _now()}
         updated = Project(**fields)
+        self._projects[project_id] = updated
+        return updated
+
+    async def set_workflow(
+        self, workspace_id: int, project_id: int, workflow: Workflow
+    ) -> Project | None:
+        existing = await self.get(workspace_id, project_id)
+        if existing is None:
+            return None
+        updated = Project(**{**existing.__dict__, "workflow": workflow})
         self._projects[project_id] = updated
         return updated
 

@@ -13,14 +13,6 @@
  */
 
 import { mapValues } from "../runtime";
-import type { TaskStatus } from "./TaskStatus";
-import {
-  TaskStatusFromJSON,
-  TaskStatusFromJSONTyped,
-  TaskStatusToJSON,
-  TaskStatusToJSONTyped,
-} from "./TaskStatus";
-
 /**
  *
  * @export
@@ -47,10 +39,16 @@ export interface TaskSchema {
   description: string;
   /**
    *
-   * @type {TaskStatus}
+   * @type {string}
    * @memberof TaskSchema
    */
-  status: TaskStatus;
+  status: string;
+  /**
+   *
+   * @type {boolean}
+   * @memberof TaskSchema
+   */
+  isDone: boolean;
   /**
    *
    * @type {number}
@@ -92,6 +90,13 @@ export function instanceOfTaskSchema(value: object): value is TaskSchema {
   if (!("description" in value) || value["description"] === undefined)
     return false;
   if (!("status" in value) || value["status"] === undefined) return false;
+  if (
+    (!("isDone" in (value as Record<string, any>)) &&
+      !("is_done" in (value as Record<string, any>))) ||
+    ((value as Record<string, any>)["isDone"] === undefined &&
+      (value as Record<string, any>)["is_done"] === undefined)
+  )
+    return false;
   if (!("position" in value) || value["position"] === undefined) return false;
   if (
     (!("projectId" in (value as Record<string, any>)) &&
@@ -139,7 +144,8 @@ export function TaskSchemaFromJSONTyped(
     id: json["id"],
     title: json["title"],
     description: json["description"],
-    status: TaskStatusFromJSON(json["status"]),
+    status: json["status"],
+    isDone: json["is_done"],
     position: json["position"],
     projectId: json["project_id"],
     dueDate: json["due_date"] == null ? null : new Date(json["due_date"]),
@@ -164,7 +170,8 @@ export function TaskSchemaToJSONTyped(
     id: value["id"],
     title: value["title"],
     description: value["description"],
-    status: TaskStatusToJSON(value["status"]),
+    status: value["status"],
+    is_done: value["isDone"],
     position: value["position"],
     project_id: value["projectId"],
     due_date:

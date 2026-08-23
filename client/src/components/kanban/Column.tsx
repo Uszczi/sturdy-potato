@@ -29,7 +29,7 @@ export default function Column({
   return (
     <div
       key={name}
-      className="flex w-56 flex-col gap-4"
+      className="flex w-56 shrink-0 flex-col gap-4"
       ref={ref}
       style={style}
       data-testid={`column-${id}`}

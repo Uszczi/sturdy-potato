@@ -8,7 +8,7 @@ Name | Type
 ------------ | -------------
 `title` | string
 `description` | string
-`status` | [TaskStatus](TaskStatus.md)
+`status` | string
 `projectId` | number
 `dueDate` | Date
 

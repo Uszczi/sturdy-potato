@@ -71,7 +71,7 @@ example().catch(console.error);
 ### HTTP request headers
 
 - **Content-Type**: `application/json`
-- **Accept**: `application/jsonl`, `application/json`
+- **Accept**: `text/event-stream`, `application/json`
 
 
 ### HTTP response details

@@ -1,14 +1,37 @@
 from datetime import UTC, date, datetime
 from typing import Any
 
-from sqlalchemy import Column, DateTime, ForeignKey, Index, Integer, UniqueConstraint
+from sqlalchemy import (
+    JSON,
+    Boolean,
+    Column,
+    DateTime,
+    ForeignKey,
+    Index,
+    Integer,
+    UniqueConstraint,
+)
 from sqlmodel import Field, SQLModel
 
-from use_cases.task_status import TaskStatus
+from use_cases.workflow import DEFAULT_WORKFLOW, MAX_KEY_LENGTH
 
 
 def utcnow() -> datetime:
     return datetime.now(UTC)
+
+
+def _workflow_field() -> Any:
+    """The board's ordered statuses, stored as JSON.
+
+    JSON rather than rows because a workflow is only ever read and written whole,
+    and its list order *is* the column order — a separate table would need a
+    position column that could disagree with it. ``default_factory`` keeps every
+    row valid without a server default the domain would have to duplicate.
+    """
+    return Field(
+        default_factory=DEFAULT_WORKFLOW.to_dicts,
+        sa_column=Column(JSON, nullable=False),
+    )
 
 
 def _created_at_field() -> Any:
@@ -41,6 +64,8 @@ class Workspace(SQLModel, table=True):
 
     id: int | None = Field(default=None, primary_key=True)
     name: str = Field(max_length=100)
+    # The default new projects are copied from, and the inbox board's own.
+    workflow: list[Any] = _workflow_field()
     # True for the workspace minted for a user at registration. Lets the client
     # single out a user's default workspace without inspecting memberships.
     is_personal: bool = False
@@ -93,6 +118,10 @@ class Project(SQLModel, table=True):
     # Optional accent colour as a "#rrggbb" hex string; null falls back to the
     # theme's primary colour in the UI.
     color: str | None = Field(default=None, max_length=7)
+    # Snapshot-copied from the workspace's default when the project is created,
+    # then edited independently: changing a workspace's default never rewrites
+    # the boards of projects that already exist.
+    workflow: list[Any] = _workflow_field()
     position: int = 0
     created_at: datetime = _created_at_field()
     updated_at: datetime = _updated_at_field()
@@ -112,6 +141,9 @@ class Task(SQLModel, table=True):
             "status",
             "position",
         ),
+        # The workspace-wide "still open" reads (list_open, the upcoming view,
+        # the open count) filter on is_done rather than a status value.
+        Index("ix_todo_workspace_done_position", "workspace_id", "is_done", "position"),
     )
 
     id: int | None = Field(default=None, primary_key=True)
@@ -119,10 +151,16 @@ class Task(SQLModel, table=True):
     project_id: int | None = Field(default=None, foreign_key="projects.id")
     title: str = Field(max_length=200)
     description: str = ""
-    # Stored as a plain string (not a DB enum) so a future per-project status
-    # setting can introduce new values without a schema migration. The domain's
-    # TaskStatus is the source of truth for which values are valid.
-    status: str = Field(default=TaskStatus.OPEN, max_length=20)
+    # A status key from the owning board's workflow (its project's, or the
+    # workspace's for an inbox task). A plain string, not a DB enum: which keys
+    # are valid is per-project data, not schema.
+    status: str = Field(default=DEFAULT_WORKFLOW.initial.key, max_length=MAX_KEY_LENGTH)
+    # Whether ``status`` is terminal in the owning board's workflow. Denormalised
+    # so workspace-wide "still open" reads stay a single indexed predicate; see
+    # ADR-0001 for the trade and the write paths that maintain it.
+    is_done: bool = Field(
+        default=False, sa_column=Column(Boolean, nullable=False, index=False)
+    )
     position: int = 0
     due_date: date | None = None
     created_at: datetime = _created_at_field()

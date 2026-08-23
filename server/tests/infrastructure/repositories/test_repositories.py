@@ -7,7 +7,13 @@ port contract (the fakes honour it), so exercise it directly here.
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from infrastructure.repositories import CommentRepository, TaskRepository
+from infrastructure.repositories import (
+    CommentRepository,
+    ProjectRepository,
+    TaskRepository,
+    WorkspaceRepository,
+)
+from use_cases.workflow import DEFAULT_WORKFLOW
 
 
 async def test_update_returns_none_for_a_missing_task(session: AsyncSession) -> None:
@@ -48,3 +54,25 @@ async def test_comment_delete_returns_false_for_a_missing_comment(
     repository = CommentRepository(session)
 
     assert await repository.delete(workspace_id=1, comment_id=999) is False
+
+
+async def test_set_workflow_returns_none_for_a_missing_project(
+    session: AsyncSession,
+) -> None:
+    repository = ProjectRepository(session)
+
+    result = await repository.set_workflow(
+        workspace_id=1, project_id=999, workflow=DEFAULT_WORKFLOW
+    )
+
+    assert result is None
+
+
+async def test_set_workflow_returns_none_for_a_missing_workspace(
+    session: AsyncSession,
+) -> None:
+    repository = WorkspaceRepository(session)
+
+    result = await repository.set_workflow(workspace_id=999, workflow=DEFAULT_WORKFLOW)
+
+    assert result is None

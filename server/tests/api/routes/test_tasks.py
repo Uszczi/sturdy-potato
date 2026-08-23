@@ -12,7 +12,6 @@ from tests.factories import (
     create_user,
     create_user_with_workspace,
 )
-from use_cases.task_status import TaskStatus
 
 
 async def test_list_returns_only_the_workspaces_tasks(
@@ -53,9 +52,7 @@ async def test_list_sinks_completed_below_open_ignoring_position(
 ) -> None:
     user, workspace = await create_user_with_workspace(session)
     # The done task has the lower position, yet must still sort last.
-    await create_task(
-        session, workspace, title="Done", status=TaskStatus.DONE, position=0
-    )
+    await create_task(session, workspace, title="Done", status="done", position=0)
     await create_task(session, workspace, title="Open", position=1)
 
     response = await client.get(
@@ -72,10 +69,10 @@ async def test_completed_tasks_sort_by_manual_position(
     # `first` has the lower position but the older updated_at: the done column is
     # manually sortable, so position wins over completion recency.
     first = await create_task(
-        session, workspace, title="First", status=TaskStatus.DONE, position=0
+        session, workspace, title="First", status="done", position=0
     )
     second = await create_task(
-        session, workspace, title="Second", status=TaskStatus.DONE, position=1
+        session, workspace, title="Second", status="done", position=1
     )
     first.updated_at = datetime(2024, 1, 1, tzinfo=UTC)
     second.updated_at = datetime(2024, 2, 1, tzinfo=UTC)
@@ -94,7 +91,7 @@ async def test_reopening_a_task_returns_it_to_the_open_group(
     user, workspace = await create_user_with_workspace(session)
     await create_task(session, workspace, title="Open", position=0)
     done = await create_task(
-        session, workspace, title="Reopened", status=TaskStatus.DONE, position=1
+        session, workspace, title="Reopened", status="done", position=1
     )
     headers = auth_headers(user)
 
@@ -198,7 +195,7 @@ async def test_retrieve_missing_task_returns_404(
 
 async def test_update_task_fields(client: AsyncClient, session: AsyncSession) -> None:
     user, workspace = await create_user_with_workspace(session)
-    task = await create_task(session, workspace, title="Old", status=TaskStatus.OPEN)
+    task = await create_task(session, workspace, title="Old", status="open")
 
     response = await client.patch(
         f"/api/workspaces/{workspace.id}/tasks/{task.id}/",
@@ -339,7 +336,7 @@ async def test_move_task_across_columns_and_persists(
     response = await client.post(
         f"/api/workspaces/{workspace.id}/tasks/{second.id}/move/",
         headers=auth_headers(user),
-        json={"status": TaskStatus.DONE.value, "position": 0},
+        json={"status": "done", "position": 0},
     )
 
     assert response.status_code == 204
@@ -347,7 +344,7 @@ async def test_move_task_across_columns_and_persists(
         f"/api/workspaces/{workspace.id}/tasks/", headers=auth_headers(user)
     )
     tasks_by_id = {task["id"]: task for task in listed.json()}
-    assert tasks_by_id[second.id]["status"] == TaskStatus.DONE.value
+    assert tasks_by_id[second.id]["status"] == "done"
     # Open column keeps First; Second now leads the done column.
     assert [t["id"] for t in listed.json()] == [first.id, second.id]
 
@@ -360,7 +357,7 @@ async def test_move_missing_task_returns_404(
     response = await client.post(
         f"/api/workspaces/{workspace.id}/tasks/999/move/",
         headers=auth_headers(user),
-        json={"status": TaskStatus.OPEN.value, "position": 0},
+        json={"status": "open", "position": 0},
     )
 
     assert response.status_code == 404
@@ -375,7 +372,7 @@ async def test_move_rejects_negative_position(
     response = await client.post(
         f"/api/workspaces/{workspace.id}/tasks/{task.id}/move/",
         headers=auth_headers(user),
-        json={"status": TaskStatus.OPEN.value, "position": -1},
+        json={"status": "open", "position": -1},
     )
 
     assert response.status_code == 422
@@ -518,9 +515,7 @@ async def test_open_tasks_with_limit(
     user, workspace = await create_user_with_workspace(session)
     await create_task(session, workspace, title="Open 1", position=0)
     await create_task(session, workspace, title="Open 2", position=1)
-    await create_task(
-        session, workspace, title="Done", status=TaskStatus.DONE, position=2
-    )
+    await create_task(session, workspace, title="Done", status="done", position=2)
 
     unlimited = await client.get(
         f"/api/workspaces/{workspace.id}/tasks/open/", headers=auth_headers(user)
@@ -537,16 +532,18 @@ async def test_open_tasks_with_limit(
 
 async def test_count_tasks(client: AsyncClient, session: AsyncSession) -> None:
     user, workspace = await create_user_with_workspace(session)
-    await create_task(session, workspace, status=TaskStatus.OPEN)
-    await create_task(session, workspace, status=TaskStatus.DONE)
+    await create_task(session, workspace, status="open")
+    await create_task(session, workspace, status="done")
 
     total = await client.get(
         f"/api/workspaces/{workspace.id}/tasks/count/", headers=auth_headers(user)
     )
+    # Boards can disagree on which status keys mean finished, so the filter is
+    # done-ness rather than a status name.
     open_only = await client.get(
         f"/api/workspaces/{workspace.id}/tasks/count/",
         headers=auth_headers(user),
-        params={"status": "open"},
+        params={"done": "false"},
     )
 
     assert total.json() == {"count": 2}

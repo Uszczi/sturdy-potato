@@ -4,7 +4,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from schemas._coercions import empty_to_none, reject_null, strip_if_str
 from use_cases.dtos import TaskCreateData, TaskUpdateData
-from use_cases.task_status import TaskStatus
+from use_cases.workflow import MAX_KEY_LENGTH
 
 
 class TaskCreateInput(BaseModel):
@@ -12,7 +12,9 @@ class TaskCreateInput(BaseModel):
 
     title: str = Field(min_length=1, max_length=200)
     description: str = ""
-    status: TaskStatus = TaskStatus.OPEN
+    # A status key from the target board's workflow. Omitted means "wherever
+    # this board starts", which is what a plain new task wants.
+    status: str | None = Field(default=None, max_length=MAX_KEY_LENGTH)
     project_id: int | None = None
     due_date: date | None = None
 
@@ -41,7 +43,7 @@ class TaskUpdateInput(BaseModel):
 
     title: str | None = Field(default=None, max_length=200)
     description: str | None = None
-    status: TaskStatus | None = None
+    status: str | None = Field(default=None, max_length=MAX_KEY_LENGTH)
     project_id: int | None = None
     due_date: date | None = None
 
@@ -67,7 +69,7 @@ class TaskMoveInput(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     # The column the card lands in and its index within that column (0 = top).
-    status: TaskStatus
+    status: str = Field(min_length=1, max_length=MAX_KEY_LENGTH)
     position: int = Field(ge=0)
 
 
@@ -81,7 +83,10 @@ class TaskSchema(BaseModel):
     id: int
     title: str
     description: str
-    status: TaskStatus
+    status: str
+    # Whether ``status`` is terminal on this task's board. The client can't
+    # derive it: the same key can be terminal in one project and not another.
+    is_done: bool
     position: int
     project_id: int | None
     due_date: date | None

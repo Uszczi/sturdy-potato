@@ -6,7 +6,7 @@
 
 Name | Type
 ------------ | -------------
-`status` | [TaskStatus](TaskStatus.md)
+`status` | string
 `position` | number
 
 ## Example

@@ -1,7 +1,7 @@
 from collections.abc import Mapping
 from typing import Any
 
-from sqlalchemy import func, insert, update
+from sqlalchemy import delete, func, insert
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import col, select
 
@@ -9,6 +9,7 @@ from infrastructure.models import Project, Task, utcnow
 from infrastructure.repositories._positioning import next_position_subquery
 from use_cases.dtos import ProjectCreateData
 from use_cases.entities import Project as ProjectEntity
+from use_cases.workflow import Workflow
 
 _ORDER = (col(Project.position), col(Project.name), col(Project.id))
 
@@ -20,6 +21,7 @@ def _to_entity(project: Project, task_count: int) -> ProjectEntity:
         workspace_id=project.workspace_id,
         name=project.name,
         color=project.color,
+        workflow=Workflow.from_dicts(project.workflow),
         position=project.position,
         task_count=task_count,
         created_at=project.created_at,
@@ -86,7 +88,9 @@ class ProjectRepository:
             statement = statement.where(col(Project.id) != exclude_id)
         return (await self._session.scalar(statement)) is not None
 
-    async def create(self, workspace_id: int, data: ProjectCreateData) -> ProjectEntity:
+    async def create(
+        self, workspace_id: int, data: ProjectCreateData, workflow: Workflow
+    ) -> ProjectEntity:
         # Assign the next position inside the INSERT so concurrent creates can't
         # read the same max and land on the same slot.
         now = utcnow()
@@ -96,6 +100,7 @@ class ProjectRepository:
                 workspace_id=workspace_id,
                 name=data.name,
                 color=data.color,
+                workflow=workflow.to_dicts(),
                 position=next_position_subquery(
                     col(Project.position), col(Project.workspace_id), workspace_id
                 ),
@@ -120,16 +125,25 @@ class ProjectRepository:
         await self._session.flush()
         return await self.get(workspace_id, project_id)
 
+    async def set_workflow(
+        self, workspace_id: int, project_id: int, workflow: Workflow
+    ) -> ProjectEntity | None:
+        project = await self._get_orm(workspace_id, project_id)
+        if project is None:
+            return None
+        project.workflow = workflow.to_dicts()
+        self._session.add(project)
+        await self._session.flush()
+        return await self.get(workspace_id, project_id)
+
     async def delete(self, workspace_id: int, project_id: int) -> bool:
         project = await self._get_orm(workspace_id, project_id)
         if project is None:
             return False
-        # Mirror the previous ON DELETE SET NULL: detach the project's tasks
-        # before removing it so they survive as unassigned todos.
+        # A project owns its tasks: deleting it deletes them. Their comments
+        # follow via the comments -> todos ON DELETE CASCADE.
         await self._session.execute(
-            update(Task)
-            .where(col(Task.project_id) == project_id)
-            .values(project_id=None)
+            delete(Task).where(col(Task.project_id) == project_id)
         )
         await self._session.delete(project)
         await self._session.flush()

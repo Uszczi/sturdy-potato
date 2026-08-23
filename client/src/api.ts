@@ -1,4 +1,10 @@
-import { Configuration, ApiApi, ProjectsApi, TasksApi } from "../api-client";
+import {
+  Configuration,
+  ApiApi,
+  ProjectsApi,
+  TasksApi,
+  WorkspacesApi,
+} from "../api-client";
 
 // Same-origin: in production FastAPI serves both this SPA and the API; in dev
 // Vite proxies /api to the backend (see vite.config.ts). An empty base path
@@ -11,7 +17,8 @@ const BASE_PATH = "";
 // subsequent call sends `Authorization: Bearer <token>` automatically.
 //
 // The generator splits endpoints into one class per OpenAPI tag, so we share a
-// single Configuration across the auth (`api`), projects, and tasks clients.
+// single Configuration across the auth (`api`), projects, tasks and workspaces
+// clients.
 const config = new Configuration({
   basePath: BASE_PATH,
   accessToken: () => localStorage.getItem("access") ?? "",
@@ -20,3 +27,4 @@ const config = new Configuration({
 export const api = new ApiApi(config);
 export const projectsApi = new ProjectsApi(config);
 export const tasksApi = new TasksApi(config);
+export const workspacesApi = new WorkspacesApi(config);

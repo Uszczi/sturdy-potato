@@ -14,7 +14,7 @@ from infrastructure.models import (
     WorkspaceMembership,
 )
 from infrastructure.security import password_hasher
-from use_cases.task_status import TaskStatus
+from use_cases.workflow import DEFAULT_WORKFLOW, StatusAssignment
 
 DEMO_USERNAME = os.environ.get("SEEDDB_DEMO_USERNAME", "demo")
 DEMO_PASSWORD = os.environ.get("SEEDDB_DEMO_PASSWORD", "demo-password-123")
@@ -149,6 +149,20 @@ async def _get_or_create_personal_workspace(
     return workspace
 
 
+def _seed_status(completed: bool) -> StatusAssignment:
+    """Where a seeded task sits on the default workflow every seeded board uses.
+
+    Goes through the workflow rather than naming keys so seeded rows carry the
+    same status/is_done pairing the write paths produce.
+    """
+    workflow = DEFAULT_WORKFLOW
+    return (
+        workflow.assign(workflow.first_terminal.key)
+        if completed
+        else workflow.assign_initial()
+    )
+
+
 async def _seed_projects_and_todos(session: AsyncSession, workspace: Workspace) -> None:
     for project_position, (project_name, todos) in enumerate(SEEDED_PROJECTS):
         project = await session.scalar(
@@ -181,8 +195,8 @@ async def _seed_projects_and_todos(session: AsyncSession, workspace: Workspace) 
                         project_id=project.id,
                         title=title,
                         description=description,
-                        status=TaskStatus.DONE if completed else TaskStatus.OPEN,
                         position=task_position,
+                        **_seed_status(completed).as_changes(),
                     )
                 )
         await session.commit()
@@ -269,8 +283,8 @@ async def seed_heavy(
                         project_id=project.id,
                         title=f"Task {number + 1}",
                         position=number,
-                        status=TaskStatus.DONE if completed else TaskStatus.OPEN,
                         due_date=_random_due_date(rng, today),
+                        **_seed_status(completed).as_changes(),
                     )
                 )
             session.add_all(tasks)

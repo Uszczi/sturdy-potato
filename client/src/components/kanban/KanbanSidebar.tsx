@@ -2,11 +2,13 @@ import { Link } from "@tanstack/react-router";
 
 import { useAppStore } from "@/stores/app-store";
 import ProjectSelector from "./ProjectSelector";
+import WorkflowEditor from "./WorkflowEditor";
 
 /** Board controls occupy the shared app sidebar while Kanban is open. */
 export function KanbanSidebar() {
   const open = useAppStore((state) => state.sidebarOpen);
   const setSidebarOpen = useAppStore((state) => state.setSidebarOpen);
+  const selectedProject = useAppStore((state) => state.kanbanSelectedProject);
 
   return (
     <aside
@@ -41,6 +43,12 @@ export function KanbanSidebar() {
         </p>
         <div className="mt-3">
           <ProjectSelector />
+        </div>
+        <div className="mt-3">
+          <WorkflowEditor
+            projectId={selectedProject?.id ?? null}
+            boardName={selectedProject?.name ?? "Inbox"}
+          />
         </div>
       </div>
 

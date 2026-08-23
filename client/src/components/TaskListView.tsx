@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-import { TaskStatus } from "@api-client";
 import type { ProjectSchema, TaskSchema } from "@api-client";
 import { Link } from "@tanstack/react-router";
 import { useAppStore } from "@/stores/app-store";
@@ -75,13 +74,17 @@ function TaskListView({
     draggingId.current = null;
     setActiveId(null);
     if (movedId === null) return;
-    // Persist the moved card's new index within this board's open column.
-    const openItems = items.filter((task) => !isTaskDone(task));
-    const originalOpen = tasks.filter((task) => !isTaskDone(task));
-    const newIndex = openItems.findIndex((task) => task.id === movedId);
-    const oldIndex = originalOpen.findIndex((task) => task.id === movedId);
+    // Persist the moved card's new index within its own status column: a list
+    // reorder never changes a task's status, and positions are scoped per
+    // column, so the index has to be counted within that column alone.
+    const moved = items.find((task) => task.id === movedId);
+    if (!moved) return;
+    const column = items.filter((task) => task.status === moved.status);
+    const originalColumn = tasks.filter((task) => task.status === moved.status);
+    const newIndex = column.findIndex((task) => task.id === movedId);
+    const oldIndex = originalColumn.findIndex((task) => task.id === movedId);
     if (newIndex !== -1 && newIndex !== oldIndex) {
-      void moveTask(movedId, TaskStatus.Open, newIndex);
+      void moveTask(movedId, moved.status, newIndex);
     }
   }
 
@@ -366,8 +369,8 @@ function TaskRow({
   onDragEnd: () => void;
 }) {
   const projects = useAppStore((state) => state.projects);
-  const moveTask = useAppStore((state) => state.moveTask);
   const markTaskDone = useAppStore((state) => state.markTaskDone);
+  const reopenTask = useAppStore((state) => state.reopenTask);
   const assignTaskProject = useAppStore((state) => state.assignTaskProject);
   const done = isTaskDone(task);
   // Only open rows on a reorderable board drag; the done group and the
@@ -420,10 +423,10 @@ function TaskRow({
           type="button"
           onClick={(event) => {
             event.stopPropagation();
-            // Completing floats the task to the top of the done group; reopening
-            // returns it to the end of the open group.
+            // Completing floats the task to the top of its board's first
+            // finished column; reopening returns it to the starting one.
             if (done) {
-              void moveTask(task.id, TaskStatus.Open, Number.MAX_SAFE_INTEGER);
+              void reopenTask(task.id);
             } else {
               void markTaskDone(task.id);
             }

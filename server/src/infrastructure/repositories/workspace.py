@@ -3,6 +3,7 @@ from sqlmodel import col, select
 
 from infrastructure.models import Workspace, WorkspaceMembership
 from use_cases.entities import Workspace as WorkspaceEntity
+from use_cases.workflow import Workflow
 
 # Personal workspace sorts first, then oldest-created, so a user's default lands
 # at the top of their list.
@@ -14,6 +15,7 @@ def _to_entity(workspace: Workspace) -> WorkspaceEntity:
     return WorkspaceEntity(
         id=workspace.id,
         name=workspace.name,
+        workflow=Workflow.from_dicts(workspace.workflow),
         is_personal=workspace.is_personal,
         created_at=workspace.created_at,
         updated_at=workspace.updated_at,
@@ -43,6 +45,27 @@ class WorkspaceRepository:
                 workspace_id=workspace.id, user_id=owner_id, role="owner"
             )
         )
+        await self._session.flush()
+        return _to_entity(workspace)
+
+    async def _get_orm(self, workspace_id: int) -> Workspace | None:
+        workspace: Workspace | None = await self._session.scalar(
+            select(Workspace).where(col(Workspace.id) == workspace_id)
+        )
+        return workspace
+
+    async def get(self, workspace_id: int) -> WorkspaceEntity | None:
+        workspace = await self._get_orm(workspace_id)
+        return _to_entity(workspace) if workspace is not None else None
+
+    async def set_workflow(
+        self, workspace_id: int, workflow: Workflow
+    ) -> WorkspaceEntity | None:
+        workspace = await self._get_orm(workspace_id)
+        if workspace is None:
+            return None
+        workspace.workflow = workflow.to_dicts()
+        self._session.add(workspace)
         await self._session.flush()
         return _to_entity(workspace)
 

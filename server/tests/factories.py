@@ -12,7 +12,7 @@ from infrastructure.models import (
     WorkspaceMembership,
 )
 from infrastructure.security import password_hasher, token_service
-from use_cases.task_status import TaskStatus
+from use_cases.workflow import DEFAULT_WORKFLOW, Workflow
 
 _user_counter = count(1)
 _workspace_counter = count(1)
@@ -47,6 +47,7 @@ async def create_workspace(
     *,
     name: str | None = None,
     is_personal: bool = True,
+    workflow: Workflow = DEFAULT_WORKFLOW,
 ) -> Workspace:
     """A workspace owned by ``user`` (workspace + owner membership).
 
@@ -55,6 +56,7 @@ async def create_workspace(
     """
     workspace = Workspace(
         name=name or f"Workspace {next(_workspace_counter)}",
+        workflow=workflow.to_dicts(),
         is_personal=is_personal,
     )
     session.add(workspace)
@@ -93,11 +95,13 @@ async def create_project(
     name: str | None = None,
     color: str | None = None,
     position: int = 0,
+    workflow: Workflow = DEFAULT_WORKFLOW,
 ) -> Project:
     project = Project(
         workspace_id=workspace.id,
         name=name or f"Project {next(_project_counter)}",
         color=color,
+        workflow=workflow.to_dicts(),
         position=position,
     )
     session.add(project)
@@ -112,17 +116,27 @@ async def create_task(
     *,
     title: str | None = None,
     description: str = "",
-    status: TaskStatus = TaskStatus.OPEN,
+    status: str | None = None,
     position: int = 0,
     project: Project | None = None,
     due_date: date | None = None,
 ) -> Task:
+    """A task on ``project``'s board (or the inbox), defaulting to its initial status.
+
+    ``status`` names a key in that board's workflow; is_done is derived from it,
+    so factory-made rows obey the same invariant the write paths do.
+    """
+    board = Workflow.from_dicts(
+        project.workflow if project is not None else workspace.workflow
+    )
+    assignment = board.assign(status) if status is not None else board.assign_initial()
     task = Task(
         workspace_id=workspace.id,
         project_id=project.id if project is not None else None,
         title=title or f"Task {next(_task_counter)}",
         description=description,
-        status=status,
+        status=assignment.key,
+        is_done=assignment.is_done,
         position=position,
         due_date=due_date,
     )

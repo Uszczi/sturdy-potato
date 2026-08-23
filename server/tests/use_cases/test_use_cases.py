@@ -32,7 +32,7 @@ from use_cases.dtos import (
     TaskCreateData,
     TaskUpdateData,
 )
-from use_cases.entities import Comment, Project, Task, User
+from use_cases.entities import Comment, Project, Task, User, Workspace
 from use_cases.exceptions import (
     CommentNotFound,
     InvalidCredentials,
@@ -44,12 +44,12 @@ from use_cases.exceptions import (
     UsernameConflict,
 )
 from use_cases.projects.create_project import CreateProject
-from use_cases.task_status import TaskStatus
 from use_cases.tasks.create_task import CreateTask
 from use_cases.tasks.delete_task import DeleteTask
 from use_cases.tasks.list_open_tasks import ListOpenTasks
 from use_cases.tasks.move_task import MoveTask
 from use_cases.tasks.update_task import UpdateTask
+from use_cases.workflow import DEFAULT_WORKFLOW
 
 USER = 1
 # The workspace the acting user operates in; use-case scope args take this.
@@ -71,6 +71,27 @@ def _authenticate(user: User | None) -> AuthenticateUser:
     return AuthenticateUser(users, FakePasswordHasher(), FakeTokenIssuer())
 
 
+def _workspaces() -> FakeWorkspaceRepository:
+    """A repo holding WORKSPACE on the default workflow (open -> done).
+
+    Task use cases resolve a board's workflow before touching a status, so they
+    need the workspace (for inbox tasks) as well as the projects.
+    """
+    now = datetime(2024, 1, 1, tzinfo=UTC)
+    return FakeWorkspaceRepository(
+        [
+            Workspace(
+                id=WORKSPACE,
+                name="Personal",
+                workflow=DEFAULT_WORKFLOW,
+                is_personal=True,
+                created_at=now,
+                updated_at=now,
+            )
+        ]
+    )
+
+
 def _task(task_id: int, *, position: int, project_id: int | None = None) -> Task:
     now = datetime(2024, 1, 1, tzinfo=UTC)
     return Task(
@@ -79,7 +100,8 @@ def _task(task_id: int, *, position: int, project_id: int | None = None) -> Task
         project_id=project_id,
         title=f"Task {task_id}",
         description="",
-        status=TaskStatus.OPEN,
+        status="open",
+        is_done=False,
         position=position,
         due_date=None,
         created_at=now,
@@ -94,6 +116,7 @@ def _project(project_id: int, *, name: str = "Work") -> Project:
         workspace_id=WORKSPACE,
         name=name,
         color=None,
+        workflow=DEFAULT_WORKFLOW,
         position=0,
         task_count=0,
         created_at=now,
@@ -105,7 +128,7 @@ def _create_data(*, project_id: int | None = None) -> TaskCreateData:
     return TaskCreateData(
         title="Write tests",
         description="",
-        status=TaskStatus.OPEN,
+        status=None,
         project_id=project_id,
         due_date=None,
     )
@@ -129,7 +152,7 @@ async def test_create_task_rejects_project_owned_by_nobody() -> None:
     projects = FakeProjectRepository()  # no projects exist
 
     with pytest.raises(ProjectNotFound):
-        await CreateTask(tasks, projects).execute(
+        await CreateTask(tasks, projects, _workspaces()).execute(
             WORKSPACE, _create_data(project_id=99)
         )
 
@@ -138,7 +161,7 @@ async def test_create_task_accepts_an_owned_project() -> None:
     tasks = FakeTaskRepository()
     projects = FakeProjectRepository([_project(5)])
 
-    task = await CreateTask(tasks, projects).execute(
+    task = await CreateTask(tasks, projects, _workspaces()).execute(
         WORKSPACE, _create_data(project_id=5)
     )
 
@@ -150,12 +173,12 @@ async def test_update_task_only_touches_provided_fields() -> None:
     tasks = FakeTaskRepository([_task(1, position=0)])
     projects = FakeProjectRepository()
 
-    updated = await UpdateTask(tasks, projects).execute(
-        WORKSPACE, 1, TaskUpdateData(status=TaskStatus.DONE)
+    updated = await UpdateTask(tasks, projects, _workspaces()).execute(
+        WORKSPACE, 1, TaskUpdateData(status="done")
     )
 
     # exclude_unset: title left alone, only status changed.
-    assert updated.status is TaskStatus.DONE
+    assert updated.status == "done"
     assert updated.title == "Task 1"
 
 
@@ -164,7 +187,7 @@ async def test_update_task_missing_raises_not_found() -> None:
     projects = FakeProjectRepository()
 
     with pytest.raises(TaskNotFound):
-        await UpdateTask(tasks, projects).execute(
+        await UpdateTask(tasks, projects, _workspaces()).execute(
             WORKSPACE, 1, TaskUpdateData(title="x")
         )
 
@@ -176,7 +199,7 @@ async def test_delete_task_missing_raises_not_found() -> None:
 
 async def test_list_open_excludes_done_tasks() -> None:
     done = _task(1, position=0)
-    done = Task(**{**done.__dict__, "status": TaskStatus.DONE})
+    done = Task(**{**done.__dict__, "status": "done", "is_done": True})
     tasks = FakeTaskRepository([done, _task(2, position=1)])
 
     listed = await ListOpenTasks(tasks).execute(WORKSPACE, limit=None)
@@ -188,12 +211,14 @@ async def test_list_open_excludes_done_tasks() -> None:
 async def _open_order(tasks: FakeTaskRepository) -> list[int]:
     """Ids of the inbox open column in board order (a test read-back helper)."""
     listed = await tasks.list_all(WORKSPACE)
-    return [t.id for t in listed if not t.status.is_done]
+    return [t.id for t in listed if not t.is_done]
 
 
 async def test_move_task_missing_raises_not_found() -> None:
     with pytest.raises(TaskNotFound):
-        await MoveTask(FakeTaskRepository()).execute(WORKSPACE, 1, TaskStatus.DONE, 0)
+        await MoveTask(
+            FakeTaskRepository(), FakeProjectRepository(), _workspaces()
+        ).execute(WORKSPACE, 1, "done", 0)
 
 
 async def test_move_task_reorders_within_a_column() -> None:
@@ -202,21 +227,25 @@ async def test_move_task_reorders_within_a_column() -> None:
     )
 
     # Same status, so this is a pure reorder: drop task 3 at the top.
-    await MoveTask(tasks).execute(WORKSPACE, 3, TaskStatus.OPEN, 0)
+    await MoveTask(tasks, FakeProjectRepository(), _workspaces()).execute(
+        WORKSPACE, 3, "open", 0
+    )
 
     assert await _open_order(tasks) == [3, 1, 2]
 
 
 async def test_move_task_changes_status_and_slots_into_the_column() -> None:
-    done = Task(**{**_task(3, position=0).__dict__, "status": TaskStatus.DONE})
+    done = Task(**{**_task(3, position=0).__dict__, "status": "done", "is_done": True})
     tasks = FakeTaskRepository([_task(1, position=0), _task(2, position=1), done])
 
     # Send task 1 to the done column at the top; it should sit above task 3.
-    await MoveTask(tasks).execute(WORKSPACE, 1, TaskStatus.DONE, 0)
+    await MoveTask(tasks, FakeProjectRepository(), _workspaces()).execute(
+        WORKSPACE, 1, "done", 0
+    )
 
     moved = await tasks.get(WORKSPACE, 1)
-    assert moved is not None and moved.status is TaskStatus.DONE
-    done_ids = [t.id for t in await tasks.list_all(WORKSPACE) if t.status.is_done]
+    assert moved is not None and moved.status == "done"
+    done_ids = [t.id for t in await tasks.list_all(WORKSPACE) if t.is_done]
     assert done_ids == [1, 3]
 
 
@@ -226,9 +255,10 @@ async def test_move_task_only_renumbers_its_own_project_column() -> None:
     a2 = _task(2, position=1, project_id=10)
     b1 = _task(3, position=0, project_id=20)
     tasks = FakeTaskRepository([a1, a2, b1])
+    projects = FakeProjectRepository([_project(10), _project(20, name="Other")])
 
     # Reorder project 10's column; project 20 must be untouched.
-    await MoveTask(tasks).execute(WORKSPACE, 2, TaskStatus.OPEN, 0)
+    await MoveTask(tasks, projects, _workspaces()).execute(WORKSPACE, 2, "open", 0)
 
     listed = {t.id: t.position for t in await tasks.list_all(WORKSPACE)}
     assert (listed[2], listed[1]) == (0, 1)  # project 10 reordered
@@ -239,7 +269,9 @@ async def test_move_task_clamps_position_past_the_end() -> None:
     tasks = FakeTaskRepository([_task(1, position=0), _task(2, position=1)])
 
     # An out-of-range index lands the task at the bottom of the column.
-    await MoveTask(tasks).execute(WORKSPACE, 1, TaskStatus.OPEN, 99)
+    await MoveTask(tasks, FakeProjectRepository(), _workspaces()).execute(
+        WORKSPACE, 1, "open", 99
+    )
 
     assert await _open_order(tasks) == [2, 1]
 
@@ -326,7 +358,7 @@ async def test_create_project_rejects_duplicate_name() -> None:
     projects = FakeProjectRepository([_project(1, name="Work")])
 
     with pytest.raises(ProjectNameConflict):
-        await CreateProject(projects).execute(
+        await CreateProject(projects, _workspaces()).execute(
             WORKSPACE, ProjectCreateData("Work", None)
         )
 

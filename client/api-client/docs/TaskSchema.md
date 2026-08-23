@@ -9,7 +9,8 @@ Name | Type
 `id` | number
 `title` | string
 `description` | string
-`status` | [TaskStatus](TaskStatus.md)
+`status` | string
+`isDone` | boolean
 `position` | number
 `projectId` | number
 `dueDate` | Date
@@ -27,6 +28,7 @@ const example = {
   "title": null,
   "description": null,
   "status": null,
+  "isDone": null,
   "position": null,
   "projectId": null,
   "dueDate": null,

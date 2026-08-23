@@ -1,6 +1,5 @@
 import { tasksApi } from "../api";
 import { getWorkspaceId } from "./chat";
-import { TaskStatus } from "../../api-client";
 import type {
   TaskSchema,
   TaskCreateInput,
@@ -12,15 +11,20 @@ import type {
 // sending the request otherwise). Resolve the caller's workspace — cached after
 // the first lookup — and thread it through.
 
-/** Whether a task sits in the terminal `done` status. */
+/**
+ * Whether a task sits in a terminal status of its own board.
+ *
+ * Read straight off the server's flag: the same status key can be terminal on
+ * one board and not another, so the key alone can't answer this.
+ */
 export function isTaskDone(task: TaskSchema): boolean {
-  return task.status === TaskStatus.Done;
+  return task.isDone;
 }
 
 /**
  * Tasks for one board — a single project, or the inbox (`null`). The server
- * returns these in board order (open column first, then done, each by manual
- * position), which is why boards are fetched per project instead of all at once.
+ * returns these in board order (unfinished columns first, then finished, each by
+ * manual position), which is why boards are fetched per project, not all at once.
  */
 export async function fetchBoardTasks(
   projectId: number | null,
@@ -51,12 +55,17 @@ export async function fetchOpenTasks(limit?: number): Promise<TaskSchema[]> {
   return tasksApi.apiTasksOpenList({ workspaceId, limit });
 }
 
-/** How many of the user's tasks are in `status` (all statuses when omitted). */
-export async function countTasks(status?: TaskStatus): Promise<number> {
+/**
+ * How many of the user's tasks are finished / unfinished (all when omitted).
+ *
+ * Counts span every board, and boards can disagree on which status keys mean
+ * finished, so this filters on done-ness rather than a status name.
+ */
+export async function countTasks(done?: boolean): Promise<number> {
   const workspaceId = await getWorkspaceId();
   const { count } = await tasksApi.apiTasksCountRetrieve({
     workspaceId,
-    status,
+    done,
   });
   return count;
 }
@@ -81,10 +90,11 @@ export async function updateTask(
 /**
  * Move a task to a status column and an index within it (0 = top). Positions are
  * scoped per board column, so this only ever touches the task's own project.
+ * `status` must be a status key the task's own board offers.
  */
 export async function moveTask(
   id: number,
-  status: TaskStatus,
+  status: string,
   position: number,
 ): Promise<void> {
   const workspaceId = await getWorkspaceId();

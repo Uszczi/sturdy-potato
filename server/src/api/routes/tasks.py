@@ -21,7 +21,6 @@ from schemas.task import (
     TaskSchema,
     TaskUpdateInput,
 )
-from use_cases.task_status import TaskStatus
 
 router = APIRouter(prefix="/workspaces/{workspace_id}/tasks", tags=["tasks"])
 
@@ -70,9 +69,11 @@ async def open_tasks(
 async def count_tasks(
     workspace_id: WorkspaceId,
     use_case: CountTasksDep,
-    status: TaskStatus | None = None,
+    # Counts span every board in the workspace, and boards can disagree on which
+    # status keys mean "finished", so the filter is done-ness, not a status.
+    done: Annotated[bool | None, Query()] = None,
 ) -> TaskCountSchema:
-    total = await use_case.execute(workspace_id, status=status)
+    total = await use_case.execute(workspace_id, done=done)
     return TaskCountSchema(count=total)
 
 

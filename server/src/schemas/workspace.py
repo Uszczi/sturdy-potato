@@ -3,6 +3,7 @@ from datetime import datetime
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from schemas._coercions import strip_if_str
+from schemas.workflow import WorkflowMixin
 
 
 class WorkspaceCreateInput(BaseModel):
@@ -24,3 +25,10 @@ class WorkspaceSchema(BaseModel):
     is_personal: bool
     created_at: datetime
     updated_at: datetime
+
+
+class WorkspaceDetailSchema(WorkspaceSchema, WorkflowMixin):
+    """One workspace, with the workflow the inbox board renders as columns.
+
+    It is also the template every new project's workflow is copied from.
+    """

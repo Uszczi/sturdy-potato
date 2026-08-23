@@ -7,5 +7,6 @@ class DeleteProject:
         self._projects = projects
 
     async def execute(self, workspace_id: int, project_id: int) -> None:
+        # Deleting a project takes its tasks (and their comments) with it.
         if not await self._projects.delete(workspace_id, project_id):
             raise ProjectNotFound()

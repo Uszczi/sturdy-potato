@@ -13,14 +13,6 @@
  */
 
 import { mapValues } from "../runtime";
-import type { TaskStatus } from "./TaskStatus";
-import {
-  TaskStatusFromJSON,
-  TaskStatusFromJSONTyped,
-  TaskStatusToJSON,
-  TaskStatusToJSONTyped,
-} from "./TaskStatus";
-
 /**
  *
  * @export
@@ -41,10 +33,10 @@ export interface TaskCreateInput {
   description?: string;
   /**
    *
-   * @type {TaskStatus}
+   * @type {string}
    * @memberof TaskCreateInput
    */
-  status?: TaskStatus;
+  status?: string | null;
   /**
    *
    * @type {number}
@@ -84,7 +76,11 @@ export function TaskCreateInputFromJSONTyped(
     title: json["title"],
     description: json["description"] == null ? undefined : json["description"],
     status:
-      json["status"] == null ? undefined : TaskStatusFromJSON(json["status"]),
+      json["status"] === undefined
+        ? undefined
+        : json["status"] === null
+          ? null
+          : json["status"],
     projectId:
       json["project_id"] === undefined
         ? undefined
@@ -115,7 +111,7 @@ export function TaskCreateInputToJSONTyped(
   return {
     title: value["title"],
     description: value["description"],
-    status: TaskStatusToJSON(value["status"]),
+    status: value["status"],
     project_id: value["projectId"],
     due_date:
       value["dueDate"] == null

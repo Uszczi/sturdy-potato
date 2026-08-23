@@ -5,9 +5,11 @@ them from ``use_cases.workspaces`` without depending on the per-operation module
 """
 
 from use_cases.workspaces.create_workspace import CreateWorkspace
+from use_cases.workspaces.get_workspace import GetWorkspace
 from use_cases.workspaces.list_workspaces import ListWorkspaces
 
 __all__ = [
     "CreateWorkspace",
+    "GetWorkspace",
     "ListWorkspaces",
 ]

@@ -24,6 +24,11 @@ import {
   ProjectCreateInputToJSON,
 } from "../models/ProjectCreateInput";
 import {
+  type ProjectDetailSchema,
+  ProjectDetailSchemaFromJSON,
+  ProjectDetailSchemaToJSON,
+} from "../models/ProjectDetailSchema";
+import {
   type ProjectSchema,
   ProjectSchemaFromJSON,
   ProjectSchemaToJSON,
@@ -38,6 +43,11 @@ import {
   ReorderInputFromJSON,
   ReorderInputToJSON,
 } from "../models/ReorderInput";
+import {
+  type WorkflowInput,
+  WorkflowInputFromJSON,
+  WorkflowInputToJSON,
+} from "../models/WorkflowInput";
 
 export interface ApiProjectsCreateRequest {
   workspaceId: number;
@@ -67,6 +77,12 @@ export interface ApiProjectsReorderCreateRequest {
 export interface ApiProjectsRetrieveRequest {
   id: number;
   workspaceId: number;
+}
+
+export interface ApiProjectsStatusesUpdateRequest {
+  id: number;
+  workspaceId: number;
+  workflowInput: WorkflowInput;
 }
 
 /**
@@ -520,13 +536,13 @@ export class ProjectsApi extends runtime.BaseAPI {
   async apiProjectsRetrieveRaw(
     requestParameters: ApiProjectsRetrieveRequest,
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
-  ): Promise<runtime.ApiResponse<ProjectSchema>> {
+  ): Promise<runtime.ApiResponse<ProjectDetailSchema>> {
     const requestOptions =
       await this.apiProjectsRetrieveRequestOpts(requestParameters);
     const response = await this.request(requestOptions, initOverrides);
 
     return new runtime.JSONApiResponse(response, (jsonValue) =>
-      ProjectSchemaFromJSON(jsonValue),
+      ProjectDetailSchemaFromJSON(jsonValue),
     );
   }
 
@@ -536,8 +552,101 @@ export class ProjectsApi extends runtime.BaseAPI {
   async apiProjectsRetrieve(
     requestParameters: ApiProjectsRetrieveRequest,
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
-  ): Promise<ProjectSchema> {
+  ): Promise<ProjectDetailSchema> {
     const response = await this.apiProjectsRetrieveRaw(
+      requestParameters,
+      initOverrides,
+    );
+    return await response.value();
+  }
+
+  /**
+   * Creates request options for apiProjectsStatusesUpdate without sending the request
+   */
+  async apiProjectsStatusesUpdateRequestOpts(
+    requestParameters: ApiProjectsStatusesUpdateRequest,
+  ): Promise<runtime.RequestOpts> {
+    if (requestParameters["id"] == null) {
+      throw new runtime.RequiredError(
+        "id",
+        'Required parameter "id" was null or undefined when calling apiProjectsStatusesUpdate().',
+      );
+    }
+
+    if (requestParameters["workspaceId"] == null) {
+      throw new runtime.RequiredError(
+        "workspaceId",
+        'Required parameter "workspaceId" was null or undefined when calling apiProjectsStatusesUpdate().',
+      );
+    }
+
+    if (requestParameters["workflowInput"] == null) {
+      throw new runtime.RequiredError(
+        "workflowInput",
+        'Required parameter "workflowInput" was null or undefined when calling apiProjectsStatusesUpdate().',
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    headerParameters["Content-Type"] = "application/json";
+
+    if (this.configuration && this.configuration.accessToken) {
+      const token = this.configuration.accessToken;
+      const tokenString = await token("HTTPBearer", []);
+
+      if (tokenString) {
+        headerParameters["Authorization"] = `Bearer ${tokenString}`;
+      }
+    }
+
+    let urlPath = `/api/workspaces/{workspace_id}/projects/{id}/statuses/`;
+    urlPath = urlPath.replace(
+      "{id}",
+      encodeURIComponent(String(requestParameters["id"])),
+    );
+    urlPath = urlPath.replace(
+      "{workspace_id}",
+      encodeURIComponent(String(requestParameters["workspaceId"])),
+    );
+
+    return {
+      path: urlPath,
+      method: "PUT",
+      headers: headerParameters,
+      query: queryParameters,
+      body: WorkflowInputToJSON(requestParameters["workflowInput"]),
+    };
+  }
+
+  /**
+   * Replace this project board\'s workflow with the complete list sent.  One request covers adding, renaming, reordering and removing statuses, since the rules a workflow must satisfy only make sense against a finished list.
+   * Set Project Workflow
+   */
+  async apiProjectsStatusesUpdateRaw(
+    requestParameters: ApiProjectsStatusesUpdateRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<runtime.ApiResponse<ProjectDetailSchema>> {
+    const requestOptions =
+      await this.apiProjectsStatusesUpdateRequestOpts(requestParameters);
+    const response = await this.request(requestOptions, initOverrides);
+
+    return new runtime.JSONApiResponse(response, (jsonValue) =>
+      ProjectDetailSchemaFromJSON(jsonValue),
+    );
+  }
+
+  /**
+   * Replace this project board\'s workflow with the complete list sent.  One request covers adding, renaming, reordering and removing statuses, since the rules a workflow must satisfy only make sense against a finished list.
+   * Set Project Workflow
+   */
+  async apiProjectsStatusesUpdate(
+    requestParameters: ApiProjectsStatusesUpdateRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<ProjectDetailSchema> {
+    const response = await this.apiProjectsStatusesUpdateRaw(
       requestParameters,
       initOverrides,
     );

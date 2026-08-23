@@ -13,14 +13,6 @@
  */
 
 import { mapValues } from "../runtime";
-import type { TaskStatus } from "./TaskStatus";
-import {
-  TaskStatusFromJSON,
-  TaskStatusFromJSONTyped,
-  TaskStatusToJSON,
-  TaskStatusToJSONTyped,
-} from "./TaskStatus";
-
 /**
  *
  * @export
@@ -41,10 +33,10 @@ export interface TaskUpdateInput {
   description?: string | null;
   /**
    *
-   * @type {TaskStatus}
+   * @type {string}
    * @memberof TaskUpdateInput
    */
-  status?: TaskStatus | null;
+  status?: string | null;
   /**
    *
    * @type {number}
@@ -97,7 +89,7 @@ export function TaskUpdateInputFromJSONTyped(
         ? undefined
         : json["status"] === null
           ? null
-          : TaskStatusFromJSON(json["status"]),
+          : json["status"],
     projectId:
       json["project_id"] === undefined
         ? undefined
@@ -128,7 +120,7 @@ export function TaskUpdateInputToJSONTyped(
   return {
     title: value["title"],
     description: value["description"],
-    status: TaskStatusToJSON(value["status"]),
+    status: value["status"],
     project_id: value["projectId"],
     due_date:
       value["dueDate"] == null

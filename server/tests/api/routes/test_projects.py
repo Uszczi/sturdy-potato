@@ -246,12 +246,13 @@ async def test_reorder_rejects_another_workspaces_project(
     assert response.status_code == 400
 
 
-async def test_deleting_a_project_unassigns_its_tasks(
+async def test_deleting_a_project_deletes_its_tasks(
     client: AsyncClient, session: AsyncSession
 ) -> None:
     user, workspace = await create_user_with_workspace(session)
     project = await create_project(session, workspace)
     task = await create_task(session, workspace, project=project)
+    inbox_task = await create_task(session, workspace)
 
     response = await client.delete(
         f"/api/workspaces/{workspace.id}/projects/{project.id}/",
@@ -262,7 +263,13 @@ async def test_deleting_a_project_unassigns_its_tasks(
     retrieved = await client.get(
         f"/api/workspaces/{workspace.id}/tasks/{task.id}/", headers=auth_headers(user)
     )
-    assert retrieved.json()["project_id"] is None
+    assert retrieved.status_code == 404
+    # Only the project's own tasks go; the inbox is untouched.
+    survivor = await client.get(
+        f"/api/workspaces/{workspace.id}/tasks/{inbox_task.id}/",
+        headers=auth_headers(user),
+    )
+    assert survivor.status_code == 200
 
 
 async def test_delete_missing_project_returns_404(

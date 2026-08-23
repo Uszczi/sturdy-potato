@@ -2,11 +2,13 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type {
   ProjectSchema,
+  StatusSchema,
   TaskSchema,
   TaskCreateInput,
   TaskUpdateInput,
+  WorkflowInput,
 } from "@api-client";
-import { ResponseError, TaskStatus } from "@api-client";
+import { ResponseError } from "@api-client";
 import { logout } from "@/services/auth";
 import {
   createProject,
@@ -21,6 +23,7 @@ import {
   moveTask,
   updateTask,
 } from "@/services/tasks";
+import { fetchWorkflow, saveWorkflow } from "@/services/workflows";
 
 /** A board is one project's tasks, or the inbox (unassigned) when `null`. */
 export function boardKey(projectId: number | null): string {
@@ -28,6 +31,7 @@ export function boardKey(projectId: number | null): string {
 }
 
 const EMPTY: TaskSchema[] = [];
+const NO_COLUMNS: StatusSchema[] = [];
 
 type AppState = {
   projects: ProjectSchema[];
@@ -35,6 +39,9 @@ type AppState = {
   // first time one is opened and refetched individually after a mutation, so we
   // never pull the whole task list at once.
   boards: Record<string, TaskSchema[]>;
+  // Each board's ordered statuses, keyed by `boardKey` alongside its tasks.
+  // Which columns a board has is per-board data, so it travels with the board.
+  workflows: Record<string, StatusSchema[]>;
   loaded: boolean;
   loading: boolean;
   error: string | null;
@@ -51,6 +58,11 @@ type AppState = {
   ensureBoard: (projectId: number | null) => Promise<void>;
   refreshBoard: (projectId: number | null) => Promise<void>;
   getBoard: (projectId: number | null) => TaskSchema[];
+  getWorkflow: (projectId: number | null) => StatusSchema[];
+  saveWorkflow: (
+    projectId: number | null,
+    workflow: WorkflowInput,
+  ) => Promise<boolean>;
 
   addProject: (name: string, color?: string | null) => Promise<void>;
   updateProject: (
@@ -65,15 +77,12 @@ type AppState = {
     taskId: number,
     projectId: number | null,
   ) => Promise<void>;
-  moveTask: (
-    id: number,
-    status: TaskStatus,
-    position: number,
-  ) => Promise<void>;
+  moveTask: (id: number, status: string, position: number) => Promise<void>;
   markTaskDone: (id: number) => Promise<void>;
+  reopenTask: (id: number) => Promise<void>;
 };
 
-/** Board order: open column first, then done, each by manual position. */
+/** Board order: unfinished cards first, then finished, each by manual position. */
 function compareTasks(a: TaskSchema, b: TaskSchema): number {
   const aDone = isTaskDone(a);
   const bDone = isTaskDone(b);
@@ -119,16 +128,60 @@ export const useAppStore = create<AppState>()(
         return null;
       }
 
+      /**
+       * Send a card to the first column of its own board matching `pick`.
+       *
+       * Completing and reopening are the same walk — find the board, find the
+       * column that plays the role, drop the card at a slot — because neither
+       * "done" nor "todo" is a fixed status any more.
+       */
+      async function moveToColumn(
+        id: number,
+        pick: (status: StatusSchema) => boolean,
+        slot: number,
+      ): Promise<void> {
+        const found = locate(id);
+        if (!found) return;
+        const column = get().getWorkflow(found.projectId).find(pick);
+        if (!column) return;
+        await get().moveTask(id, column.key, slot);
+      }
+
+      // Several actions refetch the same shared state (adding a task or a
+      // project both reload the project list; switching boards while a save is
+      // in flight reloads a board twice). Responses can land out of order, and
+      // the slower, staler one would win — showing a project list without the
+      // project just created, or a board without the column just added. Each
+      // load claims a ticket and discards its own result if another load for
+      // the same key started while it was waiting.
+      const loads = new Map<string, number>();
+
+      function claim(key: string): () => boolean {
+        const ticket = (loads.get(key) ?? 0) + 1;
+        loads.set(key, ticket);
+        return () => loads.get(key) === ticket;
+      }
+
       async function storeBoard(projectId: number | null): Promise<void> {
-        const tasks = await fetchBoardTasks(projectId);
+        const key = boardKey(projectId);
+        const current = claim(`board:${key}`);
+        // The columns and the cards are fetched together: a board can't be
+        // rendered from tasks alone now that its statuses are per-board.
+        const [tasks, workflow] = await Promise.all([
+          fetchBoardTasks(projectId),
+          fetchWorkflow(projectId),
+        ]);
+        if (!current()) return;
         set({
-          boards: { ...get().boards, [boardKey(projectId)]: tasks },
+          boards: { ...get().boards, [key]: tasks },
+          workflows: { ...get().workflows, [key]: workflow },
         });
       }
 
       return {
         projects: [],
         boards: {},
+        workflows: {},
         loaded: false,
         loading: false,
         error: null,
@@ -146,7 +199,9 @@ export const useAppStore = create<AppState>()(
         loadProjects: async () => {
           set({ loading: true, error: null });
           await guard(set, async () => {
+            const current = claim("projects");
             const projects = await listProjects();
+            if (!current()) return;
             set({ projects, loaded: true });
           });
           set({ loading: false });
@@ -162,6 +217,19 @@ export const useAppStore = create<AppState>()(
         },
 
         getBoard: (projectId) => get().boards[boardKey(projectId)] ?? EMPTY,
+
+        getWorkflow: (projectId) =>
+          get().workflows[boardKey(projectId)] ?? NO_COLUMNS,
+
+        saveWorkflow: async (projectId, workflow) => {
+          const ok = await guard(set, () =>
+            saveWorkflow(projectId, workflow).then(() => undefined),
+          );
+          // Statuses may have been renamed, dropped or merged, so the board's
+          // cards can have moved: reload both halves.
+          if (ok) await get().refreshBoard(projectId);
+          return ok;
+        },
 
         addProject: async (name, color) => {
           const ok = await guard(set, () =>
@@ -182,7 +250,9 @@ export const useAppStore = create<AppState>()(
 
         reorderProjects: async (orderedIds) => {
           const previous = get().projects;
-          const byId = new Map(previous.map((project) => [project.id, project]));
+          const byId = new Map(
+            previous.map((project) => [project.id, project]),
+          );
           const optimistic = orderedIds
             .map((id) => byId.get(id))
             .filter(
@@ -233,6 +303,13 @@ export const useAppStore = create<AppState>()(
           const projectId = found.projectId;
           const key = boardKey(projectId);
           const previous = get().boards[key] ?? EMPTY;
+          // The server never writes a status without its done-ness, so neither
+          // does the optimistic copy: sorting and the completion tick both read
+          // isDone, and a card dropped in a terminal column would otherwise
+          // render as still-open until the refetch landed.
+          const landing = get()
+            .getWorkflow(projectId)
+            .find((candidate) => candidate.key === status);
           // Mirror the server so the card holds its slot without a flicker:
           // rebuild the destination column with the card at `position`, then
           // renumber that column 0..N while flipping the moved card's status.
@@ -247,7 +324,9 @@ export const useAppStore = create<AppState>()(
               rank.has(task.id)
                 ? {
                     ...task,
-                    ...(task.id === id ? { status } : null),
+                    ...(task.id === id
+                      ? { status, isDone: landing?.isTerminal ?? task.isDone }
+                      : null),
                     position: rank.get(task.id)!,
                   }
                 : task,
@@ -260,10 +339,19 @@ export const useAppStore = create<AppState>()(
           else set({ boards: { ...get().boards, [key]: previous } });
         },
 
-        markTaskDone: async (id) => {
-          // Completing floats the card to the top of its board's done column.
-          await get().moveTask(id, TaskStatus.Done, 0);
-        },
+        markTaskDone: async (id) =>
+          // Completing floats the card to the top of its board's first
+          // finished column.
+          moveToColumn(id, (status) => status.isTerminal, 0),
+
+        reopenTask: async (id) =>
+          // The mirror: unfinished work returns to the end of the column its
+          // board starts in.
+          moveToColumn(
+            id,
+            (status) => status.isInitial,
+            Number.MAX_SAFE_INTEGER,
+          ),
       };
     },
     {

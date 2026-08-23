@@ -12,6 +12,7 @@ from use_cases import auth as auth_use_cases
 from use_cases import comments as comment_use_cases
 from use_cases import projects as project_use_cases
 from use_cases import tasks as task_use_cases
+from use_cases import workflows as workflow_use_cases
 from use_cases import workspaces as workspace_use_cases
 
 
@@ -85,6 +86,29 @@ CreateWorkspaceDep = Annotated[
     workspace_use_cases.CreateWorkspace,
     Depends(_use_case(lambda uow: workspace_use_cases.CreateWorkspace(uow.workspaces))),
 ]
+GetWorkspaceDep = Annotated[
+    workspace_use_cases.GetWorkspace,
+    Depends(_use_case(lambda uow: workspace_use_cases.GetWorkspace(uow.workspaces))),
+]
+
+SetWorkspaceWorkflowDep = Annotated[
+    workflow_use_cases.SetWorkspaceWorkflow,
+    Depends(
+        _use_case(
+            lambda uow: workflow_use_cases.SetWorkspaceWorkflow(
+                uow.workspaces, uow.tasks
+            )
+        )
+    ),
+]
+SetProjectWorkflowDep = Annotated[
+    workflow_use_cases.SetProjectWorkflow,
+    Depends(
+        _use_case(
+            lambda uow: workflow_use_cases.SetProjectWorkflow(uow.projects, uow.tasks)
+        )
+    ),
+]
 
 ListTasksDep = Annotated[
     task_use_cases.ListTasks,
@@ -104,7 +128,13 @@ CountTasksDep = Annotated[
 ]
 CreateTaskDep = Annotated[
     task_use_cases.CreateTask,
-    Depends(_use_case(lambda uow: task_use_cases.CreateTask(uow.tasks, uow.projects))),
+    Depends(
+        _use_case(
+            lambda uow: task_use_cases.CreateTask(
+                uow.tasks, uow.projects, uow.workspaces
+            )
+        )
+    ),
 ]
 GetTaskDep = Annotated[
     task_use_cases.GetTask,
@@ -112,7 +142,13 @@ GetTaskDep = Annotated[
 ]
 UpdateTaskDep = Annotated[
     task_use_cases.UpdateTask,
-    Depends(_use_case(lambda uow: task_use_cases.UpdateTask(uow.tasks, uow.projects))),
+    Depends(
+        _use_case(
+            lambda uow: task_use_cases.UpdateTask(
+                uow.tasks, uow.projects, uow.workspaces
+            )
+        )
+    ),
 ]
 DeleteTaskDep = Annotated[
     task_use_cases.DeleteTask,
@@ -120,7 +156,11 @@ DeleteTaskDep = Annotated[
 ]
 MoveTaskDep = Annotated[
     task_use_cases.MoveTask,
-    Depends(_use_case(lambda uow: task_use_cases.MoveTask(uow.tasks))),
+    Depends(
+        _use_case(
+            lambda uow: task_use_cases.MoveTask(uow.tasks, uow.projects, uow.workspaces)
+        )
+    ),
 ]
 
 ListCommentsDep = Annotated[
@@ -150,7 +190,11 @@ ListProjectsDep = Annotated[
 ]
 CreateProjectDep = Annotated[
     project_use_cases.CreateProject,
-    Depends(_use_case(lambda uow: project_use_cases.CreateProject(uow.projects))),
+    Depends(
+        _use_case(
+            lambda uow: project_use_cases.CreateProject(uow.projects, uow.workspaces)
+        )
+    ),
 ]
 GetProjectDep = Annotated[
     project_use_cases.GetProject,
@@ -183,6 +227,7 @@ __all__ = [
     "DeleteTaskDep",
     "GetProjectDep",
     "GetTaskDep",
+    "GetWorkspaceDep",
     "ListCommentsDep",
     "ListOpenTasksDep",
     "ListProjectsDep",
@@ -193,6 +238,8 @@ __all__ = [
     "RegisterUserDep",
     "ReorderProjectsDep",
     "SessionDep",
+    "SetProjectWorkflowDep",
+    "SetWorkspaceWorkflowDep",
     "UnitOfWorkDep",
     "UpdateCommentDep",
     "UpdateProjectDep",

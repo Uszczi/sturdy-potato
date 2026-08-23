@@ -1,7 +1,6 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { DragDropProvider } from "@dnd-kit/react";
 import type { TaskSchema } from "@api-client";
-import { TaskStatus } from "@api-client";
 
 import AppLayout from "@/components/AppLayout";
 import Card from "@/components/kanban/Card";
@@ -27,7 +26,9 @@ function Kanban() {
   const moveTask = useAppStore((state) => state.moveTask);
   const [tasks, setTasks] = useState<TaskSchema[]>([]);
   const [activeTaskId, setActiveTaskId] = useState<number | null>(null);
-  const columnNames: TaskStatus[] = [TaskStatus.Open, TaskStatus.Done];
+  // The columns are whatever this board's workflow says, in its order — every
+  // one of them, including the empty ones, so a card can be dragged there.
+  const columns = useAppStore((state) => state.getWorkflow(projectId));
 
   const activeColumn =
     activeTaskId === null
@@ -62,7 +63,7 @@ function Kanban() {
 
                 const targetColumn =
                   target.type === "column"
-                    ? (target.id as TaskStatus)
+                    ? (target.id as string)
                     : current.find((task) => task.id === target.id)?.status;
                 if (!targetColumn) return current;
 
@@ -127,23 +128,25 @@ function Kanban() {
               moveTask(moved.id, moved.status, position);
             }}
           >
+            {/* Columns keep a readable width and the board scrolls sideways,
+                rather than squeezing every column thinner as more are added. */}
             <div className="flex flex-1 flex-nowrap gap-4 overflow-x-auto">
-              {columnNames.map((columnName) => (
+              {columns.map((column) => (
                 <Column
-                  key={columnName}
-                  id={columnName}
-                  name={columnName}
-                  highlighted={activeColumn === columnName}
+                  key={column.key}
+                  id={column.key}
+                  name={column.label}
+                  highlighted={activeColumn === column.key}
                 >
                   {tasks
-                    .filter((task) => task.status === columnName)
+                    .filter((task) => task.status === column.key)
                     .map((task, index) => (
                       <Card
                         task={task}
                         id={task.id}
                         index={index}
                         key={task.id}
-                        column={columnName}
+                        column={column.key}
                       />
                     ))}
                 </Column>

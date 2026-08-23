@@ -2,7 +2,7 @@ from collections.abc import Mapping
 from datetime import date
 from typing import Any
 
-from sqlalchemy import case, func, insert
+from sqlalchemy import func, insert
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import col, select
 
@@ -10,7 +10,7 @@ from infrastructure.models import Task, utcnow
 from infrastructure.repositories._positioning import next_task_position_subquery
 from use_cases.dtos import TaskCreateData
 from use_cases.entities import Task as TaskEntity
-from use_cases.task_status import TaskStatus
+from use_cases.workflow import StatusAssignment
 
 
 def _to_entity(task: Task) -> TaskEntity:
@@ -21,7 +21,8 @@ def _to_entity(task: Task) -> TaskEntity:
         project_id=task.project_id,
         title=task.title,
         description=task.description,
-        status=TaskStatus(task.status),
+        status=task.status,
+        is_done=task.is_done,
         position=task.position,
         due_date=task.due_date,
         created_at=task.created_at,
@@ -29,13 +30,14 @@ def _to_entity(task: Task) -> TaskEntity:
     )
 
 
-# "Done" is the terminal status; everything else counts as still-open work.
-_IS_DONE = case((col(Task.status) == TaskStatus.DONE, 1), else_=0)
+# Which statuses count as finished is per-board, so ordering reads the
+# denormalised flag rather than comparing against any particular status key.
+_IS_DONE = col(Task.is_done)
 
-# One board (a single project, or the inbox) in board order: open cards first,
-# then done, and within each status column the manual position wins. Positions
-# are scoped per column, so this only makes sense when the read is already
-# limited to one project group.
+# One board (a single project, or the inbox) in board order: unfinished cards
+# first, then finished, and within each status column the manual position wins.
+# Positions are scoped per column, so this only makes sense when the read is
+# already limited to one project group.
 _BOARD_ORDER = (
     _IS_DONE.asc(),
     col(Task.position).asc(),
@@ -96,7 +98,7 @@ class TaskRepository:
         elif view == "upcoming":
             statement = statement.where(
                 col(Task.due_date) > today,
-                col(Task.status) != TaskStatus.DONE,
+                _IS_DONE.is_(False),
             )
         order = _BOARD_ORDER if scoped_to_one_board else _VIEW_ORDER
         statement = statement.order_by(*order)
@@ -111,7 +113,7 @@ class TaskRepository:
             select(Task)
             .where(
                 col(Task.workspace_id) == workspace_id,
-                col(Task.status) != TaskStatus.DONE,
+                _IS_DONE.is_(False),
             )
             .order_by(col(Task.position), col(Task.id).desc())
         )
@@ -119,14 +121,14 @@ class TaskRepository:
             statement = statement.limit(limit)
         return [_to_entity(task) for task in await self._session.scalars(statement)]
 
-    async def count(self, workspace_id: int, *, status: TaskStatus | None) -> int:
+    async def count(self, workspace_id: int, *, done: bool | None) -> int:
         statement = (
             select(func.count())
             .select_from(Task)
             .where(col(Task.workspace_id) == workspace_id)
         )
-        if status is not None:
-            statement = statement.where(col(Task.status) == status)
+        if done is not None:
+            statement = statement.where(_IS_DONE.is_(done))
         total: int | None = await self._session.scalar(statement)
         return total or 0
 
@@ -134,7 +136,9 @@ class TaskRepository:
         task = await self._get_orm(workspace_id, task_id)
         return _to_entity(task) if task is not None else None
 
-    async def create(self, workspace_id: int, data: TaskCreateData) -> TaskEntity:
+    async def create(
+        self, workspace_id: int, data: TaskCreateData, status: StatusAssignment
+    ) -> TaskEntity:
         # Assign the next slot in the target column inside the INSERT itself so
         # the "read the max, then write" gap can't hand two concurrent creates
         # the same slot.
@@ -146,10 +150,11 @@ class TaskRepository:
                 project_id=data.project_id,
                 title=data.title,
                 description=data.description,
-                status=data.status,
+                status=status.key,
+                is_done=status.is_done,
                 due_date=data.due_date,
                 position=next_task_position_subquery(
-                    workspace_id, data.project_id, data.status
+                    workspace_id, data.project_id, status.key
                 ),
                 created_at=now,
                 updated_at=now,

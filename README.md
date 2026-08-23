@@ -12,7 +12,15 @@ A FastAPI backend for a React todo SPA. The server is organized as:
 - `server/src/seed.py` seeds the demo user and example data.
 
 Projects belong to one user, and tasks may be assigned to one of that user's projects.
-Tasks can carry comments; deleting a task cascades to its comments.
+Tasks can carry comments; deleting a task cascades to its comments, and deleting a
+project cascades to its tasks.
+
+Which statuses a task can occupy is per-board: a project owns its **workflow** (an
+ordered list of statuses, rendered as the kanban's columns), copied from the
+workspace's default when the project is created and edited independently after
+that. The workspace's own workflow also serves the inbox — the tasks belonging to
+no project. See `CONTEXT.md` for the vocabulary and `docs/adr/` for why a task
+carries a denormalised `is_done` alongside its status.
 Schema changes are versioned with Alembic (`server/src/infrastructure/alembic/`).
 Python tooling (`pyproject.toml`, `uv.lock`, `Dockerfile`) lives under `server/`.
 

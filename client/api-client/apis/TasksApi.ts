@@ -39,11 +39,6 @@ import {
   TaskSchemaToJSON,
 } from "../models/TaskSchema";
 import {
-  type TaskStatus,
-  TaskStatusFromJSON,
-  TaskStatusToJSON,
-} from "../models/TaskStatus";
-import {
   type TaskUpdateInput,
   TaskUpdateInputFromJSON,
   TaskUpdateInputToJSON,
@@ -51,7 +46,7 @@ import {
 
 export interface ApiTasksCountRetrieveRequest {
   workspaceId: number;
-  status?: TaskStatus | null;
+  done?: boolean | null;
 }
 
 export interface ApiTasksCreateRequest {
@@ -116,8 +111,8 @@ export class TasksApi extends runtime.BaseAPI {
 
     const queryParameters: any = {};
 
-    if (requestParameters["status"] != null) {
-      queryParameters["status"] = requestParameters["status"];
+    if (requestParameters["done"] != null) {
+      queryParameters["done"] = requestParameters["done"];
     }
 
     const headerParameters: runtime.HTTPHeaders = {};

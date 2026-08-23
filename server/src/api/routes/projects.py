@@ -6,11 +6,18 @@ from api.dependencies import (
     GetProjectDep,
     ListProjectsDep,
     ReorderProjectsDep,
+    SetProjectWorkflowDep,
     UpdateProjectDep,
 )
 from auth import WorkspaceId
 from schemas.order import ReorderInput
-from schemas.project import ProjectCreateInput, ProjectSchema, ProjectUpdateInput
+from schemas.project import (
+    ProjectCreateInput,
+    ProjectDetailSchema,
+    ProjectSchema,
+    ProjectUpdateInput,
+)
+from schemas.workflow import WorkflowInput
 
 router = APIRouter(prefix="/workspaces/{workspace_id}/projects", tags=["projects"])
 
@@ -47,9 +54,25 @@ async def reorder_projects(
 @router.get("/{id}/", operation_id="api_projects_retrieve")
 async def retrieve_project(
     id: int, workspace_id: WorkspaceId, use_case: GetProjectDep
-) -> ProjectSchema:
+) -> ProjectDetailSchema:
     project = await use_case.execute(workspace_id, id)
-    return ProjectSchema.model_validate(project)
+    return ProjectDetailSchema.model_validate(project)
+
+
+@router.put("/{id}/statuses/", operation_id="api_projects_statuses_update")
+async def set_project_workflow(
+    id: int,
+    body: WorkflowInput,
+    workspace_id: WorkspaceId,
+    use_case: SetProjectWorkflowDep,
+) -> ProjectDetailSchema:
+    """Replace this project board's workflow with the complete list sent.
+
+    One request covers adding, renaming, reordering and removing statuses, since
+    the rules a workflow must satisfy only make sense against a finished list.
+    """
+    project = await use_case.execute(workspace_id, id, body.to_domain())
+    return ProjectDetailSchema.model_validate(project)
 
 
 @router.patch("/{id}/", operation_id="api_projects_partial_update")

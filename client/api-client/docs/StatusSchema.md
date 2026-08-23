@@ -1,0 +1,40 @@
+
+# StatusSchema
+
+
+## Properties
+
+Name | Type
+------------ | -------------
+`key` | string
+`label` | string
+`isInitial` | boolean
+`isTerminal` | boolean
+
+## Example
+
+```typescript
+import type { StatusSchema } from ''
+
+// TODO: Update the object below with actual values
+const example = {
+  "key": null,
+  "label": null,
+  "isInitial": null,
+  "isTerminal": null,
+} satisfies StatusSchema
+
+console.log(example)
+
+// Convert the instance to a JSON string
+const exampleJSON: string = JSON.stringify(example)
+console.log(exampleJSON)
+
+// Parse the JSON string back to an object
+const exampleParsed = JSON.parse(exampleJSON) as StatusSchema
+console.log(exampleParsed)
+```
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+

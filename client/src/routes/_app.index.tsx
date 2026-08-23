@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import type { TaskSchema } from "@api-client";
-import { TaskStatus } from "@api-client";
 import { countTasks, fetchOpenTasks } from "../services/tasks";
 import { useAppStore } from "../stores/app-store";
 
@@ -21,8 +20,8 @@ function Overview() {
     let active = true;
     void Promise.all([
       fetchOpenTasks(6),
-      countTasks(TaskStatus.Open),
-      countTasks(TaskStatus.Done),
+      countTasks(false),
+      countTasks(true),
     ]).then(([preview, open, done]) => {
       if (!active) return;
       setOpenTasks(preview);

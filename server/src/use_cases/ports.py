@@ -12,7 +12,7 @@ from typing import Any, Protocol
 
 from use_cases.dtos import CommentCreateData, ProjectCreateData, TaskCreateData
 from use_cases.entities import Comment, Project, Task, User, Workspace
-from use_cases.task_status import TaskStatus
+from use_cases.workflow import StatusAssignment, Workflow
 
 
 class UserRepository(Protocol):
@@ -29,9 +29,15 @@ class WorkspaceRepository(Protocol):
         self, owner_id: int, name: str, *, is_personal: bool = False
     ) -> Workspace: ...
 
+    async def get(self, workspace_id: int) -> Workspace | None: ...
+
     async def list_for_user(self, user_id: int) -> list[Workspace]: ...
 
     async def is_member(self, user_id: int, workspace_id: int) -> bool: ...
+
+    async def set_workflow(
+        self, workspace_id: int, workflow: Workflow
+    ) -> Workspace | None: ...
 
 
 class PasswordHasher(Protocol):
@@ -63,11 +69,15 @@ class TaskRepository(Protocol):
         self, workspace_id: int, *, limit: int | None
     ) -> list[Task]: ...
 
-    async def count(self, workspace_id: int, *, status: TaskStatus | None) -> int: ...
+    async def count(self, workspace_id: int, *, done: bool | None) -> int: ...
 
     async def get(self, workspace_id: int, task_id: int) -> Task | None: ...
 
-    async def create(self, workspace_id: int, data: TaskCreateData) -> Task: ...
+    # ``status`` is resolved by the caller against the target board's workflow;
+    # the repository only stores what it is given.
+    async def create(
+        self, workspace_id: int, data: TaskCreateData, status: StatusAssignment
+    ) -> Task: ...
 
     async def update(
         self, workspace_id: int, task_id: int, changes: Mapping[str, Any]
@@ -107,10 +117,17 @@ class ProjectRepository(Protocol):
         self, workspace_id: int, name: str, *, exclude_id: int | None = None
     ) -> bool: ...
 
-    async def create(self, workspace_id: int, data: ProjectCreateData) -> Project: ...
+    # ``workflow`` is the snapshot copied from the workspace's default.
+    async def create(
+        self, workspace_id: int, data: ProjectCreateData, workflow: Workflow
+    ) -> Project: ...
 
     async def update(
         self, workspace_id: int, project_id: int, changes: Mapping[str, Any]
+    ) -> Project | None: ...
+
+    async def set_workflow(
+        self, workspace_id: int, project_id: int, workflow: Workflow
     ) -> Project | None: ...
 
     async def delete(self, workspace_id: int, project_id: int) -> bool: ...

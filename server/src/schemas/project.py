@@ -4,6 +4,7 @@ from datetime import datetime
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from schemas._coercions import reject_null, strip_if_str
+from schemas.workflow import WorkflowMixin
 from use_cases.dtos import ProjectCreateData, ProjectUpdateData
 
 _HEX_COLOR = re.compile(r"^#[0-9a-fA-F]{6}$")
@@ -74,3 +75,11 @@ class ProjectSchema(BaseModel):
     task_count: int = 0
     created_at: datetime
     updated_at: datetime
+
+
+class ProjectDetailSchema(ProjectSchema, WorkflowMixin):
+    """One project, with the workflow its board renders as columns.
+
+    Only the detail response carries it: the sidebar lists projects but never
+    draws their boards, so shipping every workflow there would be dead weight.
+    """

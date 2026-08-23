@@ -17,7 +17,6 @@ from fastmcp.exceptions import ToolError
 from use_cases import tasks as task_use_cases
 from use_cases.dtos import UNSET, TaskCreateData, TaskUpdateData, Unset
 from use_cases.exceptions import UseCaseError
-from use_cases.task_status import TaskStatus
 
 from potato_mcp.context import acting_context
 from potato_mcp.serialization import task_to_dict
@@ -70,11 +69,16 @@ async def get_task(task_id: int) -> dict[str, object]:
 async def create_task(
     title: str,
     description: str = "",
-    status: TaskStatus = TaskStatus.OPEN,
+    status: str | None = None,
     project_id: int | None = None,
     due_date: date | None = None,
 ) -> dict[str, object]:
-    """Create a task. ``project_id``, if given, must belong to the workspace."""
+    """Create a task. ``project_id``, if given, must belong to the workspace.
+
+    ``status`` is a status key from the target board's workflow (the project's,
+    or the workspace's for a task with no project); omit it to start the task in
+    whichever status that board begins with.
+    """
     data = TaskCreateData(
         title=title,
         description=description,
@@ -83,9 +87,9 @@ async def create_task(
         due_date=due_date,
     )
     async with acting_context() as ctx:
-        task = await task_use_cases.CreateTask(ctx.uow.tasks, ctx.uow.projects).execute(
-            ctx.workspace_id, data
-        )
+        task = await task_use_cases.CreateTask(
+            ctx.uow.tasks, ctx.uow.projects, ctx.uow.workspaces
+        ).execute(ctx.workspace_id, data)
         return task_to_dict(task)
 
 
@@ -94,7 +98,7 @@ async def update_task(
     task_id: int,
     title: str | None = None,
     description: str | None = None,
-    status: TaskStatus | None = None,
+    status: str | None = None,
     project_id: int | None = None,
     due_date: date | None = None,
 ) -> dict[str, object]:
@@ -116,9 +120,9 @@ async def update_task(
         due_date=_set(due_date),
     )
     async with acting_context() as ctx:
-        task = await task_use_cases.UpdateTask(ctx.uow.tasks, ctx.uow.projects).execute(
-            ctx.workspace_id, task_id, data
-        )
+        task = await task_use_cases.UpdateTask(
+            ctx.uow.tasks, ctx.uow.projects, ctx.uow.workspaces
+        ).execute(ctx.workspace_id, task_id, data)
         return task_to_dict(task)
 
 
@@ -133,14 +137,15 @@ async def delete_task(task_id: int) -> dict[str, object]:
 
 
 @_tool
-async def move_task(
-    task_id: int, status: TaskStatus, position: int
-) -> dict[str, object]:
-    """Move a task to a status column and a 0-based slot within it."""
+async def move_task(task_id: int, status: str, position: int) -> dict[str, object]:
+    """Move a task to a status column and a 0-based slot within it.
+
+    ``status`` must be a status key the task's own board offers.
+    """
     async with acting_context() as ctx:
-        await task_use_cases.MoveTask(ctx.uow.tasks).execute(
-            ctx.workspace_id, task_id, status, position
-        )
+        await task_use_cases.MoveTask(
+            ctx.uow.tasks, ctx.uow.projects, ctx.uow.workspaces
+        ).execute(ctx.workspace_id, task_id, status, position)
         task = await task_use_cases.GetTask(ctx.uow.tasks).execute(
             ctx.workspace_id, task_id
         )

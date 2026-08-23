@@ -10,6 +10,7 @@ All URIs are relative to *http://localhost*
 | [**apiProjectsPartialUpdate**](ProjectsApi.md#apiprojectspartialupdate) | **PATCH** /api/workspaces/{workspace_id}/projects/{id}/ | Update Project |
 | [**apiProjectsReorderCreate**](ProjectsApi.md#apiprojectsreordercreate) | **POST** /api/workspaces/{workspace_id}/projects/reorder/ | Reorder Projects |
 | [**apiProjectsRetrieve**](ProjectsApi.md#apiprojectsretrieve) | **GET** /api/workspaces/{workspace_id}/projects/{id}/ | Retrieve Project |
+| [**apiProjectsStatusesUpdate**](ProjectsApi.md#apiprojectsstatusesupdate) | **PUT** /api/workspaces/{workspace_id}/projects/{id}/statuses/ | Set Project Workflow |
 
 
 
@@ -380,7 +381,7 @@ example().catch(console.error);
 
 ## apiProjectsRetrieve
 
-> ProjectSchema apiProjectsRetrieve(id, workspaceId)
+> ProjectDetailSchema apiProjectsRetrieve(id, workspaceId)
 
 Retrieve Project
 
@@ -430,7 +431,7 @@ example().catch(console.error);
 
 ### Return type
 
-[**ProjectSchema**](ProjectSchema.md)
+[**ProjectDetailSchema**](ProjectDetailSchema.md)
 
 ### Authorization
 
@@ -439,6 +440,84 @@ example().catch(console.error);
 ### HTTP request headers
 
 - **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## apiProjectsStatusesUpdate
+
+> ProjectDetailSchema apiProjectsStatusesUpdate(id, workspaceId, workflowInput)
+
+Set Project Workflow
+
+Replace this project board\&#39;s workflow with the complete list sent.  One request covers adding, renaming, reordering and removing statuses, since the rules a workflow must satisfy only make sense against a finished list.
+
+### Example
+
+```ts
+import {
+  Configuration,
+  ProjectsApi,
+} from '';
+import type { ApiProjectsStatusesUpdateRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({ 
+    // Configure HTTP bearer authorization: HTTPBearer
+    accessToken: "YOUR BEARER TOKEN",
+  });
+  const api = new ProjectsApi(config);
+
+  const body = {
+    // number
+    id: 56,
+    // number
+    workspaceId: 56,
+    // WorkflowInput
+    workflowInput: ...,
+  } satisfies ApiProjectsStatusesUpdateRequest;
+
+  try {
+    const data = await api.apiProjectsStatusesUpdate(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **id** | `number` |  | [Defaults to `undefined`] |
+| **workspaceId** | `number` |  | [Defaults to `undefined`] |
+| **workflowInput** | [WorkflowInput](WorkflowInput.md) |  | |
+
+### Return type
+
+[**ProjectDetailSchema**](ProjectDetailSchema.md)
+
+### Authorization
+
+[HTTPBearer](../README.md#HTTPBearer)
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
 - **Accept**: `application/json`
 
 

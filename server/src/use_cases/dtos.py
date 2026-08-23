@@ -5,12 +5,13 @@ translate validated request bodies into these before calling a use case, so the
 use-case layer never imports ``schemas`` (a web concern).
 """
 
+from collections.abc import Mapping
 from dataclasses import dataclass, fields
 from datetime import date
 from enum import Enum
 from typing import Any
 
-from use_cases.task_status import TaskStatus
+from use_cases.workflow import Status
 
 
 class _Unset(Enum):
@@ -37,7 +38,9 @@ class IssuedTokens:
 class TaskCreateData:
     title: str
     description: str
-    status: TaskStatus
+    # A status key from the target board's workflow; None means "wherever this
+    # board starts", which is the usual case.
+    status: str | None
     project_id: int | None
     due_date: date | None
 
@@ -46,7 +49,7 @@ class TaskCreateData:
 class TaskUpdateData:
     title: str | Unset = UNSET
     description: str | Unset = UNSET
-    status: TaskStatus | Unset = UNSET
+    status: str | Unset = UNSET
     project_id: int | None | Unset = UNSET
     due_date: date | None | Unset = UNSET
 
@@ -57,6 +60,21 @@ class TaskUpdateData:
             for field in fields(self)
             if (value := getattr(self, field.name)) is not UNSET
         }
+
+
+@dataclass(frozen=True)
+class WorkflowUpdateData:
+    """A board's complete desired workflow, plus where dropped statuses go.
+
+    The whole list is sent at once — add, rename, reorder and remove are one
+    request — because "exactly one initial, at least one terminal" is only
+    checkable against a finished list, not against each step of a sequence.
+    """
+
+    statuses: tuple[Status, ...]
+    # Removed status key -> the key its tasks move to. Every key dropped from
+    # the workflow needs an entry; nothing else may appear here.
+    reassign: Mapping[str, str]
 
 
 @dataclass(frozen=True)

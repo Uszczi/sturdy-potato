@@ -18,7 +18,7 @@ All URIs are relative to *http://localhost*
 
 ## apiTasksCountRetrieve
 
-> TaskCountSchema apiTasksCountRetrieve(workspaceId, status)
+> TaskCountSchema apiTasksCountRetrieve(workspaceId, done)
 
 Count Tasks
 
@@ -42,8 +42,8 @@ async function example() {
   const body = {
     // number
     workspaceId: 56,
-    // TaskStatus (optional)
-    status: ...,
+    // boolean (optional)
+    done: true,
   } satisfies ApiTasksCountRetrieveRequest;
 
   try {
@@ -64,7 +64,7 @@ example().catch(console.error);
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **workspaceId** | `number` |  | [Defaults to `undefined`] |
-| **status** | `TaskStatus` |  | [Optional] [Defaults to `undefined`] [Enum: open, done] |
+| **done** | `boolean` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 

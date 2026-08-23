@@ -21,7 +21,9 @@ export default function ProjectSelector() {
       </div>
       <ul
         tabIndex={-1}
-        className="dropdown-content bg-base-300 rounded-box z-1 w-52 p-2 shadow-2xl"
+        // Capped and scrollable: a workspace with many projects would otherwise
+        // run the list off the bottom of the screen with no way to reach it.
+        className="dropdown-content bg-base-300 rounded-box z-1 max-h-72 w-52 overflow-y-auto p-2 shadow-2xl"
       >
         {projects.map((project) => (
           <li key={project.id}>

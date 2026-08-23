@@ -1,20 +1,28 @@
 
-# TaskStatus
+# StatusInput
 
 
 ## Properties
 
 Name | Type
 ------------ | -------------
+`key` | string
+`label` | string
+`isInitial` | boolean
+`isTerminal` | boolean
 
 ## Example
 
 ```typescript
-import type { TaskStatus } from ''
+import type { StatusInput } from ''
 
 // TODO: Update the object below with actual values
 const example = {
-} satisfies TaskStatus
+  "key": null,
+  "label": null,
+  "isInitial": null,
+  "isTerminal": null,
+} satisfies StatusInput
 
 console.log(example)
 
@@ -23,7 +31,7 @@ const exampleJSON: string = JSON.stringify(example)
 console.log(exampleJSON)
 
 // Parse the JSON string back to an object
-const exampleParsed = JSON.parse(exampleJSON) as TaskStatus
+const exampleParsed = JSON.parse(exampleJSON) as StatusInput
 console.log(exampleParsed)
 ```
 

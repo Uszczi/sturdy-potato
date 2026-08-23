@@ -61,6 +61,16 @@ class UsernameConflict(ConflictError):
     detail = "A user with this username already exists."
 
 
+class InvalidWorkflow(UseCaseError):
+    status_code = 400
+    detail = "Invalid workflow."
+
+
+class UnknownStatus(UseCaseError):
+    status_code = 400
+    detail = "Unknown status for this board."
+
+
 class InvalidReorder(UseCaseError):
     status_code = 400
     detail = "Order contains items outside this workspace."
