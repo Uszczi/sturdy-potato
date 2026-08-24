@@ -2,18 +2,33 @@
 
 A FastAPI backend for a React todo SPA. The server is organized as:
 
-- `server/src/main.py` builds the FastAPI app and wires the routers.
-- `server/src/api/routes/` owns the HTTP layer (`/api/tasks/`, `/api/tasks/{id}/comments/`, `/api/projects/`, `/api/token/`, `/api/register/`, `/api/time/`).
+- `server/src/main.py` builds the FastAPI app, wires the routers, maps domain
+  errors to HTTP responses, and serves the built SPA when it is present.
+- `server/src/api/routes/` owns the HTTP layer. Most routes are nested under a
+  workspace (`/api/workspaces/{id}/tasks/`, `.../tasks/{id}/comments/`,
+  `.../projects/`, `.../chat/`); `/api/workspaces/`, `/api/token/`,
+  `/api/register/` and `/api/time/` sit at the top level.
+- `server/src/api/dependencies.py` builds each use case from the request's unit of
+  work, naming the repositories it needs.
+- `server/src/use_cases/` holds the business logic, free of any framework. It owns
+  its own entities, DTOs, errors and `ports.py` (the repository Protocols), so it
+  never imports `infrastructure`.
+- `server/src/infrastructure/repositories/` implements those ports with async
+  SQLAlchemy, one class per aggregate, and `unit_of_work.py` commits them together.
+- `server/src/infrastructure/models.py` defines the SQLModel tables (`User`,
+  `Workspace`, `WorkspaceMembership`, `Project`, `Task`, `Comment`).
 - `server/src/infrastructure/cache.py` holds the async Redis client used for caching.
-- `server/src/repositories/` holds the async SQLAlchemy data access, one class per aggregate.
-- `server/src/models.py` defines the SQLModel tables (`User`, `Project`, `Todo`, `Comment`).
+- `server/src/infrastructure/security.py` handles password hashing (argon2) and JWT
+  issue/verify; `server/src/auth.py` turns those into the request's current user
+  and workspace.
 - `server/src/schemas/` contains the Pydantic request/response models.
-- `server/src/auth.py` handles password hashing (argon2) and JWT issue/verify.
-- `server/src/seed.py` seeds the demo user and example data.
+- `server/src/cli/` is the management entrypoint (`python -m cli`), including
+  `seed.py` for the demo user and example data.
 
-Projects belong to one user, and tasks may be assigned to one of that user's projects.
-Tasks can carry comments; deleting a task cascades to its comments, and deleting a
-project cascades to its tasks.
+Projects belong to a workspace, and a user reaches them through their membership of
+it. Tasks may be assigned to one of the workspace's projects. Tasks can carry
+comments; deleting a task cascades to its comments, and deleting a project cascades
+to its tasks.
 
 Which statuses a task can occupy is per-board: a project owns its **workflow** (an
 ordered list of statuses, rendered as the kanban's columns), copied from the
@@ -22,7 +37,9 @@ that. The workspace's own workflow also serves the inbox — the tasks belonging
 no project. See `CONTEXT.md` for the vocabulary and `docs/adr/` for why a task
 carries a denormalised `is_done` alongside its status.
 Schema changes are versioned with Alembic (`server/src/infrastructure/alembic/`).
-Python tooling (`pyproject.toml`, `uv.lock`, `Dockerfile`) lives under `server/`.
+The repo is a uv workspace: the root `pyproject.toml` and `uv.lock` tie together
+the `server/` and `mcp/` members, which share the root `.venv`. `mcp/` serves the
+same use cases as MCP tools, so the assistant and the REST API run identical logic.
 
 ## Development
 
