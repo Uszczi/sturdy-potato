@@ -1,6 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 
-import { streamChat, type ChatEvent, type ChatMessage } from "../services/chat";
+import {
+  ChatTimeoutError,
+  streamChat,
+  type ChatEvent,
+  type ChatMessage,
+} from "../services/chat";
 
 /**
  * A chat assistant backed by the local Ollama model. Each turn replays the whole
@@ -57,8 +62,12 @@ function ChatPanel() {
 
     try {
       await streamChat(history, onEvent);
-    } catch {
-      setError("The assistant is unavailable. Is Ollama running?");
+    } catch (failure) {
+      setError(
+        failure instanceof ChatTimeoutError
+          ? "The assistant timed out. Try again, or ask something smaller."
+          : "The assistant is unavailable. Is Ollama running?",
+      );
       // Drop the empty assistant bubble we added for the failed turn.
       setMessages((current) =>
         current[current.length - 1]?.content === ""
