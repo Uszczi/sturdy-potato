@@ -4,13 +4,13 @@ All URIs are relative to *http://localhost*
 
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
-| [**apiChatCreate**](ChatApi.md#apichatcreate) | **POST** /api/workspaces/{workspace_id}/chat/ | Chat |
+| [**apiChatCreate**](ChatApi.md#apichatcreate) | **POST** /api/chat/ | Chat |
 
 
 
 ## apiChatCreate
 
-> apiChatCreate(workspaceId, chatRequest)
+> apiChatCreate(chatRequest, xWorkspaceId)
 
 Chat
 
@@ -34,10 +34,10 @@ async function example() {
   const api = new ChatApi(config);
 
   const body = {
-    // number
-    workspaceId: 56,
     // ChatRequest
     chatRequest: ...,
+    // number (optional)
+    xWorkspaceId: 56,
   } satisfies ApiChatCreateRequest;
 
   try {
@@ -57,8 +57,8 @@ example().catch(console.error);
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **workspaceId** | `number` |  | [Defaults to `undefined`] |
 | **chatRequest** | [ChatRequest](ChatRequest.md) |  | |
+| **xWorkspaceId** | `number` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 

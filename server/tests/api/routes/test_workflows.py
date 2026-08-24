@@ -42,7 +42,7 @@ async def test_project_detail_carries_its_workflow(
     project = await create_project(session, workspace)
 
     response = await client.get(
-        f"/api/workspaces/{workspace.id}/projects/{project.id}/",
+        f"/api/projects/{project.id}/",
         headers=auth_headers(user),
     )
 
@@ -56,9 +56,7 @@ async def test_project_list_omits_the_workflow(
     user, workspace = await create_user_with_workspace(session)
     await create_project(session, workspace)
 
-    response = await client.get(
-        f"/api/workspaces/{workspace.id}/projects/", headers=auth_headers(user)
-    )
+    response = await client.get("/api/projects/", headers=auth_headers(user))
 
     # Only the board view needs the columns, so the sidebar's list stays lean.
     assert "workflow" not in response.json()[0]
@@ -97,7 +95,7 @@ async def test_replacing_a_project_workflow_changes_its_columns(
     project = await create_project(session, workspace)
 
     response = await client.put(
-        f"/api/workspaces/{workspace.id}/projects/{project.id}/statuses/",
+        f"/api/projects/{project.id}/statuses/",
         headers=auth_headers(user),
         json={"statuses": THREE_COLUMN, "reassign": FROM_DEFAULT},
     )
@@ -119,18 +117,14 @@ async def test_replacing_a_workflow_moves_the_tasks_standing_on_it(
     done_task = await create_task(session, workspace, project=project, status="done")
 
     await client.put(
-        f"/api/workspaces/{workspace.id}/projects/{project.id}/statuses/",
+        f"/api/projects/{project.id}/statuses/",
         headers=auth_headers(user),
         json={"statuses": THREE_COLUMN, "reassign": FROM_DEFAULT},
     )
 
     tasks = {
         task["id"]: task
-        for task in (
-            await client.get(
-                f"/api/workspaces/{workspace.id}/tasks/", headers=auth_headers(user)
-            )
-        ).json()
+        for task in (await client.get("/api/tasks/", headers=auth_headers(user))).json()
     }
     assert (tasks[open_task.id]["status"], tasks[open_task.id]["is_done"]) == (
         "todo",
@@ -154,15 +148,13 @@ async def test_reordering_columns_leaves_the_tasks_where_they_are(
     ]
 
     response = await client.put(
-        f"/api/workspaces/{workspace.id}/projects/{project.id}/statuses/",
+        f"/api/projects/{project.id}/statuses/",
         headers=auth_headers(user),
         json={"statuses": reversed_order},
     )
 
     assert [s["key"] for s in response.json()["workflow"]] == ["done", "open"]
-    retrieved = await client.get(
-        f"/api/workspaces/{workspace.id}/tasks/{task.id}/", headers=auth_headers(user)
-    )
+    retrieved = await client.get(f"/api/tasks/{task.id}/", headers=auth_headers(user))
     assert retrieved.json()["status"] == "done"
 
 
@@ -183,15 +175,13 @@ async def test_renaming_a_label_keeps_the_key(
     ]
 
     response = await client.put(
-        f"/api/workspaces/{workspace.id}/projects/{project.id}/statuses/",
+        f"/api/projects/{project.id}/statuses/",
         headers=auth_headers(user),
         json={"statuses": renamed},
     )
 
     assert response.json()["workflow"][0]["label"] == "Backlog"
-    retrieved = await client.get(
-        f"/api/workspaces/{workspace.id}/tasks/{task.id}/", headers=auth_headers(user)
-    )
+    retrieved = await client.get(f"/api/tasks/{task.id}/", headers=auth_headers(user))
     # No task row is rewritten by a rename: the key is what they store.
     assert retrieved.json()["status"] == "open"
 
@@ -203,7 +193,7 @@ async def test_dropping_a_status_without_a_target_is_rejected(
     project = await create_project(session, workspace)
 
     response = await client.put(
-        f"/api/workspaces/{workspace.id}/projects/{project.id}/statuses/",
+        f"/api/projects/{project.id}/statuses/",
         headers=auth_headers(user),
         json={"statuses": THREE_COLUMN},
     )
@@ -223,7 +213,7 @@ async def test_a_workflow_without_an_ending_is_rejected(
     ]
 
     response = await client.put(
-        f"/api/workspaces/{workspace.id}/projects/{project.id}/statuses/",
+        f"/api/projects/{project.id}/statuses/",
         headers=auth_headers(user),
         json={"statuses": no_ending, "reassign": {"open": "todo", "done": "doing"}},
     )
@@ -235,10 +225,10 @@ async def test_a_workflow_without_an_ending_is_rejected(
 async def test_setting_the_workflow_of_a_missing_project_is_404(
     client: AsyncClient, session: AsyncSession
 ) -> None:
-    user, workspace = await create_user_with_workspace(session)
+    user, _workspace = await create_user_with_workspace(session)
 
     response = await client.put(
-        f"/api/workspaces/{workspace.id}/projects/999/statuses/",
+        "/api/projects/999/statuses/",
         headers=auth_headers(user),
         json={"statuses": THREE_COLUMN, "reassign": FROM_DEFAULT},
     )
@@ -263,11 +253,7 @@ async def test_replacing_the_workspace_workflow_resettles_the_inbox(
     assert response.status_code == 200
     tasks = {
         task["id"]: task
-        for task in (
-            await client.get(
-                f"/api/workspaces/{workspace.id}/tasks/", headers=auth_headers(user)
-            )
-        ).json()
+        for task in (await client.get("/api/tasks/", headers=auth_headers(user))).json()
     }
     assert tasks[inbox_task.id]["status"] == "todo"
     # The project holds its own snapshot, so the default's edit skips it.
@@ -285,12 +271,12 @@ async def test_a_new_project_copies_the_workspace_workflow(
     )
 
     created = await client.post(
-        f"/api/workspaces/{workspace.id}/projects/",
+        "/api/projects/",
         headers=auth_headers(user),
         json={"name": "Fresh"},
     )
     detail = await client.get(
-        f"/api/workspaces/{workspace.id}/projects/{created.json()['id']}/",
+        f"/api/projects/{created.json()['id']}/",
         headers=auth_headers(user),
     )
 
@@ -306,7 +292,7 @@ async def test_a_task_starts_in_its_boards_initial_status(
     )
 
     response = await client.post(
-        f"/api/workspaces/{workspace.id}/tasks/",
+        "/api/tasks/",
         headers=auth_headers(user),
         json={"title": "Ship it", "project_id": project.id},
     )
@@ -324,7 +310,7 @@ async def test_a_task_cannot_be_created_in_another_boards_status(
     )
 
     response = await client.post(
-        f"/api/workspaces/{workspace.id}/tasks/",
+        "/api/tasks/",
         headers=auth_headers(user),
         json={"title": "Ship it", "project_id": project.id, "status": "open"},
     )
@@ -343,7 +329,7 @@ async def test_a_card_cannot_be_dragged_to_a_column_the_board_lacks(
     task = await create_task(session, workspace, project=project, status="doing")
 
     response = await client.post(
-        f"/api/workspaces/{workspace.id}/tasks/{task.id}/move/",
+        f"/api/tasks/{task.id}/move/",
         headers=auth_headers(user),
         json={"status": "done", "position": 0},
     )
@@ -362,7 +348,7 @@ async def test_moving_a_task_to_a_board_without_its_status_maps_it(
     task = await create_task(session, workspace, project=rich, status="shipped")
 
     response = await client.patch(
-        f"/api/workspaces/{workspace.id}/tasks/{task.id}/",
+        f"/api/tasks/{task.id}/",
         headers=auth_headers(user),
         json={"project_id": simple.id},
     )

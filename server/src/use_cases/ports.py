@@ -33,6 +33,9 @@ class WorkspaceRepository(Protocol):
 
     async def list_for_user(self, user_id: int) -> list[Workspace]: ...
 
+    # The workspace a request acts on when it names none (see ``auth``).
+    async def get_personal(self, user_id: int) -> Workspace | None: ...
+
     async def is_member(self, user_id: int, workspace_id: int) -> bool: ...
 
     async def set_workflow(

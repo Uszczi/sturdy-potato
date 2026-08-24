@@ -8,7 +8,7 @@ from config import settings
 from infrastructure.llm import stream_chat
 from schemas.chat import ChatRequest
 
-router = APIRouter(prefix="/workspaces/{workspace_id}/chat", tags=["chat"])
+router = APIRouter(prefix="/chat", tags=["chat"])
 
 
 @router.post("/", response_class=EventSourceResponse, operation_id="api_chat_create")

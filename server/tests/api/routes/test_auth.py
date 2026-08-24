@@ -138,7 +138,7 @@ async def test_refresh_rejects_a_non_integer_subject(client: AsyncClient) -> Non
 
 
 async def test_protected_endpoint_requires_a_token(client: AsyncClient) -> None:
-    response = await client.get("/api/workspaces/1/tasks/")
+    response = await client.get("/api/tasks/")
 
     assert response.status_code == 401
 
@@ -147,7 +147,7 @@ async def test_protected_endpoint_rejects_a_malformed_token(
     client: AsyncClient,
 ) -> None:
     response = await client.get(
-        "/api/workspaces/1/tasks/", headers={"Authorization": "Bearer nonsense"}
+        "/api/tasks/", headers={"Authorization": "Bearer nonsense"}
     )
 
     assert response.status_code == 401
@@ -159,7 +159,7 @@ async def test_protected_endpoint_rejects_a_non_integer_subject(
     token = _make_token(user_id="nope", token_type="access")
 
     response = await client.get(
-        "/api/workspaces/1/tasks/", headers={"Authorization": f"Bearer {token}"}
+        "/api/tasks/", headers={"Authorization": f"Bearer {token}"}
     )
 
     assert response.status_code == 401

@@ -84,6 +84,11 @@ class FakeWorkspaceRepository:
         found = [self._workspaces[ws_id] for ws_id in ids]
         return sorted(found, key=lambda w: (not w.is_personal, w.id))
 
+    async def get_personal(self, user_id: int) -> Workspace | None:
+        return next(
+            (w for w in await self.list_for_user(user_id) if w.is_personal), None
+        )
+
     async def is_member(self, user_id: int, workspace_id: int) -> bool:
         return any(
             ws_id == workspace_id and uid == user_id

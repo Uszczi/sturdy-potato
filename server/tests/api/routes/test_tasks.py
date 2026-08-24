@@ -22,9 +22,7 @@ async def test_list_returns_only_the_workspaces_tasks(
     _other, other_workspace = await create_user_with_workspace(session)
     await create_task(session, other_workspace, title="Theirs")
 
-    response = await client.get(
-        f"/api/workspaces/{workspace.id}/tasks/", headers=auth_headers(user)
-    )
+    response = await client.get("/api/tasks/", headers=auth_headers(user))
 
     assert response.status_code == 200
     titles = [task["title"] for task in response.json()]
@@ -39,9 +37,7 @@ async def test_list_orders_by_position_then_newest(
         await create_task(session, workspace, title="Older", position=0)
         await create_task(session, workspace, title="Newer", position=0)
 
-    response = await client.get(
-        f"/api/workspaces/{workspace.id}/tasks/", headers=auth_headers(user)
-    )
+    response = await client.get("/api/tasks/", headers=auth_headers(user))
 
     # Same position falls back to newest-created first.
     assert [task["title"] for task in response.json()] == ["Newer", "Older"]
@@ -55,9 +51,7 @@ async def test_list_sinks_completed_below_open_ignoring_position(
     await create_task(session, workspace, title="Done", status="done", position=0)
     await create_task(session, workspace, title="Open", position=1)
 
-    response = await client.get(
-        f"/api/workspaces/{workspace.id}/tasks/", headers=auth_headers(user)
-    )
+    response = await client.get("/api/tasks/", headers=auth_headers(user))
 
     assert [task["title"] for task in response.json()] == ["Open", "Done"]
 
@@ -79,9 +73,7 @@ async def test_completed_tasks_sort_by_manual_position(
     session.add_all([first, second])
     await session.commit()
 
-    response = await client.get(
-        f"/api/workspaces/{workspace.id}/tasks/", headers=auth_headers(user)
-    )
+    response = await client.get("/api/tasks/", headers=auth_headers(user))
     assert [task["title"] for task in response.json()] == ["First", "Second"]
 
 
@@ -96,23 +88,21 @@ async def test_reopening_a_task_returns_it_to_the_open_group(
     headers = auth_headers(user)
 
     await client.patch(
-        f"/api/workspaces/{workspace.id}/tasks/{done.id}/",
+        f"/api/tasks/{done.id}/",
         headers=headers,
         json={"status": "open"},
     )
 
-    response = await client.get(
-        f"/api/workspaces/{workspace.id}/tasks/", headers=headers
-    )
+    response = await client.get("/api/tasks/", headers=headers)
     # Back among the open tasks, ordered by its position.
     assert [task["title"] for task in response.json()] == ["Open", "Reopened"]
 
 
 async def test_create_task(client: AsyncClient, session: AsyncSession) -> None:
-    user, workspace = await create_user_with_workspace(session)
+    user, _workspace = await create_user_with_workspace(session)
 
     response = await client.post(
-        f"/api/workspaces/{workspace.id}/tasks/",
+        "/api/tasks/",
         headers=auth_headers(user),
         json={"title": "Write docs"},
     )
@@ -126,10 +116,10 @@ async def test_create_task(client: AsyncClient, session: AsyncSession) -> None:
 async def test_create_task_rejects_a_blank_title(
     client: AsyncClient, session: AsyncSession
 ) -> None:
-    user, workspace = await create_user_with_workspace(session)
+    user, _workspace = await create_user_with_workspace(session)
 
     response = await client.post(
-        f"/api/workspaces/{workspace.id}/tasks/",
+        "/api/tasks/",
         headers=auth_headers(user),
         json={"title": "   "},
     )
@@ -144,7 +134,7 @@ async def test_create_task_assigned_to_a_project(
     project = await create_project(session, workspace)
 
     response = await client.post(
-        f"/api/workspaces/{workspace.id}/tasks/",
+        "/api/tasks/",
         headers=auth_headers(user),
         json={"title": "Scoped", "project_id": project.id},
     )
@@ -156,12 +146,12 @@ async def test_create_task_assigned_to_a_project(
 async def test_create_task_rejects_a_project_from_another_workspace(
     client: AsyncClient, session: AsyncSession
 ) -> None:
-    user, workspace = await create_user_with_workspace(session)
+    user, _workspace = await create_user_with_workspace(session)
     _other, other_workspace = await create_user_with_workspace(session)
     project = await create_project(session, other_workspace)
 
     response = await client.post(
-        f"/api/workspaces/{workspace.id}/tasks/",
+        "/api/tasks/",
         headers=auth_headers(user),
         json={"title": "Sneaky", "project_id": project.id},
     )
@@ -173,9 +163,7 @@ async def test_retrieve_task(client: AsyncClient, session: AsyncSession) -> None
     user, workspace = await create_user_with_workspace(session)
     task = await create_task(session, workspace, title="Find me")
 
-    response = await client.get(
-        f"/api/workspaces/{workspace.id}/tasks/{task.id}/", headers=auth_headers(user)
-    )
+    response = await client.get(f"/api/tasks/{task.id}/", headers=auth_headers(user))
 
     assert response.status_code == 200
     assert response.json()["title"] == "Find me"
@@ -184,11 +172,9 @@ async def test_retrieve_task(client: AsyncClient, session: AsyncSession) -> None
 async def test_retrieve_missing_task_returns_404(
     client: AsyncClient, session: AsyncSession
 ) -> None:
-    user, workspace = await create_user_with_workspace(session)
+    user, _workspace = await create_user_with_workspace(session)
 
-    response = await client.get(
-        f"/api/workspaces/{workspace.id}/tasks/999/", headers=auth_headers(user)
-    )
+    response = await client.get("/api/tasks/999/", headers=auth_headers(user))
 
     assert response.status_code == 404
 
@@ -198,7 +184,7 @@ async def test_update_task_fields(client: AsyncClient, session: AsyncSession) ->
     task = await create_task(session, workspace, title="Old", status="open")
 
     response = await client.patch(
-        f"/api/workspaces/{workspace.id}/tasks/{task.id}/",
+        f"/api/tasks/{task.id}/",
         headers=auth_headers(user),
         json={"title": "New", "status": "done"},
     )
@@ -216,7 +202,7 @@ async def test_update_task_rejects_null_title(
     task = await create_task(session, workspace)
 
     response = await client.patch(
-        f"/api/workspaces/{workspace.id}/tasks/{task.id}/",
+        f"/api/tasks/{task.id}/",
         headers=auth_headers(user),
         json={"title": None},
     )
@@ -232,7 +218,7 @@ async def test_update_task_can_clear_the_project(
     task = await create_task(session, workspace, project=project)
 
     response = await client.patch(
-        f"/api/workspaces/{workspace.id}/tasks/{task.id}/",
+        f"/api/tasks/{task.id}/",
         headers=auth_headers(user),
         json={"project_id": None},
     )
@@ -252,7 +238,7 @@ async def test_reassigning_to_a_project_appends_to_its_column(
     headers = auth_headers(user)
 
     response = await client.patch(
-        f"/api/workspaces/{workspace.id}/tasks/{loose.id}/",
+        f"/api/tasks/{loose.id}/",
         headers=headers,
         json={"project_id": project.id},
     )
@@ -261,7 +247,7 @@ async def test_reassigning_to_a_project_appends_to_its_column(
     # It joins the project's open column at the end (slot 1), after the resident.
     assert response.json()["position"] == 1
     board = await client.get(
-        f"/api/workspaces/{workspace.id}/tasks/view/",
+        "/api/tasks/view/",
         headers=headers,
         params={"project": project.id},
     )
@@ -277,7 +263,7 @@ async def test_update_task_rejects_a_project_from_another_workspace(
     project = await create_project(session, other_workspace)
 
     response = await client.patch(
-        f"/api/workspaces/{workspace.id}/tasks/{task.id}/",
+        f"/api/tasks/{task.id}/",
         headers=auth_headers(user),
         json={"project_id": project.id},
     )
@@ -288,10 +274,10 @@ async def test_update_task_rejects_a_project_from_another_workspace(
 async def test_update_missing_task_returns_404(
     client: AsyncClient, session: AsyncSession
 ) -> None:
-    user, workspace = await create_user_with_workspace(session)
+    user, _workspace = await create_user_with_workspace(session)
 
     response = await client.patch(
-        f"/api/workspaces/{workspace.id}/tasks/999/",
+        "/api/tasks/999/",
         headers=auth_headers(user),
         json={"title": "X"},
     )
@@ -303,25 +289,19 @@ async def test_delete_task(client: AsyncClient, session: AsyncSession) -> None:
     user, workspace = await create_user_with_workspace(session)
     task = await create_task(session, workspace)
 
-    response = await client.delete(
-        f"/api/workspaces/{workspace.id}/tasks/{task.id}/", headers=auth_headers(user)
-    )
+    response = await client.delete(f"/api/tasks/{task.id}/", headers=auth_headers(user))
 
     assert response.status_code == 204
-    follow_up = await client.get(
-        f"/api/workspaces/{workspace.id}/tasks/{task.id}/", headers=auth_headers(user)
-    )
+    follow_up = await client.get(f"/api/tasks/{task.id}/", headers=auth_headers(user))
     assert follow_up.status_code == 404
 
 
 async def test_delete_missing_task_returns_404(
     client: AsyncClient, session: AsyncSession
 ) -> None:
-    user, workspace = await create_user_with_workspace(session)
+    user, _workspace = await create_user_with_workspace(session)
 
-    response = await client.delete(
-        f"/api/workspaces/{workspace.id}/tasks/999/", headers=auth_headers(user)
-    )
+    response = await client.delete("/api/tasks/999/", headers=auth_headers(user))
 
     assert response.status_code == 404
 
@@ -334,15 +314,13 @@ async def test_move_task_across_columns_and_persists(
     second = await create_task(session, workspace, title="Second", position=1)
 
     response = await client.post(
-        f"/api/workspaces/{workspace.id}/tasks/{second.id}/move/",
+        f"/api/tasks/{second.id}/move/",
         headers=auth_headers(user),
         json={"status": "done", "position": 0},
     )
 
     assert response.status_code == 204
-    listed = await client.get(
-        f"/api/workspaces/{workspace.id}/tasks/", headers=auth_headers(user)
-    )
+    listed = await client.get("/api/tasks/", headers=auth_headers(user))
     tasks_by_id = {task["id"]: task for task in listed.json()}
     assert tasks_by_id[second.id]["status"] == "done"
     # Open column keeps First; Second now leads the done column.
@@ -352,10 +330,10 @@ async def test_move_task_across_columns_and_persists(
 async def test_move_missing_task_returns_404(
     client: AsyncClient, session: AsyncSession
 ) -> None:
-    user, workspace = await create_user_with_workspace(session)
+    user, _workspace = await create_user_with_workspace(session)
 
     response = await client.post(
-        f"/api/workspaces/{workspace.id}/tasks/999/move/",
+        "/api/tasks/999/move/",
         headers=auth_headers(user),
         json={"status": "open", "position": 0},
     )
@@ -370,7 +348,7 @@ async def test_move_rejects_negative_position(
     task = await create_task(session, workspace)
 
     response = await client.post(
-        f"/api/workspaces/{workspace.id}/tasks/{task.id}/move/",
+        f"/api/tasks/{task.id}/move/",
         headers=auth_headers(user),
         json={"status": "open", "position": -1},
     )
@@ -387,7 +365,7 @@ async def test_view_inbox_returns_unassigned_tasks(
     await create_task(session, workspace, title="Scoped", project=project)
 
     response = await client.get(
-        f"/api/workspaces/{workspace.id}/tasks/view/",
+        "/api/tasks/view/",
         headers=auth_headers(user),
         params={"view": "inbox"},
     )
@@ -403,7 +381,7 @@ async def test_view_by_project(client: AsyncClient, session: AsyncSession) -> No
     await create_task(session, workspace, title="Loose")
 
     response = await client.get(
-        f"/api/workspaces/{workspace.id}/tasks/view/",
+        "/api/tasks/view/",
         headers=auth_headers(user),
         params={"project": project.id},
     )
@@ -415,12 +393,12 @@ async def test_view_by_project(client: AsyncClient, session: AsyncSession) -> No
 async def test_view_rejects_a_project_from_another_workspace(
     client: AsyncClient, session: AsyncSession
 ) -> None:
-    user, workspace = await create_user_with_workspace(session)
+    user, _workspace = await create_user_with_workspace(session)
     _other, other_workspace = await create_user_with_workspace(session)
     project = await create_project(session, other_workspace)
 
     response = await client.get(
-        f"/api/workspaces/{workspace.id}/tasks/view/",
+        "/api/tasks/view/",
         headers=auth_headers(user),
         params={"project": project.id},
     )
@@ -439,12 +417,12 @@ async def test_view_today_and_upcoming(
     )
 
     today_response = await client.get(
-        f"/api/workspaces/{workspace.id}/tasks/view/",
+        "/api/tasks/view/",
         headers=auth_headers(user),
         params={"view": "today"},
     )
     upcoming_response = await client.get(
-        f"/api/workspaces/{workspace.id}/tasks/view/",
+        "/api/tasks/view/",
         headers=auth_headers(user),
         params={"view": "upcoming"},
     )
@@ -464,12 +442,12 @@ async def test_view_today_respects_client_timezone(
     )
 
     default_view = await client.get(
-        f"/api/workspaces/{workspace.id}/tasks/view/",
+        "/api/tasks/view/",
         headers=auth_headers(user),
         params={"view": "today"},
     )
     ahead_view = await client.get(
-        f"/api/workspaces/{workspace.id}/tasks/view/",
+        "/api/tasks/view/",
         headers=auth_headers(user),
         params={"view": "today", "tz": "Pacific/Kiritimati"},
     )
@@ -481,10 +459,10 @@ async def test_view_today_respects_client_timezone(
 async def test_view_rejects_an_unknown_timezone(
     client: AsyncClient, session: AsyncSession
 ) -> None:
-    user, workspace = await create_user_with_workspace(session)
+    user, _workspace = await create_user_with_workspace(session)
 
     response = await client.get(
-        f"/api/workspaces/{workspace.id}/tasks/view/",
+        "/api/tasks/view/",
         headers=auth_headers(user),
         params={"view": "today", "tz": "Mars/Phobos"},
     )
@@ -501,7 +479,7 @@ async def test_view_all_returns_everything(
     await create_task(session, workspace, title="Scoped", project=project)
 
     response = await client.get(
-        f"/api/workspaces/{workspace.id}/tasks/view/",
+        "/api/tasks/view/",
         headers=auth_headers(user),
         params={"view": "all"},
     )
@@ -517,11 +495,9 @@ async def test_open_tasks_with_limit(
     await create_task(session, workspace, title="Open 2", position=1)
     await create_task(session, workspace, title="Done", status="done", position=2)
 
-    unlimited = await client.get(
-        f"/api/workspaces/{workspace.id}/tasks/open/", headers=auth_headers(user)
-    )
+    unlimited = await client.get("/api/tasks/open/", headers=auth_headers(user))
     limited = await client.get(
-        f"/api/workspaces/{workspace.id}/tasks/open/",
+        "/api/tasks/open/",
         headers=auth_headers(user),
         params={"limit": 1},
     )
@@ -535,13 +511,11 @@ async def test_count_tasks(client: AsyncClient, session: AsyncSession) -> None:
     await create_task(session, workspace, status="open")
     await create_task(session, workspace, status="done")
 
-    total = await client.get(
-        f"/api/workspaces/{workspace.id}/tasks/count/", headers=auth_headers(user)
-    )
+    total = await client.get("/api/tasks/count/", headers=auth_headers(user))
     # Boards can disagree on which status keys mean finished, so the filter is
     # done-ness rather than a status name.
     open_only = await client.get(
-        f"/api/workspaces/{workspace.id}/tasks/count/",
+        "/api/tasks/count/",
         headers=auth_headers(user),
         params={"done": "false"},
     )
@@ -558,8 +532,8 @@ async def test_non_member_cannot_retrieve_a_task(
     intruder = await create_user(session)
 
     response = await client.get(
-        f"/api/workspaces/{workspace.id}/tasks/{task.id}/",
-        headers=auth_headers(intruder),
+        f"/api/tasks/{task.id}/",
+        headers=auth_headers(intruder, workspace),
     )
 
     assert response.status_code == 404
@@ -573,8 +547,8 @@ async def test_non_member_cannot_update_a_task(
     intruder = await create_user(session)
 
     response = await client.patch(
-        f"/api/workspaces/{workspace.id}/tasks/{task.id}/",
-        headers=auth_headers(intruder),
+        f"/api/tasks/{task.id}/",
+        headers=auth_headers(intruder, workspace),
         json={"title": "Hijacked"},
     )
 
@@ -589,13 +563,13 @@ async def test_non_member_cannot_delete_a_task(
     intruder = await create_user(session)
 
     response = await client.delete(
-        f"/api/workspaces/{workspace.id}/tasks/{task.id}/",
-        headers=auth_headers(intruder),
+        f"/api/tasks/{task.id}/",
+        headers=auth_headers(intruder, workspace),
     )
 
     assert response.status_code == 404
     # The owner can still see it: the delete never touched their row.
     still_there = await client.get(
-        f"/api/workspaces/{workspace.id}/tasks/{task.id}/", headers=auth_headers(owner)
+        f"/api/tasks/{task.id}/", headers=auth_headers(owner)
     )
     assert still_there.status_code == 200

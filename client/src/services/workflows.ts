@@ -1,5 +1,5 @@
 import { projectsApi, workspacesApi } from "../api";
-import { getWorkspaceId } from "./chat";
+import { getWorkspaceId } from "./workspace";
 import type { StatusSchema, WorkflowInput } from "../../api-client";
 
 /**
@@ -12,17 +12,15 @@ import type { StatusSchema, WorkflowInput } from "../../api-client";
 export async function fetchWorkflow(
   projectId: number | null,
 ): Promise<StatusSchema[]> {
-  const workspaceId = await getWorkspaceId();
   if (projectId === null) {
+    // The workspace's own routes still name it in the path; project routes take
+    // it from the header, so they need nothing here.
     const workspace = await workspacesApi.apiWorkspacesRetrieve({
-      workspaceId,
+      workspaceId: await getWorkspaceId(),
     });
     return workspace.workflow;
   }
-  const project = await projectsApi.apiProjectsRetrieve({
-    workspaceId,
-    id: projectId,
-  });
+  const project = await projectsApi.apiProjectsRetrieve({ id: projectId });
   return project.workflow;
 }
 
@@ -38,16 +36,14 @@ export async function saveWorkflow(
   projectId: number | null,
   workflowInput: WorkflowInput,
 ): Promise<StatusSchema[]> {
-  const workspaceId = await getWorkspaceId();
   if (projectId === null) {
     const workspace = await workspacesApi.apiWorkspacesStatusesUpdate({
-      workspaceId,
+      workspaceId: await getWorkspaceId(),
       workflowInput,
     });
     return workspace.workflow;
   }
   const project = await projectsApi.apiProjectsStatusesUpdate({
-    workspaceId,
     id: projectId,
     workflowInput,
   });

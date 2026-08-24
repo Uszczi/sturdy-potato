@@ -1,15 +1,13 @@
 import { tasksApi } from "../api";
-import { getWorkspaceId } from "./chat";
 import type {
   TaskSchema,
   TaskCreateInput,
   TaskUpdateInput,
 } from "../../api-client";
 
-// Every task route is nested under /api/workspaces/{workspace_id}/, so the
-// generated client requires a workspaceId on each call (it throws before
-// sending the request otherwise). Resolve the caller's workspace — cached after
-// the first lookup — and thread it through.
+// No workspace is passed: task routes take it from the X-Workspace-Id header and
+// default to the caller's personal workspace, which is the only one this client
+// works in so far.
 
 /**
  * Whether a task sits in a terminal status of its own board.
@@ -29,11 +27,10 @@ export function isTaskDone(task: TaskSchema): boolean {
 export async function fetchBoardTasks(
   projectId: number | null,
 ): Promise<TaskSchema[]> {
-  const workspaceId = await getWorkspaceId();
   return tasksApi.apiTasksViewList(
     projectId === null
-      ? { workspaceId, view: "inbox" }
-      : { workspaceId, view: "all", project: projectId },
+      ? { view: "inbox" }
+      : { view: "all", project: projectId },
   );
 }
 
@@ -44,15 +41,13 @@ export async function fetchBoardTasks(
 export async function fetchDateView(
   view: "today" | "upcoming",
 ): Promise<TaskSchema[]> {
-  const workspaceId = await getWorkspaceId();
   const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-  return tasksApi.apiTasksViewList({ workspaceId, view, tz });
+  return tasksApi.apiTasksViewList({ view, tz });
 }
 
 /** A small cross-project "next up" preview of open tasks. */
 export async function fetchOpenTasks(limit?: number): Promise<TaskSchema[]> {
-  const workspaceId = await getWorkspaceId();
-  return tasksApi.apiTasksOpenList({ workspaceId, limit });
+  return tasksApi.apiTasksOpenList({ limit });
 }
 
 /**
@@ -62,26 +57,19 @@ export async function fetchOpenTasks(limit?: number): Promise<TaskSchema[]> {
  * finished, so this filters on done-ness rather than a status name.
  */
 export async function countTasks(done?: boolean): Promise<number> {
-  const workspaceId = await getWorkspaceId();
-  const { count } = await tasksApi.apiTasksCountRetrieve({
-    workspaceId,
-    done,
-  });
+  const { count } = await tasksApi.apiTasksCountRetrieve({ done });
   return count;
 }
 
 export async function createTask(input: TaskCreateInput): Promise<TaskSchema> {
-  const workspaceId = await getWorkspaceId();
-  return tasksApi.apiTasksCreate({ workspaceId, taskCreateInput: input });
+  return tasksApi.apiTasksCreate({ taskCreateInput: input });
 }
 
 export async function updateTask(
   id: number,
   input: TaskUpdateInput,
 ): Promise<TaskSchema> {
-  const workspaceId = await getWorkspaceId();
   return tasksApi.apiTasksPartialUpdate({
-    workspaceId,
     id,
     taskUpdateInput: input,
   });
@@ -97,9 +85,7 @@ export async function moveTask(
   status: string,
   position: number,
 ): Promise<void> {
-  const workspaceId = await getWorkspaceId();
   return tasksApi.apiTasksMoveCreate({
-    workspaceId,
     id,
     taskMoveInput: { status, position },
   });

@@ -25,8 +25,8 @@ import {
 } from "../models/HTTPValidationError";
 
 export interface ApiChatCreateRequest {
-  workspaceId: number;
   chatRequest: ChatRequest;
+  xWorkspaceId?: number | null;
 }
 
 /**
@@ -39,13 +39,6 @@ export class ChatApi extends runtime.BaseAPI {
   async apiChatCreateRequestOpts(
     requestParameters: ApiChatCreateRequest,
   ): Promise<runtime.RequestOpts> {
-    if (requestParameters["workspaceId"] == null) {
-      throw new runtime.RequiredError(
-        "workspaceId",
-        'Required parameter "workspaceId" was null or undefined when calling apiChatCreate().',
-      );
-    }
-
     if (requestParameters["chatRequest"] == null) {
       throw new runtime.RequiredError(
         "chatRequest",
@@ -59,6 +52,12 @@ export class ChatApi extends runtime.BaseAPI {
 
     headerParameters["Content-Type"] = "application/json";
 
+    if (requestParameters["xWorkspaceId"] != null) {
+      headerParameters["X-Workspace-Id"] = String(
+        requestParameters["xWorkspaceId"],
+      );
+    }
+
     if (this.configuration && this.configuration.accessToken) {
       const token = this.configuration.accessToken;
       const tokenString = await token("HTTPBearer", []);
@@ -68,11 +67,7 @@ export class ChatApi extends runtime.BaseAPI {
       }
     }
 
-    let urlPath = `/api/workspaces/{workspace_id}/chat/`;
-    urlPath = urlPath.replace(
-      "{workspace_id}",
-      encodeURIComponent(String(requestParameters["workspaceId"])),
-    );
+    let urlPath = `/api/chat/`;
 
     return {
       path: urlPath,

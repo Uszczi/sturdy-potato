@@ -10,9 +10,7 @@ from auth import CurrentUserId, WorkspaceId
 from schemas.comment import CommentCreateInput, CommentSchema, CommentUpdateInput
 
 # Comments hang off a task, so the whole router is nested under its id.
-router = APIRouter(
-    prefix="/workspaces/{workspace_id}/tasks/{task_id}/comments", tags=["comments"]
-)
+router = APIRouter(prefix="/tasks/{task_id}/comments", tags=["comments"])
 
 
 @router.get("/", operation_id="api_task_comments_list")

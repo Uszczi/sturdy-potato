@@ -4,16 +4,16 @@ All URIs are relative to *http://localhost*
 
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
-| [**apiTaskCommentsCreate**](CommentsApi.md#apitaskcommentscreate) | **POST** /api/workspaces/{workspace_id}/tasks/{task_id}/comments/ | Create Comment |
-| [**apiTaskCommentsDestroy**](CommentsApi.md#apitaskcommentsdestroy) | **DELETE** /api/workspaces/{workspace_id}/tasks/{task_id}/comments/{comment_id}/ | Delete Comment |
-| [**apiTaskCommentsList**](CommentsApi.md#apitaskcommentslist) | **GET** /api/workspaces/{workspace_id}/tasks/{task_id}/comments/ | List Comments |
-| [**apiTaskCommentsPartialUpdate**](CommentsApi.md#apitaskcommentspartialupdate) | **PATCH** /api/workspaces/{workspace_id}/tasks/{task_id}/comments/{comment_id}/ | Update Comment |
+| [**apiTaskCommentsCreate**](CommentsApi.md#apitaskcommentscreate) | **POST** /api/tasks/{task_id}/comments/ | Create Comment |
+| [**apiTaskCommentsDestroy**](CommentsApi.md#apitaskcommentsdestroy) | **DELETE** /api/tasks/{task_id}/comments/{comment_id}/ | Delete Comment |
+| [**apiTaskCommentsList**](CommentsApi.md#apitaskcommentslist) | **GET** /api/tasks/{task_id}/comments/ | List Comments |
+| [**apiTaskCommentsPartialUpdate**](CommentsApi.md#apitaskcommentspartialupdate) | **PATCH** /api/tasks/{task_id}/comments/{comment_id}/ | Update Comment |
 
 
 
 ## apiTaskCommentsCreate
 
-> CommentSchema apiTaskCommentsCreate(taskId, workspaceId, commentCreateInput)
+> CommentSchema apiTaskCommentsCreate(taskId, commentCreateInput, xWorkspaceId)
 
 Create Comment
 
@@ -37,10 +37,10 @@ async function example() {
   const body = {
     // number
     taskId: 56,
-    // number
-    workspaceId: 56,
     // CommentCreateInput
     commentCreateInput: ...,
+    // number (optional)
+    xWorkspaceId: 56,
   } satisfies ApiTaskCommentsCreateRequest;
 
   try {
@@ -61,8 +61,8 @@ example().catch(console.error);
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **taskId** | `number` |  | [Defaults to `undefined`] |
-| **workspaceId** | `number` |  | [Defaults to `undefined`] |
 | **commentCreateInput** | [CommentCreateInput](CommentCreateInput.md) |  | |
+| **xWorkspaceId** | `number` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -89,7 +89,7 @@ example().catch(console.error);
 
 ## apiTaskCommentsDestroy
 
-> apiTaskCommentsDestroy(taskId, commentId, workspaceId)
+> apiTaskCommentsDestroy(taskId, commentId, xWorkspaceId)
 
 Delete Comment
 
@@ -115,8 +115,8 @@ async function example() {
     taskId: 56,
     // number
     commentId: 56,
-    // number
-    workspaceId: 56,
+    // number (optional)
+    xWorkspaceId: 56,
   } satisfies ApiTaskCommentsDestroyRequest;
 
   try {
@@ -138,7 +138,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **taskId** | `number` |  | [Defaults to `undefined`] |
 | **commentId** | `number` |  | [Defaults to `undefined`] |
-| **workspaceId** | `number` |  | [Defaults to `undefined`] |
+| **xWorkspaceId** | `number` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -165,7 +165,7 @@ example().catch(console.error);
 
 ## apiTaskCommentsList
 
-> Array&lt;CommentSchema&gt; apiTaskCommentsList(taskId, workspaceId)
+> Array&lt;CommentSchema&gt; apiTaskCommentsList(taskId, xWorkspaceId)
 
 List Comments
 
@@ -189,8 +189,8 @@ async function example() {
   const body = {
     // number
     taskId: 56,
-    // number
-    workspaceId: 56,
+    // number (optional)
+    xWorkspaceId: 56,
   } satisfies ApiTaskCommentsListRequest;
 
   try {
@@ -211,7 +211,7 @@ example().catch(console.error);
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **taskId** | `number` |  | [Defaults to `undefined`] |
-| **workspaceId** | `number` |  | [Defaults to `undefined`] |
+| **xWorkspaceId** | `number` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -238,7 +238,7 @@ example().catch(console.error);
 
 ## apiTaskCommentsPartialUpdate
 
-> CommentSchema apiTaskCommentsPartialUpdate(taskId, commentId, workspaceId, commentUpdateInput)
+> CommentSchema apiTaskCommentsPartialUpdate(taskId, commentId, commentUpdateInput, xWorkspaceId)
 
 Update Comment
 
@@ -264,10 +264,10 @@ async function example() {
     taskId: 56,
     // number
     commentId: 56,
-    // number
-    workspaceId: 56,
     // CommentUpdateInput
     commentUpdateInput: ...,
+    // number (optional)
+    xWorkspaceId: 56,
   } satisfies ApiTaskCommentsPartialUpdateRequest;
 
   try {
@@ -289,8 +289,8 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **taskId** | `number` |  | [Defaults to `undefined`] |
 | **commentId** | `number` |  | [Defaults to `undefined`] |
-| **workspaceId** | `number` |  | [Defaults to `undefined`] |
 | **commentUpdateInput** | [CommentUpdateInput](CommentUpdateInput.md) |  | |
+| **xWorkspaceId** | `number` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 

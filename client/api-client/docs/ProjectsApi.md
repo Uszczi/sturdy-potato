@@ -4,19 +4,19 @@ All URIs are relative to *http://localhost*
 
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
-| [**apiProjectsCreate**](ProjectsApi.md#apiprojectscreate) | **POST** /api/workspaces/{workspace_id}/projects/ | Create Project |
-| [**apiProjectsDestroy**](ProjectsApi.md#apiprojectsdestroy) | **DELETE** /api/workspaces/{workspace_id}/projects/{id}/ | Delete Project |
-| [**apiProjectsList**](ProjectsApi.md#apiprojectslist) | **GET** /api/workspaces/{workspace_id}/projects/ | List Projects |
-| [**apiProjectsPartialUpdate**](ProjectsApi.md#apiprojectspartialupdate) | **PATCH** /api/workspaces/{workspace_id}/projects/{id}/ | Update Project |
-| [**apiProjectsReorderCreate**](ProjectsApi.md#apiprojectsreordercreate) | **POST** /api/workspaces/{workspace_id}/projects/reorder/ | Reorder Projects |
-| [**apiProjectsRetrieve**](ProjectsApi.md#apiprojectsretrieve) | **GET** /api/workspaces/{workspace_id}/projects/{id}/ | Retrieve Project |
-| [**apiProjectsStatusesUpdate**](ProjectsApi.md#apiprojectsstatusesupdate) | **PUT** /api/workspaces/{workspace_id}/projects/{id}/statuses/ | Set Project Workflow |
+| [**apiProjectsCreate**](ProjectsApi.md#apiprojectscreate) | **POST** /api/projects/ | Create Project |
+| [**apiProjectsDestroy**](ProjectsApi.md#apiprojectsdestroy) | **DELETE** /api/projects/{id}/ | Delete Project |
+| [**apiProjectsList**](ProjectsApi.md#apiprojectslist) | **GET** /api/projects/ | List Projects |
+| [**apiProjectsPartialUpdate**](ProjectsApi.md#apiprojectspartialupdate) | **PATCH** /api/projects/{id}/ | Update Project |
+| [**apiProjectsReorderCreate**](ProjectsApi.md#apiprojectsreordercreate) | **POST** /api/projects/reorder/ | Reorder Projects |
+| [**apiProjectsRetrieve**](ProjectsApi.md#apiprojectsretrieve) | **GET** /api/projects/{id}/ | Retrieve Project |
+| [**apiProjectsStatusesUpdate**](ProjectsApi.md#apiprojectsstatusesupdate) | **PUT** /api/projects/{id}/statuses/ | Set Project Workflow |
 
 
 
 ## apiProjectsCreate
 
-> ProjectSchema apiProjectsCreate(workspaceId, projectCreateInput)
+> ProjectSchema apiProjectsCreate(projectCreateInput, xWorkspaceId)
 
 Create Project
 
@@ -38,10 +38,10 @@ async function example() {
   const api = new ProjectsApi(config);
 
   const body = {
-    // number
-    workspaceId: 56,
     // ProjectCreateInput
     projectCreateInput: ...,
+    // number (optional)
+    xWorkspaceId: 56,
   } satisfies ApiProjectsCreateRequest;
 
   try {
@@ -61,8 +61,8 @@ example().catch(console.error);
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **workspaceId** | `number` |  | [Defaults to `undefined`] |
 | **projectCreateInput** | [ProjectCreateInput](ProjectCreateInput.md) |  | |
+| **xWorkspaceId** | `number` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -89,7 +89,7 @@ example().catch(console.error);
 
 ## apiProjectsDestroy
 
-> apiProjectsDestroy(id, workspaceId)
+> apiProjectsDestroy(id, xWorkspaceId)
 
 Delete Project
 
@@ -113,8 +113,8 @@ async function example() {
   const body = {
     // number
     id: 56,
-    // number
-    workspaceId: 56,
+    // number (optional)
+    xWorkspaceId: 56,
   } satisfies ApiProjectsDestroyRequest;
 
   try {
@@ -135,7 +135,7 @@ example().catch(console.error);
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **id** | `number` |  | [Defaults to `undefined`] |
-| **workspaceId** | `number` |  | [Defaults to `undefined`] |
+| **xWorkspaceId** | `number` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -162,7 +162,7 @@ example().catch(console.error);
 
 ## apiProjectsList
 
-> Array&lt;ProjectSchema&gt; apiProjectsList(workspaceId)
+> Array&lt;ProjectSchema&gt; apiProjectsList(xWorkspaceId)
 
 List Projects
 
@@ -184,8 +184,8 @@ async function example() {
   const api = new ProjectsApi(config);
 
   const body = {
-    // number
-    workspaceId: 56,
+    // number (optional)
+    xWorkspaceId: 56,
   } satisfies ApiProjectsListRequest;
 
   try {
@@ -205,7 +205,7 @@ example().catch(console.error);
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **workspaceId** | `number` |  | [Defaults to `undefined`] |
+| **xWorkspaceId** | `number` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -232,7 +232,7 @@ example().catch(console.error);
 
 ## apiProjectsPartialUpdate
 
-> ProjectSchema apiProjectsPartialUpdate(id, workspaceId, projectUpdateInput)
+> ProjectSchema apiProjectsPartialUpdate(id, projectUpdateInput, xWorkspaceId)
 
 Update Project
 
@@ -256,10 +256,10 @@ async function example() {
   const body = {
     // number
     id: 56,
-    // number
-    workspaceId: 56,
     // ProjectUpdateInput
     projectUpdateInput: ...,
+    // number (optional)
+    xWorkspaceId: 56,
   } satisfies ApiProjectsPartialUpdateRequest;
 
   try {
@@ -280,8 +280,8 @@ example().catch(console.error);
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **id** | `number` |  | [Defaults to `undefined`] |
-| **workspaceId** | `number` |  | [Defaults to `undefined`] |
 | **projectUpdateInput** | [ProjectUpdateInput](ProjectUpdateInput.md) |  | |
+| **xWorkspaceId** | `number` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -308,7 +308,7 @@ example().catch(console.error);
 
 ## apiProjectsReorderCreate
 
-> apiProjectsReorderCreate(workspaceId, reorderInput)
+> apiProjectsReorderCreate(reorderInput, xWorkspaceId)
 
 Reorder Projects
 
@@ -330,10 +330,10 @@ async function example() {
   const api = new ProjectsApi(config);
 
   const body = {
-    // number
-    workspaceId: 56,
     // ReorderInput
     reorderInput: ...,
+    // number (optional)
+    xWorkspaceId: 56,
   } satisfies ApiProjectsReorderCreateRequest;
 
   try {
@@ -353,8 +353,8 @@ example().catch(console.error);
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **workspaceId** | `number` |  | [Defaults to `undefined`] |
 | **reorderInput** | [ReorderInput](ReorderInput.md) |  | |
+| **xWorkspaceId** | `number` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -381,7 +381,7 @@ example().catch(console.error);
 
 ## apiProjectsRetrieve
 
-> ProjectDetailSchema apiProjectsRetrieve(id, workspaceId)
+> ProjectDetailSchema apiProjectsRetrieve(id, xWorkspaceId)
 
 Retrieve Project
 
@@ -405,8 +405,8 @@ async function example() {
   const body = {
     // number
     id: 56,
-    // number
-    workspaceId: 56,
+    // number (optional)
+    xWorkspaceId: 56,
   } satisfies ApiProjectsRetrieveRequest;
 
   try {
@@ -427,7 +427,7 @@ example().catch(console.error);
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **id** | `number` |  | [Defaults to `undefined`] |
-| **workspaceId** | `number` |  | [Defaults to `undefined`] |
+| **xWorkspaceId** | `number` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -454,7 +454,7 @@ example().catch(console.error);
 
 ## apiProjectsStatusesUpdate
 
-> ProjectDetailSchema apiProjectsStatusesUpdate(id, workspaceId, workflowInput)
+> ProjectDetailSchema apiProjectsStatusesUpdate(id, workflowInput, xWorkspaceId)
 
 Set Project Workflow
 
@@ -480,10 +480,10 @@ async function example() {
   const body = {
     // number
     id: 56,
-    // number
-    workspaceId: 56,
     // WorkflowInput
     workflowInput: ...,
+    // number (optional)
+    xWorkspaceId: 56,
   } satisfies ApiProjectsStatusesUpdateRequest;
 
   try {
@@ -504,8 +504,8 @@ example().catch(console.error);
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **id** | `number` |  | [Defaults to `undefined`] |
-| **workspaceId** | `number` |  | [Defaults to `undefined`] |
 | **workflowInput** | [WorkflowInput](WorkflowInput.md) |  | |
+| **xWorkspaceId** | `number` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 

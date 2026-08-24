@@ -1,5 +1,5 @@
 /**
- * Client for the streaming chat endpoint (`POST /api/workspaces/{id}/chat/`).
+ * Client for the streaming chat endpoint (`POST /api/chat/`).
  *
  * The generated OpenAPI client can't consume Server-Sent Events, so this talks
  * to the endpoint with a hand-rolled `fetch` + stream reader. Auth mirrors the
@@ -49,23 +49,6 @@ function authHeader(): Record<string, string> {
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
-// The chat route is nested under /workspaces/{id}, like the task routes. Until
-// the client threads a chosen workspace everywhere, use the caller's first
-// (personal) workspace. Cached so we resolve it once per session.
-let workspaceIdCache: number | null = null;
-
-export async function getWorkspaceId(): Promise<number> {
-  if (workspaceIdCache !== null) return workspaceIdCache;
-  const response = await fetch("/api/workspaces/", { headers: authHeader() });
-  if (!response.ok) {
-    throw new Error(`Could not load workspace (${response.status})`);
-  }
-  const workspaces: Array<{ id: number }> = await response.json();
-  if (workspaces.length === 0) throw new Error("No workspace available.");
-  workspaceIdCache = workspaces[0].id;
-  return workspaceIdCache;
-}
-
 /**
  * Stream one assistant turn. Sends the whole conversation and calls `onEvent`
  * for each server-sent event until the stream closes. Pass an `AbortSignal` to
@@ -77,8 +60,6 @@ export async function streamChat(
   onEvent: (event: ChatEvent) => void,
   signal?: AbortSignal,
 ): Promise<void> {
-  const workspaceId = await getWorkspaceId();
-
   // One controller drives both cancellation paths — the caller's signal and the
   // idle timer — because `fetch` takes a single signal and aborting it is also
   // what unblocks a `reader.read()` that is waiting on a dead stream.
@@ -97,7 +78,7 @@ export async function streamChat(
 
   try {
     resetIdleTimer();
-    const response = await fetch(`/api/workspaces/${workspaceId}/chat/`, {
+    const response = await fetch("/api/chat/", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

@@ -6,7 +6,7 @@ inside :func:`acting_context`, which reproduces the API's two-step authorization
 - **User** from a bearer access token, via the same ``GetCurrentUser`` use case
   and ``token_service`` the REST API uses.
 - **Workspace** from a workspace id, authorized against the caller's membership —
-  mirroring the API's ``{workspace_id}`` path segment.
+  read from the same ``X-Workspace-Id`` header the REST API takes it from.
 
 Over HTTP these come from the ``Authorization: Bearer`` and ``X-Workspace-Id``
 request headers. Over stdio there are no request headers, so they fall back to
