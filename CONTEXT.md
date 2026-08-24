@@ -13,6 +13,11 @@ The top-level container everyone and everything belongs to. A User joins one at
 registration and may be a member of several.
 _Avoid_: Team, organisation, account
 
+**Personal Workspace**:
+The Workspace minted for a User at registration — one per User, and never created
+any other way. A request that names no Workspace acts on the caller's.
+_Avoid_: Default workspace, private workspace, home
+
 **Project**:
 A named grouping of Tasks inside a Workspace. Owns its own Workflow.
 _Avoid_: List, board, category

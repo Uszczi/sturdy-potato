@@ -49,11 +49,11 @@ def _stub_stream(
 async def test_chatting_streams_the_adapters_events_as_sse(
     client: AsyncClient, session: AsyncSession, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    user, workspace = await create_user_with_workspace(session)
+    user, _workspace = await create_user_with_workspace(session)
     _stub_stream(monkeypatch)
 
     response = await client.post(
-        f"/api/workspaces/{workspace.id}/chat/",
+        "/api/chat/",
         json={"messages": [{"role": "user", "content": "what's on my plate?"}]},
         headers=auth_headers(user),
     )
@@ -85,7 +85,7 @@ async def test_the_conversation_and_the_callers_credentials_reach_the_adapter(
     headers = auth_headers(user)
 
     await client.post(
-        f"/api/workspaces/{workspace.id}/chat/",
+        "/api/chat/",
         json={
             "messages": [
                 {"role": "user", "content": "hi"},
@@ -114,9 +114,9 @@ async def test_a_non_member_cannot_chat_in_a_workspace(
     seen = _stub_stream(monkeypatch)
 
     response = await client.post(
-        f"/api/workspaces/{workspace.id}/chat/",
+        "/api/chat/",
         json={"messages": [{"role": "user", "content": "hi"}]},
-        headers=auth_headers(stranger),
+        headers=auth_headers(stranger, workspace),
     )
 
     # Membership never leaks a workspace's existence, and the model never runs.
@@ -127,11 +127,11 @@ async def test_a_non_member_cannot_chat_in_a_workspace(
 async def test_chatting_rejects_an_empty_conversation(
     client: AsyncClient, session: AsyncSession, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    user, workspace = await create_user_with_workspace(session)
+    user, _workspace = await create_user_with_workspace(session)
     _stub_stream(monkeypatch)
 
     response = await client.post(
-        f"/api/workspaces/{workspace.id}/chat/",
+        "/api/chat/",
         json={"messages": []},
         headers=auth_headers(user),
     )

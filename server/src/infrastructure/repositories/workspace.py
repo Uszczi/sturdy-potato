@@ -81,6 +81,27 @@ class WorkspaceRepository:
         )
         return [_to_entity(w) for w in await self._session.scalars(statement)]
 
+    async def get_personal(self, user_id: int) -> WorkspaceEntity | None:
+        """The user's personal workspace — what a request without a chosen one gets.
+
+        Registration mints exactly one per user; ordering by id keeps the answer
+        stable if a fixture (or a migration) ever left more than one behind.
+        """
+        statement = (
+            select(Workspace)
+            .join(
+                WorkspaceMembership,
+                col(WorkspaceMembership.workspace_id) == col(Workspace.id),
+            )
+            .where(
+                col(WorkspaceMembership.user_id) == user_id,
+                col(Workspace.is_personal).is_(True),
+            )
+            .order_by(col(Workspace.id))
+        )
+        workspace = (await self._session.scalars(statement)).first()
+        return _to_entity(workspace) if workspace is not None else None
+
     async def is_member(self, user_id: int, workspace_id: int) -> bool:
         statement = select(col(WorkspaceMembership.id)).where(
             col(WorkspaceMembership.user_id) == user_id,

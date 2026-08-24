@@ -4,10 +4,11 @@ A FastAPI backend for a React todo SPA. The server is organized as:
 
 - `server/src/main.py` builds the FastAPI app, wires the routers, maps domain
   errors to HTTP responses, and serves the built SPA when it is present.
-- `server/src/api/routes/` owns the HTTP layer. Most routes are nested under a
-  workspace (`/api/workspaces/{id}/tasks/`, `.../tasks/{id}/comments/`,
-  `.../projects/`, `.../chat/`); `/api/workspaces/`, `/api/token/`,
-  `/api/register/` and `/api/time/` sit at the top level.
+- `server/src/api/routes/` owns the HTTP layer. Resource routes (`/api/tasks/`,
+  `/api/tasks/{id}/comments/`, `/api/projects/`, `/api/chat/`) act on the
+  workspace named by the `X-Workspace-Id` header, defaulting to the caller's
+  personal one; `/api/workspaces/` (and `/api/workspaces/{id}/`), `/api/token/`,
+  `/api/register/` and `/api/time/` need no workspace.
 - `server/src/api/dependencies.py` builds each use case from the request's unit of
   work, naming the repositories it needs.
 - `server/src/use_cases/` holds the business logic, free of any framework. It owns

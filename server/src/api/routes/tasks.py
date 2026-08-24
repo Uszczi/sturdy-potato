@@ -22,7 +22,7 @@ from schemas.task import (
     TaskUpdateInput,
 )
 
-router = APIRouter(prefix="/workspaces/{workspace_id}/tasks", tags=["tasks"])
+router = APIRouter(prefix="/tasks", tags=["tasks"])
 
 
 @router.get("/", operation_id="api_tasks_list")

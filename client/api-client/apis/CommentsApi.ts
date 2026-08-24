@@ -36,26 +36,26 @@ import {
 
 export interface ApiTaskCommentsCreateRequest {
   taskId: number;
-  workspaceId: number;
   commentCreateInput: CommentCreateInput;
+  xWorkspaceId?: number | null;
 }
 
 export interface ApiTaskCommentsDestroyRequest {
   taskId: number;
   commentId: number;
-  workspaceId: number;
+  xWorkspaceId?: number | null;
 }
 
 export interface ApiTaskCommentsListRequest {
   taskId: number;
-  workspaceId: number;
+  xWorkspaceId?: number | null;
 }
 
 export interface ApiTaskCommentsPartialUpdateRequest {
   taskId: number;
   commentId: number;
-  workspaceId: number;
   commentUpdateInput: CommentUpdateInput;
+  xWorkspaceId?: number | null;
 }
 
 /**
@@ -75,13 +75,6 @@ export class CommentsApi extends runtime.BaseAPI {
       );
     }
 
-    if (requestParameters["workspaceId"] == null) {
-      throw new runtime.RequiredError(
-        "workspaceId",
-        'Required parameter "workspaceId" was null or undefined when calling apiTaskCommentsCreate().',
-      );
-    }
-
     if (requestParameters["commentCreateInput"] == null) {
       throw new runtime.RequiredError(
         "commentCreateInput",
@@ -95,6 +88,12 @@ export class CommentsApi extends runtime.BaseAPI {
 
     headerParameters["Content-Type"] = "application/json";
 
+    if (requestParameters["xWorkspaceId"] != null) {
+      headerParameters["X-Workspace-Id"] = String(
+        requestParameters["xWorkspaceId"],
+      );
+    }
+
     if (this.configuration && this.configuration.accessToken) {
       const token = this.configuration.accessToken;
       const tokenString = await token("HTTPBearer", []);
@@ -104,14 +103,10 @@ export class CommentsApi extends runtime.BaseAPI {
       }
     }
 
-    let urlPath = `/api/workspaces/{workspace_id}/tasks/{task_id}/comments/`;
+    let urlPath = `/api/tasks/{task_id}/comments/`;
     urlPath = urlPath.replace(
       "{task_id}",
       encodeURIComponent(String(requestParameters["taskId"])),
-    );
-    urlPath = urlPath.replace(
-      "{workspace_id}",
-      encodeURIComponent(String(requestParameters["workspaceId"])),
     );
 
     return {
@@ -173,16 +168,15 @@ export class CommentsApi extends runtime.BaseAPI {
       );
     }
 
-    if (requestParameters["workspaceId"] == null) {
-      throw new runtime.RequiredError(
-        "workspaceId",
-        'Required parameter "workspaceId" was null or undefined when calling apiTaskCommentsDestroy().',
-      );
-    }
-
     const queryParameters: any = {};
 
     const headerParameters: runtime.HTTPHeaders = {};
+
+    if (requestParameters["xWorkspaceId"] != null) {
+      headerParameters["X-Workspace-Id"] = String(
+        requestParameters["xWorkspaceId"],
+      );
+    }
 
     if (this.configuration && this.configuration.accessToken) {
       const token = this.configuration.accessToken;
@@ -193,7 +187,7 @@ export class CommentsApi extends runtime.BaseAPI {
       }
     }
 
-    let urlPath = `/api/workspaces/{workspace_id}/tasks/{task_id}/comments/{comment_id}/`;
+    let urlPath = `/api/tasks/{task_id}/comments/{comment_id}/`;
     urlPath = urlPath.replace(
       "{task_id}",
       encodeURIComponent(String(requestParameters["taskId"])),
@@ -201,10 +195,6 @@ export class CommentsApi extends runtime.BaseAPI {
     urlPath = urlPath.replace(
       "{comment_id}",
       encodeURIComponent(String(requestParameters["commentId"])),
-    );
-    urlPath = urlPath.replace(
-      "{workspace_id}",
-      encodeURIComponent(String(requestParameters["workspaceId"])),
     );
 
     return {
@@ -252,16 +242,15 @@ export class CommentsApi extends runtime.BaseAPI {
       );
     }
 
-    if (requestParameters["workspaceId"] == null) {
-      throw new runtime.RequiredError(
-        "workspaceId",
-        'Required parameter "workspaceId" was null or undefined when calling apiTaskCommentsList().',
-      );
-    }
-
     const queryParameters: any = {};
 
     const headerParameters: runtime.HTTPHeaders = {};
+
+    if (requestParameters["xWorkspaceId"] != null) {
+      headerParameters["X-Workspace-Id"] = String(
+        requestParameters["xWorkspaceId"],
+      );
+    }
 
     if (this.configuration && this.configuration.accessToken) {
       const token = this.configuration.accessToken;
@@ -272,14 +261,10 @@ export class CommentsApi extends runtime.BaseAPI {
       }
     }
 
-    let urlPath = `/api/workspaces/{workspace_id}/tasks/{task_id}/comments/`;
+    let urlPath = `/api/tasks/{task_id}/comments/`;
     urlPath = urlPath.replace(
       "{task_id}",
       encodeURIComponent(String(requestParameters["taskId"])),
-    );
-    urlPath = urlPath.replace(
-      "{workspace_id}",
-      encodeURIComponent(String(requestParameters["workspaceId"])),
     );
 
     return {
@@ -340,13 +325,6 @@ export class CommentsApi extends runtime.BaseAPI {
       );
     }
 
-    if (requestParameters["workspaceId"] == null) {
-      throw new runtime.RequiredError(
-        "workspaceId",
-        'Required parameter "workspaceId" was null or undefined when calling apiTaskCommentsPartialUpdate().',
-      );
-    }
-
     if (requestParameters["commentUpdateInput"] == null) {
       throw new runtime.RequiredError(
         "commentUpdateInput",
@@ -360,6 +338,12 @@ export class CommentsApi extends runtime.BaseAPI {
 
     headerParameters["Content-Type"] = "application/json";
 
+    if (requestParameters["xWorkspaceId"] != null) {
+      headerParameters["X-Workspace-Id"] = String(
+        requestParameters["xWorkspaceId"],
+      );
+    }
+
     if (this.configuration && this.configuration.accessToken) {
       const token = this.configuration.accessToken;
       const tokenString = await token("HTTPBearer", []);
@@ -369,7 +353,7 @@ export class CommentsApi extends runtime.BaseAPI {
       }
     }
 
-    let urlPath = `/api/workspaces/{workspace_id}/tasks/{task_id}/comments/{comment_id}/`;
+    let urlPath = `/api/tasks/{task_id}/comments/{comment_id}/`;
     urlPath = urlPath.replace(
       "{task_id}",
       encodeURIComponent(String(requestParameters["taskId"])),
@@ -377,10 +361,6 @@ export class CommentsApi extends runtime.BaseAPI {
     urlPath = urlPath.replace(
       "{comment_id}",
       encodeURIComponent(String(requestParameters["commentId"])),
-    );
-    urlPath = urlPath.replace(
-      "{workspace_id}",
-      encodeURIComponent(String(requestParameters["workspaceId"])),
     );
 
     return {

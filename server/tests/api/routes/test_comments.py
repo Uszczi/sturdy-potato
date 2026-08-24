@@ -21,7 +21,7 @@ async def test_list_returns_a_tasks_comments_oldest_first(
         await create_comment(session, workspace, user, task, body="Second")
 
     response = await client.get(
-        f"/api/workspaces/{workspace.id}/tasks/{task.id}/comments/",
+        f"/api/tasks/{task.id}/comments/",
         headers=auth_headers(user),
     )
 
@@ -39,7 +39,7 @@ async def test_list_only_returns_the_given_tasks_comments(
     await create_comment(session, workspace, user, other_task, body="Elsewhere")
 
     response = await client.get(
-        f"/api/workspaces/{workspace.id}/tasks/{task.id}/comments/",
+        f"/api/tasks/{task.id}/comments/",
         headers=auth_headers(user),
     )
 
@@ -49,10 +49,10 @@ async def test_list_only_returns_the_given_tasks_comments(
 async def test_list_for_a_missing_task_returns_404(
     client: AsyncClient, session: AsyncSession
 ) -> None:
-    user, workspace = await create_user_with_workspace(session)
+    user, _workspace = await create_user_with_workspace(session)
 
     response = await client.get(
-        f"/api/workspaces/{workspace.id}/tasks/999/comments/",
+        "/api/tasks/999/comments/",
         headers=auth_headers(user),
     )
 
@@ -64,7 +64,7 @@ async def test_create_comment(client: AsyncClient, session: AsyncSession) -> Non
     task = await create_task(session, workspace)
 
     response = await client.post(
-        f"/api/workspaces/{workspace.id}/tasks/{task.id}/comments/",
+        f"/api/tasks/{task.id}/comments/",
         headers=auth_headers(user),
         json={"body": "  Looks good  "},
     )
@@ -82,7 +82,7 @@ async def test_create_rejects_a_blank_body(
     task = await create_task(session, workspace)
 
     response = await client.post(
-        f"/api/workspaces/{workspace.id}/tasks/{task.id}/comments/",
+        f"/api/tasks/{task.id}/comments/",
         headers=auth_headers(user),
         json={"body": "   "},
     )
@@ -93,10 +93,10 @@ async def test_create_rejects_a_blank_body(
 async def test_create_on_a_missing_task_returns_404(
     client: AsyncClient, session: AsyncSession
 ) -> None:
-    user, workspace = await create_user_with_workspace(session)
+    user, _workspace = await create_user_with_workspace(session)
 
     response = await client.post(
-        f"/api/workspaces/{workspace.id}/tasks/999/comments/",
+        "/api/tasks/999/comments/",
         headers=auth_headers(user),
         json={"body": "Ghost"},
     )
@@ -110,7 +110,7 @@ async def test_update_comment(client: AsyncClient, session: AsyncSession) -> Non
     comment = await create_comment(session, workspace, user, task, body="Old")
 
     response = await client.patch(
-        f"/api/workspaces/{workspace.id}/tasks/{task.id}/comments/{comment.id}/",
+        f"/api/tasks/{task.id}/comments/{comment.id}/",
         headers=auth_headers(user),
         json={"body": "New"},
     )
@@ -127,7 +127,7 @@ async def test_update_rejects_a_blank_body(
     comment = await create_comment(session, workspace, user, task)
 
     response = await client.patch(
-        f"/api/workspaces/{workspace.id}/tasks/{task.id}/comments/{comment.id}/",
+        f"/api/tasks/{task.id}/comments/{comment.id}/",
         headers=auth_headers(user),
         json={"body": ""},
     )
@@ -142,7 +142,7 @@ async def test_update_a_missing_comment_returns_404(
     task = await create_task(session, workspace)
 
     response = await client.patch(
-        f"/api/workspaces/{workspace.id}/tasks/{task.id}/comments/999/",
+        f"/api/tasks/{task.id}/comments/999/",
         headers=auth_headers(user),
         json={"body": "X"},
     )
@@ -160,7 +160,7 @@ async def test_update_a_comment_under_the_wrong_task_returns_404(
 
     # Right comment id, wrong task in the path: the pair does not match.
     response = await client.patch(
-        f"/api/workspaces/{workspace.id}/tasks/{other_task.id}/comments/{comment.id}/",
+        f"/api/tasks/{other_task.id}/comments/{comment.id}/",
         headers=auth_headers(user),
         json={"body": "Sneaky"},
     )
@@ -175,14 +175,12 @@ async def test_delete_comment(client: AsyncClient, session: AsyncSession) -> Non
     headers = auth_headers(user)
 
     response = await client.delete(
-        f"/api/workspaces/{workspace.id}/tasks/{task.id}/comments/{comment.id}/",
+        f"/api/tasks/{task.id}/comments/{comment.id}/",
         headers=headers,
     )
 
     assert response.status_code == 204
-    listed = await client.get(
-        f"/api/workspaces/{workspace.id}/tasks/{task.id}/comments/", headers=headers
-    )
+    listed = await client.get(f"/api/tasks/{task.id}/comments/", headers=headers)
     assert listed.json() == []
 
 
@@ -193,7 +191,7 @@ async def test_delete_a_missing_comment_returns_404(
     task = await create_task(session, workspace)
 
     response = await client.delete(
-        f"/api/workspaces/{workspace.id}/tasks/{task.id}/comments/999/",
+        f"/api/tasks/{task.id}/comments/999/",
         headers=auth_headers(user),
     )
 
@@ -208,15 +206,11 @@ async def test_deleting_a_task_removes_its_comments(
     await create_comment(session, workspace, user, task)
     headers = auth_headers(user)
 
-    deleted = await client.delete(
-        f"/api/workspaces/{workspace.id}/tasks/{task.id}/", headers=headers
-    )
+    deleted = await client.delete(f"/api/tasks/{task.id}/", headers=headers)
     assert deleted.status_code == 204
 
     # The task is gone, so listing its comments 404s (cascade left nothing).
-    orphaned = await client.get(
-        f"/api/workspaces/{workspace.id}/tasks/{task.id}/comments/", headers=headers
-    )
+    orphaned = await client.get(f"/api/tasks/{task.id}/comments/", headers=headers)
     assert orphaned.status_code == 404
 
 
@@ -229,8 +223,8 @@ async def test_non_member_cannot_list_a_tasks_comments(
     intruder = await create_user(session)
 
     response = await client.get(
-        f"/api/workspaces/{workspace.id}/tasks/{task.id}/comments/",
-        headers=auth_headers(intruder),
+        f"/api/tasks/{task.id}/comments/",
+        headers=auth_headers(intruder, workspace),
     )
 
     assert response.status_code == 404
@@ -245,8 +239,8 @@ async def test_non_member_cannot_update_a_comment(
     intruder = await create_user(session)
 
     response = await client.patch(
-        f"/api/workspaces/{workspace.id}/tasks/{task.id}/comments/{comment.id}/",
-        headers=auth_headers(intruder),
+        f"/api/tasks/{task.id}/comments/{comment.id}/",
+        headers=auth_headers(intruder, workspace),
         json={"body": "Hijacked"},
     )
 

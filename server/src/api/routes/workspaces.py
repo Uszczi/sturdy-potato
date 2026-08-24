@@ -6,7 +6,7 @@ from api.dependencies import (
     ListWorkspacesDep,
     SetWorkspaceWorkflowDep,
 )
-from auth import CurrentUserId, WorkspaceId
+from auth import CurrentUserId, PathWorkspaceId
 from schemas.workflow import WorkflowInput
 from schemas.workspace import (
     WorkspaceCreateInput,
@@ -37,7 +37,7 @@ async def create_workspace(
 
 @router.get("/{workspace_id}/", operation_id="api_workspaces_retrieve")
 async def retrieve_workspace(
-    workspace_id: WorkspaceId, use_case: GetWorkspaceDep
+    workspace_id: PathWorkspaceId, use_case: GetWorkspaceDep
 ) -> WorkspaceDetailSchema:
     """One workspace, including the workflow the inbox board renders."""
     workspace = await use_case.execute(workspace_id)
@@ -46,7 +46,9 @@ async def retrieve_workspace(
 
 @router.put("/{workspace_id}/statuses/", operation_id="api_workspaces_statuses_update")
 async def set_workspace_workflow(
-    body: WorkflowInput, workspace_id: WorkspaceId, use_case: SetWorkspaceWorkflowDep
+    body: WorkflowInput,
+    workspace_id: PathWorkspaceId,
+    use_case: SetWorkspaceWorkflowDep,
 ) -> WorkspaceDetailSchema:
     """Replace the inbox board's workflow, and the template new projects copy.
 

@@ -3,6 +3,7 @@ from itertools import count
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from auth import WORKSPACE_HEADER
 from infrastructure.models import (
     Comment,
     Project,
@@ -166,6 +167,17 @@ async def create_comment(
     return comment
 
 
-def auth_headers(user: User) -> dict[str, str]:
+def auth_headers(user: User, workspace: Workspace | None = None) -> dict[str, str]:
+    """Bearer credentials for ``user``, optionally naming a workspace.
+
+    Resource routes read the workspace from ``X-Workspace-Id`` and fall back to
+    the caller's personal workspace, so most tests can leave it out; pass one
+    when the target is not the caller's own (a shared workspace, or somebody
+    else's, which must 404).
+    """
     assert user.id is not None
-    return {"Authorization": f"Bearer {token_service.access_token(user.id)}"}
+    headers = {"Authorization": f"Bearer {token_service.access_token(user.id)}"}
+    if workspace is not None:
+        assert workspace.id is not None
+        headers[WORKSPACE_HEADER] = str(workspace.id)
+    return headers

@@ -4,21 +4,21 @@ All URIs are relative to *http://localhost*
 
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
-| [**apiTasksCountRetrieve**](TasksApi.md#apitaskscountretrieve) | **GET** /api/workspaces/{workspace_id}/tasks/count/ | Count Tasks |
-| [**apiTasksCreate**](TasksApi.md#apitaskscreate) | **POST** /api/workspaces/{workspace_id}/tasks/ | Create Task |
-| [**apiTasksDestroy**](TasksApi.md#apitasksdestroy) | **DELETE** /api/workspaces/{workspace_id}/tasks/{id}/ | Delete Task |
-| [**apiTasksList**](TasksApi.md#apitaskslist) | **GET** /api/workspaces/{workspace_id}/tasks/ | List Tasks |
-| [**apiTasksMoveCreate**](TasksApi.md#apitasksmovecreate) | **POST** /api/workspaces/{workspace_id}/tasks/{id}/move/ | Move Task |
-| [**apiTasksOpenList**](TasksApi.md#apitasksopenlist) | **GET** /api/workspaces/{workspace_id}/tasks/open/ | Open Tasks |
-| [**apiTasksPartialUpdate**](TasksApi.md#apitaskspartialupdate) | **PATCH** /api/workspaces/{workspace_id}/tasks/{id}/ | Update Task |
-| [**apiTasksRetrieve**](TasksApi.md#apitasksretrieve) | **GET** /api/workspaces/{workspace_id}/tasks/{id}/ | Retrieve Task |
-| [**apiTasksViewList**](TasksApi.md#apitasksviewlist) | **GET** /api/workspaces/{workspace_id}/tasks/view/ | View Tasks |
+| [**apiTasksCountRetrieve**](TasksApi.md#apitaskscountretrieve) | **GET** /api/tasks/count/ | Count Tasks |
+| [**apiTasksCreate**](TasksApi.md#apitaskscreate) | **POST** /api/tasks/ | Create Task |
+| [**apiTasksDestroy**](TasksApi.md#apitasksdestroy) | **DELETE** /api/tasks/{id}/ | Delete Task |
+| [**apiTasksList**](TasksApi.md#apitaskslist) | **GET** /api/tasks/ | List Tasks |
+| [**apiTasksMoveCreate**](TasksApi.md#apitasksmovecreate) | **POST** /api/tasks/{id}/move/ | Move Task |
+| [**apiTasksOpenList**](TasksApi.md#apitasksopenlist) | **GET** /api/tasks/open/ | Open Tasks |
+| [**apiTasksPartialUpdate**](TasksApi.md#apitaskspartialupdate) | **PATCH** /api/tasks/{id}/ | Update Task |
+| [**apiTasksRetrieve**](TasksApi.md#apitasksretrieve) | **GET** /api/tasks/{id}/ | Retrieve Task |
+| [**apiTasksViewList**](TasksApi.md#apitasksviewlist) | **GET** /api/tasks/view/ | View Tasks |
 
 
 
 ## apiTasksCountRetrieve
 
-> TaskCountSchema apiTasksCountRetrieve(workspaceId, done)
+> TaskCountSchema apiTasksCountRetrieve(done, xWorkspaceId)
 
 Count Tasks
 
@@ -40,10 +40,10 @@ async function example() {
   const api = new TasksApi(config);
 
   const body = {
-    // number
-    workspaceId: 56,
     // boolean (optional)
     done: true,
+    // number (optional)
+    xWorkspaceId: 56,
   } satisfies ApiTasksCountRetrieveRequest;
 
   try {
@@ -63,8 +63,8 @@ example().catch(console.error);
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **workspaceId** | `number` |  | [Defaults to `undefined`] |
 | **done** | `boolean` |  | [Optional] [Defaults to `undefined`] |
+| **xWorkspaceId** | `number` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -91,7 +91,7 @@ example().catch(console.error);
 
 ## apiTasksCreate
 
-> TaskSchema apiTasksCreate(workspaceId, taskCreateInput)
+> TaskSchema apiTasksCreate(taskCreateInput, xWorkspaceId)
 
 Create Task
 
@@ -113,10 +113,10 @@ async function example() {
   const api = new TasksApi(config);
 
   const body = {
-    // number
-    workspaceId: 56,
     // TaskCreateInput
     taskCreateInput: ...,
+    // number (optional)
+    xWorkspaceId: 56,
   } satisfies ApiTasksCreateRequest;
 
   try {
@@ -136,8 +136,8 @@ example().catch(console.error);
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **workspaceId** | `number` |  | [Defaults to `undefined`] |
 | **taskCreateInput** | [TaskCreateInput](TaskCreateInput.md) |  | |
+| **xWorkspaceId** | `number` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -164,7 +164,7 @@ example().catch(console.error);
 
 ## apiTasksDestroy
 
-> apiTasksDestroy(id, workspaceId)
+> apiTasksDestroy(id, xWorkspaceId)
 
 Delete Task
 
@@ -188,8 +188,8 @@ async function example() {
   const body = {
     // number
     id: 56,
-    // number
-    workspaceId: 56,
+    // number (optional)
+    xWorkspaceId: 56,
   } satisfies ApiTasksDestroyRequest;
 
   try {
@@ -210,7 +210,7 @@ example().catch(console.error);
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **id** | `number` |  | [Defaults to `undefined`] |
-| **workspaceId** | `number` |  | [Defaults to `undefined`] |
+| **xWorkspaceId** | `number` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -237,7 +237,7 @@ example().catch(console.error);
 
 ## apiTasksList
 
-> Array&lt;TaskSchema&gt; apiTasksList(workspaceId)
+> Array&lt;TaskSchema&gt; apiTasksList(xWorkspaceId)
 
 List Tasks
 
@@ -259,8 +259,8 @@ async function example() {
   const api = new TasksApi(config);
 
   const body = {
-    // number
-    workspaceId: 56,
+    // number (optional)
+    xWorkspaceId: 56,
   } satisfies ApiTasksListRequest;
 
   try {
@@ -280,7 +280,7 @@ example().catch(console.error);
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **workspaceId** | `number` |  | [Defaults to `undefined`] |
+| **xWorkspaceId** | `number` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -307,7 +307,7 @@ example().catch(console.error);
 
 ## apiTasksMoveCreate
 
-> apiTasksMoveCreate(id, workspaceId, taskMoveInput)
+> apiTasksMoveCreate(id, taskMoveInput, xWorkspaceId)
 
 Move Task
 
@@ -331,10 +331,10 @@ async function example() {
   const body = {
     // number
     id: 56,
-    // number
-    workspaceId: 56,
     // TaskMoveInput
     taskMoveInput: ...,
+    // number (optional)
+    xWorkspaceId: 56,
   } satisfies ApiTasksMoveCreateRequest;
 
   try {
@@ -355,8 +355,8 @@ example().catch(console.error);
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **id** | `number` |  | [Defaults to `undefined`] |
-| **workspaceId** | `number` |  | [Defaults to `undefined`] |
 | **taskMoveInput** | [TaskMoveInput](TaskMoveInput.md) |  | |
+| **xWorkspaceId** | `number` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -383,7 +383,7 @@ example().catch(console.error);
 
 ## apiTasksOpenList
 
-> Array&lt;TaskSchema&gt; apiTasksOpenList(workspaceId, limit)
+> Array&lt;TaskSchema&gt; apiTasksOpenList(limit, xWorkspaceId)
 
 Open Tasks
 
@@ -405,10 +405,10 @@ async function example() {
   const api = new TasksApi(config);
 
   const body = {
-    // number
-    workspaceId: 56,
     // number (optional)
     limit: 56,
+    // number (optional)
+    xWorkspaceId: 56,
   } satisfies ApiTasksOpenListRequest;
 
   try {
@@ -428,8 +428,8 @@ example().catch(console.error);
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **workspaceId** | `number` |  | [Defaults to `undefined`] |
 | **limit** | `number` |  | [Optional] [Defaults to `undefined`] |
+| **xWorkspaceId** | `number` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -456,7 +456,7 @@ example().catch(console.error);
 
 ## apiTasksPartialUpdate
 
-> TaskSchema apiTasksPartialUpdate(id, workspaceId, taskUpdateInput)
+> TaskSchema apiTasksPartialUpdate(id, taskUpdateInput, xWorkspaceId)
 
 Update Task
 
@@ -480,10 +480,10 @@ async function example() {
   const body = {
     // number
     id: 56,
-    // number
-    workspaceId: 56,
     // TaskUpdateInput
     taskUpdateInput: ...,
+    // number (optional)
+    xWorkspaceId: 56,
   } satisfies ApiTasksPartialUpdateRequest;
 
   try {
@@ -504,8 +504,8 @@ example().catch(console.error);
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **id** | `number` |  | [Defaults to `undefined`] |
-| **workspaceId** | `number` |  | [Defaults to `undefined`] |
 | **taskUpdateInput** | [TaskUpdateInput](TaskUpdateInput.md) |  | |
+| **xWorkspaceId** | `number` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -532,7 +532,7 @@ example().catch(console.error);
 
 ## apiTasksRetrieve
 
-> TaskSchema apiTasksRetrieve(id, workspaceId)
+> TaskSchema apiTasksRetrieve(id, xWorkspaceId)
 
 Retrieve Task
 
@@ -556,8 +556,8 @@ async function example() {
   const body = {
     // number
     id: 56,
-    // number
-    workspaceId: 56,
+    // number (optional)
+    xWorkspaceId: 56,
   } satisfies ApiTasksRetrieveRequest;
 
   try {
@@ -578,7 +578,7 @@ example().catch(console.error);
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **id** | `number` |  | [Defaults to `undefined`] |
-| **workspaceId** | `number` |  | [Defaults to `undefined`] |
+| **xWorkspaceId** | `number` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -605,7 +605,7 @@ example().catch(console.error);
 
 ## apiTasksViewList
 
-> Array&lt;TaskSchema&gt; apiTasksViewList(workspaceId, view, project, tz)
+> Array&lt;TaskSchema&gt; apiTasksViewList(view, project, tz, xWorkspaceId)
 
 View Tasks
 
@@ -627,14 +627,14 @@ async function example() {
   const api = new TasksApi(config);
 
   const body = {
-    // number
-    workspaceId: 56,
     // 'inbox' | 'today' | 'upcoming' | 'all' (optional)
     view: view_example,
     // number (optional)
     project: 56,
     // string (optional)
     tz: tz_example,
+    // number (optional)
+    xWorkspaceId: 56,
   } satisfies ApiTasksViewListRequest;
 
   try {
@@ -654,10 +654,10 @@ example().catch(console.error);
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **workspaceId** | `number` |  | [Defaults to `undefined`] |
 | **view** | `inbox`, `today`, `upcoming`, `all` |  | [Optional] [Defaults to `&#39;inbox&#39;`] [Enum: inbox, today, upcoming, all] |
 | **project** | `number` |  | [Optional] [Defaults to `undefined`] |
 | **tz** | `string` |  | [Optional] [Defaults to `&#39;UTC&#39;`] |
+| **xWorkspaceId** | `number` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 

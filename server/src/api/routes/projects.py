@@ -19,7 +19,7 @@ from schemas.project import (
 )
 from schemas.workflow import WorkflowInput
 
-router = APIRouter(prefix="/workspaces/{workspace_id}/projects", tags=["projects"])
+router = APIRouter(prefix="/projects", tags=["projects"])
 
 
 @router.get("/", operation_id="api_projects_list")

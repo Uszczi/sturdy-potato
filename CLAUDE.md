@@ -77,8 +77,11 @@ the `mcp` workspace member can import the use-case layer in-process.
   Never write a status without a `StatusAssignment` (key + done-ness) — that pairing
   is what keeps the two in step. Four write paths maintain it: task create, status
   change, project change, and a workflow edit that changes terminal-ness.
-- Task routes are nested under `/api/workspaces/{workspace_id}/...`; the
-  `WorkspaceId` dependency in `auth.py` does the membership check.
+- Resource routes (tasks, projects, comments, chat) carry no workspace in the
+  path: the `WorkspaceId` dependency in `auth.py` reads the `X-Workspace-Id`
+  header, falls back to the caller's personal workspace, and checks membership
+  (ADR-0002). The workspace's own routes still name it in the path and use
+  `PathWorkspaceId`.
 
 ## MCP server (`mcp/`)
 
@@ -89,7 +92,7 @@ transaction, caller and workspace from request headers (or `MCP_ACCESS_TOKEN` /
 `MCP_WORKSPACE_ID` under stdio). It needs the same Postgres and matching
 `SECRET_KEY`/`DATABASE_URL` as the API.
 
-The `/api/workspaces/{id}/chat/` route streams SSE: it forwards the caller's bearer
+The `/api/chat/` route streams SSE: it forwards the caller's bearer
 token to the MCP server, so the model's tool calls are scoped to exactly what that
 user could do. `just chat` is a terminal client for the same loop.
 

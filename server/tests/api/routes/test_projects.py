@@ -21,9 +21,7 @@ async def test_list_returns_only_the_workspaces_projects_with_task_count(
     _other, other_workspace = await create_user_with_workspace(session)
     await create_project(session, other_workspace, name="Hidden")
 
-    response = await client.get(
-        f"/api/workspaces/{workspace.id}/projects/", headers=auth_headers(user)
-    )
+    response = await client.get("/api/projects/", headers=auth_headers(user))
 
     assert response.status_code == 200
     body = response.json()
@@ -33,16 +31,16 @@ async def test_list_returns_only_the_workspaces_projects_with_task_count(
 
 
 async def test_list_requires_authentication(client: AsyncClient) -> None:
-    response = await client.get("/api/workspaces/1/projects/")
+    response = await client.get("/api/projects/")
 
     assert response.status_code == 401
 
 
 async def test_create_project(client: AsyncClient, session: AsyncSession) -> None:
-    user, workspace = await create_user_with_workspace(session)
+    user, _workspace = await create_user_with_workspace(session)
 
     response = await client.post(
-        f"/api/workspaces/{workspace.id}/projects/",
+        "/api/projects/",
         headers=auth_headers(user),
         json={"name": "Roadmap"},
     )
@@ -59,7 +57,7 @@ async def test_create_project_rejects_duplicate_name(
     await create_project(session, workspace, name="Roadmap")
 
     response = await client.post(
-        f"/api/workspaces/{workspace.id}/projects/",
+        "/api/projects/",
         headers=auth_headers(user),
         json={"name": "Roadmap"},
     )
@@ -73,7 +71,7 @@ async def test_retrieve_project(client: AsyncClient, session: AsyncSession) -> N
     await create_task(session, workspace, project=project)
 
     response = await client.get(
-        f"/api/workspaces/{workspace.id}/projects/{project.id}/",
+        f"/api/projects/{project.id}/",
         headers=auth_headers(user),
     )
 
@@ -85,11 +83,9 @@ async def test_retrieve_project(client: AsyncClient, session: AsyncSession) -> N
 async def test_retrieve_missing_project_returns_404(
     client: AsyncClient, session: AsyncSession
 ) -> None:
-    user, workspace = await create_user_with_workspace(session)
+    user, _workspace = await create_user_with_workspace(session)
 
-    response = await client.get(
-        f"/api/workspaces/{workspace.id}/projects/999/", headers=auth_headers(user)
-    )
+    response = await client.get("/api/projects/999/", headers=auth_headers(user))
 
     assert response.status_code == 404
 
@@ -97,10 +93,10 @@ async def test_retrieve_missing_project_returns_404(
 async def test_create_project_with_color(
     client: AsyncClient, session: AsyncSession
 ) -> None:
-    user, workspace = await create_user_with_workspace(session)
+    user, _workspace = await create_user_with_workspace(session)
 
     response = await client.post(
-        f"/api/workspaces/{workspace.id}/projects/",
+        "/api/projects/",
         headers=auth_headers(user),
         json={"name": "Roadmap", "color": "#6366F1"},
     )
@@ -114,10 +110,10 @@ async def test_create_project_with_color(
 async def test_create_project_rejects_invalid_color(
     client: AsyncClient, session: AsyncSession, color: object
 ) -> None:
-    user, workspace = await create_user_with_workspace(session)
+    user, _workspace = await create_user_with_workspace(session)
 
     response = await client.post(
-        f"/api/workspaces/{workspace.id}/projects/",
+        "/api/projects/",
         headers=auth_headers(user),
         json={"name": "Roadmap", "color": color},
     )
@@ -130,7 +126,7 @@ async def test_update_project_color(client: AsyncClient, session: AsyncSession) 
     project = await create_project(session, workspace, color="#f43f5e")
 
     response = await client.patch(
-        f"/api/workspaces/{workspace.id}/projects/{project.id}/",
+        f"/api/projects/{project.id}/",
         headers=auth_headers(user),
         json={"color": "#10b981"},
     )
@@ -144,7 +140,7 @@ async def test_clear_project_color(client: AsyncClient, session: AsyncSession) -
     project = await create_project(session, workspace, color="#f43f5e")
 
     response = await client.patch(
-        f"/api/workspaces/{workspace.id}/projects/{project.id}/",
+        f"/api/projects/{project.id}/",
         headers=auth_headers(user),
         json={"color": None},
     )
@@ -158,7 +154,7 @@ async def test_rename_project(client: AsyncClient, session: AsyncSession) -> Non
     project = await create_project(session, workspace, name="Old")
 
     response = await client.patch(
-        f"/api/workspaces/{workspace.id}/projects/{project.id}/",
+        f"/api/projects/{project.id}/",
         headers=auth_headers(user),
         json={"name": "New"},
     )
@@ -175,7 +171,7 @@ async def test_rename_project_rejects_duplicate_name(
     project = await create_project(session, workspace, name="Free")
 
     response = await client.patch(
-        f"/api/workspaces/{workspace.id}/projects/{project.id}/",
+        f"/api/projects/{project.id}/",
         headers=auth_headers(user),
         json={"name": "Taken"},
     )
@@ -186,10 +182,10 @@ async def test_rename_project_rejects_duplicate_name(
 async def test_update_missing_project_returns_404(
     client: AsyncClient, session: AsyncSession
 ) -> None:
-    user, workspace = await create_user_with_workspace(session)
+    user, _workspace = await create_user_with_workspace(session)
 
     response = await client.patch(
-        f"/api/workspaces/{workspace.id}/projects/999/",
+        "/api/projects/999/",
         headers=auth_headers(user),
         json={"name": "X"},
     )
@@ -203,25 +199,23 @@ async def test_reorder_projects(client: AsyncClient, session: AsyncSession) -> N
     second = await create_project(session, workspace, name="Second", position=1)
 
     response = await client.post(
-        f"/api/workspaces/{workspace.id}/projects/reorder/",
+        "/api/projects/reorder/",
         headers=auth_headers(user),
         json={"order": [second.id, first.id]},
     )
 
     assert response.status_code == 204
-    listed = await client.get(
-        f"/api/workspaces/{workspace.id}/projects/", headers=auth_headers(user)
-    )
+    listed = await client.get("/api/projects/", headers=auth_headers(user))
     assert [project["id"] for project in listed.json()] == [second.id, first.id]
 
 
 async def test_reorder_with_an_empty_order_is_a_noop(
     client: AsyncClient, session: AsyncSession
 ) -> None:
-    user, workspace = await create_user_with_workspace(session)
+    user, _workspace = await create_user_with_workspace(session)
 
     response = await client.post(
-        f"/api/workspaces/{workspace.id}/projects/reorder/",
+        "/api/projects/reorder/",
         headers=auth_headers(user),
         json={"order": []},
     )
@@ -238,7 +232,7 @@ async def test_reorder_rejects_another_workspaces_project(
     foreign = await create_project(session, other_workspace)
 
     response = await client.post(
-        f"/api/workspaces/{workspace.id}/projects/reorder/",
+        "/api/projects/reorder/",
         headers=auth_headers(user),
         json={"order": [project.id, foreign.id]},
     )
@@ -255,18 +249,16 @@ async def test_deleting_a_project_deletes_its_tasks(
     inbox_task = await create_task(session, workspace)
 
     response = await client.delete(
-        f"/api/workspaces/{workspace.id}/projects/{project.id}/",
+        f"/api/projects/{project.id}/",
         headers=auth_headers(user),
     )
 
     assert response.status_code == 204
-    retrieved = await client.get(
-        f"/api/workspaces/{workspace.id}/tasks/{task.id}/", headers=auth_headers(user)
-    )
+    retrieved = await client.get(f"/api/tasks/{task.id}/", headers=auth_headers(user))
     assert retrieved.status_code == 404
     # Only the project's own tasks go; the inbox is untouched.
     survivor = await client.get(
-        f"/api/workspaces/{workspace.id}/tasks/{inbox_task.id}/",
+        f"/api/tasks/{inbox_task.id}/",
         headers=auth_headers(user),
     )
     assert survivor.status_code == 200
@@ -275,11 +267,9 @@ async def test_deleting_a_project_deletes_its_tasks(
 async def test_delete_missing_project_returns_404(
     client: AsyncClient, session: AsyncSession
 ) -> None:
-    user, workspace = await create_user_with_workspace(session)
+    user, _workspace = await create_user_with_workspace(session)
 
-    response = await client.delete(
-        f"/api/workspaces/{workspace.id}/projects/999/", headers=auth_headers(user)
-    )
+    response = await client.delete("/api/projects/999/", headers=auth_headers(user))
 
     assert response.status_code == 404
 
@@ -292,8 +282,8 @@ async def test_non_member_cannot_retrieve_a_projects_workspace(
     intruder = await create_user(session)
 
     response = await client.get(
-        f"/api/workspaces/{workspace.id}/projects/{project.id}/",
-        headers=auth_headers(intruder),
+        f"/api/projects/{project.id}/",
+        headers=auth_headers(intruder, workspace),
     )
 
     assert response.status_code == 404
@@ -307,8 +297,8 @@ async def test_non_member_cannot_update_a_projects_workspace(
     intruder = await create_user(session)
 
     response = await client.patch(
-        f"/api/workspaces/{workspace.id}/projects/{project.id}/",
-        headers=auth_headers(intruder),
+        f"/api/projects/{project.id}/",
+        headers=auth_headers(intruder, workspace),
         json={"name": "Hijacked"},
     )
 
@@ -323,13 +313,13 @@ async def test_non_member_cannot_delete_a_projects_workspace(
     intruder = await create_user(session)
 
     response = await client.delete(
-        f"/api/workspaces/{workspace.id}/projects/{project.id}/",
-        headers=auth_headers(intruder),
+        f"/api/projects/{project.id}/",
+        headers=auth_headers(intruder, workspace),
     )
 
     assert response.status_code == 404
     still_there = await client.get(
-        f"/api/workspaces/{workspace.id}/projects/{project.id}/",
+        f"/api/projects/{project.id}/",
         headers=auth_headers(owner),
     )
     assert still_there.status_code == 200
@@ -344,7 +334,7 @@ async def test_a_member_shares_the_workspaces_projects(
     await add_member(session, workspace, teammate)
 
     response = await client.get(
-        f"/api/workspaces/{workspace.id}/projects/", headers=auth_headers(teammate)
+        "/api/projects/", headers=auth_headers(teammate, workspace)
     )
 
     assert response.status_code == 200

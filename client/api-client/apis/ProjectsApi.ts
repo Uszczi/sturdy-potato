@@ -50,39 +50,39 @@ import {
 } from "../models/WorkflowInput";
 
 export interface ApiProjectsCreateRequest {
-  workspaceId: number;
   projectCreateInput: ProjectCreateInput;
+  xWorkspaceId?: number | null;
 }
 
 export interface ApiProjectsDestroyRequest {
   id: number;
-  workspaceId: number;
+  xWorkspaceId?: number | null;
 }
 
 export interface ApiProjectsListRequest {
-  workspaceId: number;
+  xWorkspaceId?: number | null;
 }
 
 export interface ApiProjectsPartialUpdateRequest {
   id: number;
-  workspaceId: number;
   projectUpdateInput: ProjectUpdateInput;
+  xWorkspaceId?: number | null;
 }
 
 export interface ApiProjectsReorderCreateRequest {
-  workspaceId: number;
   reorderInput: ReorderInput;
+  xWorkspaceId?: number | null;
 }
 
 export interface ApiProjectsRetrieveRequest {
   id: number;
-  workspaceId: number;
+  xWorkspaceId?: number | null;
 }
 
 export interface ApiProjectsStatusesUpdateRequest {
   id: number;
-  workspaceId: number;
   workflowInput: WorkflowInput;
+  xWorkspaceId?: number | null;
 }
 
 /**
@@ -95,13 +95,6 @@ export class ProjectsApi extends runtime.BaseAPI {
   async apiProjectsCreateRequestOpts(
     requestParameters: ApiProjectsCreateRequest,
   ): Promise<runtime.RequestOpts> {
-    if (requestParameters["workspaceId"] == null) {
-      throw new runtime.RequiredError(
-        "workspaceId",
-        'Required parameter "workspaceId" was null or undefined when calling apiProjectsCreate().',
-      );
-    }
-
     if (requestParameters["projectCreateInput"] == null) {
       throw new runtime.RequiredError(
         "projectCreateInput",
@@ -115,6 +108,12 @@ export class ProjectsApi extends runtime.BaseAPI {
 
     headerParameters["Content-Type"] = "application/json";
 
+    if (requestParameters["xWorkspaceId"] != null) {
+      headerParameters["X-Workspace-Id"] = String(
+        requestParameters["xWorkspaceId"],
+      );
+    }
+
     if (this.configuration && this.configuration.accessToken) {
       const token = this.configuration.accessToken;
       const tokenString = await token("HTTPBearer", []);
@@ -124,11 +123,7 @@ export class ProjectsApi extends runtime.BaseAPI {
       }
     }
 
-    let urlPath = `/api/workspaces/{workspace_id}/projects/`;
-    urlPath = urlPath.replace(
-      "{workspace_id}",
-      encodeURIComponent(String(requestParameters["workspaceId"])),
-    );
+    let urlPath = `/api/projects/`;
 
     return {
       path: urlPath,
@@ -182,16 +177,15 @@ export class ProjectsApi extends runtime.BaseAPI {
       );
     }
 
-    if (requestParameters["workspaceId"] == null) {
-      throw new runtime.RequiredError(
-        "workspaceId",
-        'Required parameter "workspaceId" was null or undefined when calling apiProjectsDestroy().',
-      );
-    }
-
     const queryParameters: any = {};
 
     const headerParameters: runtime.HTTPHeaders = {};
+
+    if (requestParameters["xWorkspaceId"] != null) {
+      headerParameters["X-Workspace-Id"] = String(
+        requestParameters["xWorkspaceId"],
+      );
+    }
 
     if (this.configuration && this.configuration.accessToken) {
       const token = this.configuration.accessToken;
@@ -202,14 +196,10 @@ export class ProjectsApi extends runtime.BaseAPI {
       }
     }
 
-    let urlPath = `/api/workspaces/{workspace_id}/projects/{id}/`;
+    let urlPath = `/api/projects/{id}/`;
     urlPath = urlPath.replace(
       "{id}",
       encodeURIComponent(String(requestParameters["id"])),
-    );
-    urlPath = urlPath.replace(
-      "{workspace_id}",
-      encodeURIComponent(String(requestParameters["workspaceId"])),
     );
 
     return {
@@ -250,16 +240,15 @@ export class ProjectsApi extends runtime.BaseAPI {
   async apiProjectsListRequestOpts(
     requestParameters: ApiProjectsListRequest,
   ): Promise<runtime.RequestOpts> {
-    if (requestParameters["workspaceId"] == null) {
-      throw new runtime.RequiredError(
-        "workspaceId",
-        'Required parameter "workspaceId" was null or undefined when calling apiProjectsList().',
-      );
-    }
-
     const queryParameters: any = {};
 
     const headerParameters: runtime.HTTPHeaders = {};
+
+    if (requestParameters["xWorkspaceId"] != null) {
+      headerParameters["X-Workspace-Id"] = String(
+        requestParameters["xWorkspaceId"],
+      );
+    }
 
     if (this.configuration && this.configuration.accessToken) {
       const token = this.configuration.accessToken;
@@ -270,11 +259,7 @@ export class ProjectsApi extends runtime.BaseAPI {
       }
     }
 
-    let urlPath = `/api/workspaces/{workspace_id}/projects/`;
-    urlPath = urlPath.replace(
-      "{workspace_id}",
-      encodeURIComponent(String(requestParameters["workspaceId"])),
-    );
+    let urlPath = `/api/projects/`;
 
     return {
       path: urlPath,
@@ -304,7 +289,7 @@ export class ProjectsApi extends runtime.BaseAPI {
    * List Projects
    */
   async apiProjectsList(
-    requestParameters: ApiProjectsListRequest,
+    requestParameters: ApiProjectsListRequest = {},
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
   ): Promise<Array<ProjectSchema>> {
     const response = await this.apiProjectsListRaw(
@@ -327,13 +312,6 @@ export class ProjectsApi extends runtime.BaseAPI {
       );
     }
 
-    if (requestParameters["workspaceId"] == null) {
-      throw new runtime.RequiredError(
-        "workspaceId",
-        'Required parameter "workspaceId" was null or undefined when calling apiProjectsPartialUpdate().',
-      );
-    }
-
     if (requestParameters["projectUpdateInput"] == null) {
       throw new runtime.RequiredError(
         "projectUpdateInput",
@@ -347,6 +325,12 @@ export class ProjectsApi extends runtime.BaseAPI {
 
     headerParameters["Content-Type"] = "application/json";
 
+    if (requestParameters["xWorkspaceId"] != null) {
+      headerParameters["X-Workspace-Id"] = String(
+        requestParameters["xWorkspaceId"],
+      );
+    }
+
     if (this.configuration && this.configuration.accessToken) {
       const token = this.configuration.accessToken;
       const tokenString = await token("HTTPBearer", []);
@@ -356,14 +340,10 @@ export class ProjectsApi extends runtime.BaseAPI {
       }
     }
 
-    let urlPath = `/api/workspaces/{workspace_id}/projects/{id}/`;
+    let urlPath = `/api/projects/{id}/`;
     urlPath = urlPath.replace(
       "{id}",
       encodeURIComponent(String(requestParameters["id"])),
-    );
-    urlPath = urlPath.replace(
-      "{workspace_id}",
-      encodeURIComponent(String(requestParameters["workspaceId"])),
     );
 
     return {
@@ -411,13 +391,6 @@ export class ProjectsApi extends runtime.BaseAPI {
   async apiProjectsReorderCreateRequestOpts(
     requestParameters: ApiProjectsReorderCreateRequest,
   ): Promise<runtime.RequestOpts> {
-    if (requestParameters["workspaceId"] == null) {
-      throw new runtime.RequiredError(
-        "workspaceId",
-        'Required parameter "workspaceId" was null or undefined when calling apiProjectsReorderCreate().',
-      );
-    }
-
     if (requestParameters["reorderInput"] == null) {
       throw new runtime.RequiredError(
         "reorderInput",
@@ -431,6 +404,12 @@ export class ProjectsApi extends runtime.BaseAPI {
 
     headerParameters["Content-Type"] = "application/json";
 
+    if (requestParameters["xWorkspaceId"] != null) {
+      headerParameters["X-Workspace-Id"] = String(
+        requestParameters["xWorkspaceId"],
+      );
+    }
+
     if (this.configuration && this.configuration.accessToken) {
       const token = this.configuration.accessToken;
       const tokenString = await token("HTTPBearer", []);
@@ -440,11 +419,7 @@ export class ProjectsApi extends runtime.BaseAPI {
       }
     }
 
-    let urlPath = `/api/workspaces/{workspace_id}/projects/reorder/`;
-    urlPath = urlPath.replace(
-      "{workspace_id}",
-      encodeURIComponent(String(requestParameters["workspaceId"])),
-    );
+    let urlPath = `/api/projects/reorder/`;
 
     return {
       path: urlPath,
@@ -492,16 +467,15 @@ export class ProjectsApi extends runtime.BaseAPI {
       );
     }
 
-    if (requestParameters["workspaceId"] == null) {
-      throw new runtime.RequiredError(
-        "workspaceId",
-        'Required parameter "workspaceId" was null or undefined when calling apiProjectsRetrieve().',
-      );
-    }
-
     const queryParameters: any = {};
 
     const headerParameters: runtime.HTTPHeaders = {};
+
+    if (requestParameters["xWorkspaceId"] != null) {
+      headerParameters["X-Workspace-Id"] = String(
+        requestParameters["xWorkspaceId"],
+      );
+    }
 
     if (this.configuration && this.configuration.accessToken) {
       const token = this.configuration.accessToken;
@@ -512,14 +486,10 @@ export class ProjectsApi extends runtime.BaseAPI {
       }
     }
 
-    let urlPath = `/api/workspaces/{workspace_id}/projects/{id}/`;
+    let urlPath = `/api/projects/{id}/`;
     urlPath = urlPath.replace(
       "{id}",
       encodeURIComponent(String(requestParameters["id"])),
-    );
-    urlPath = urlPath.replace(
-      "{workspace_id}",
-      encodeURIComponent(String(requestParameters["workspaceId"])),
     );
 
     return {
@@ -573,13 +543,6 @@ export class ProjectsApi extends runtime.BaseAPI {
       );
     }
 
-    if (requestParameters["workspaceId"] == null) {
-      throw new runtime.RequiredError(
-        "workspaceId",
-        'Required parameter "workspaceId" was null or undefined when calling apiProjectsStatusesUpdate().',
-      );
-    }
-
     if (requestParameters["workflowInput"] == null) {
       throw new runtime.RequiredError(
         "workflowInput",
@@ -593,6 +556,12 @@ export class ProjectsApi extends runtime.BaseAPI {
 
     headerParameters["Content-Type"] = "application/json";
 
+    if (requestParameters["xWorkspaceId"] != null) {
+      headerParameters["X-Workspace-Id"] = String(
+        requestParameters["xWorkspaceId"],
+      );
+    }
+
     if (this.configuration && this.configuration.accessToken) {
       const token = this.configuration.accessToken;
       const tokenString = await token("HTTPBearer", []);
@@ -602,14 +571,10 @@ export class ProjectsApi extends runtime.BaseAPI {
       }
     }
 
-    let urlPath = `/api/workspaces/{workspace_id}/projects/{id}/statuses/`;
+    let urlPath = `/api/projects/{id}/statuses/`;
     urlPath = urlPath.replace(
       "{id}",
       encodeURIComponent(String(requestParameters["id"])),
-    );
-    urlPath = urlPath.replace(
-      "{workspace_id}",
-      encodeURIComponent(String(requestParameters["workspaceId"])),
     );
 
     return {
