@@ -6,6 +6,31 @@
  * generated client: the JWT stashed in localStorage under "access".
  */
 
+/**
+ * How long a turn may stay silent before the client gives up.
+ *
+ * The timer is reset by every chunk that arrives, so this caps *silence*, not
+ * the length of a turn: a long answer streams indefinitely, while a wedged
+ * Ollama or MCP server eventually fails instead of spinning forever.
+ *
+ * Deliberately long: the quiet stretches are real — a cold model load, or a
+ * tool round waiting on the MCP server — and a false timeout throws away a turn
+ * that was still coming. Raising it further is fine up to 2**31-1 ms (~24.8
+ * days), above which `setTimeout` overflows its signed 32-bit delay and fires
+ * immediately.
+ */
+export const CHAT_IDLE_TIMEOUT_MS = 30 * 60 * 1000;
+
+/** Raised when a turn went `CHAT_IDLE_TIMEOUT_MS` without any data. */
+export class ChatTimeoutError extends Error {
+  constructor() {
+    super(
+      `The assistant sent nothing for ${CHAT_IDLE_TIMEOUT_MS / 60_000} minutes.`,
+    );
+    this.name = "ChatTimeoutError";
+  }
+}
+
 /** One turn of the conversation the assistant sees. */
 export type ChatMessage = {
   role: "user" | "assistant";
@@ -44,7 +69,8 @@ export async function getWorkspaceId(): Promise<number> {
 /**
  * Stream one assistant turn. Sends the whole conversation and calls `onEvent`
  * for each server-sent event until the stream closes. Pass an `AbortSignal` to
- * cancel an in-flight turn.
+ * cancel an in-flight turn; a turn that goes quiet for `CHAT_IDLE_TIMEOUT_MS`
+ * aborts itself and throws `ChatTimeoutError`.
  */
 export async function streamChat(
   messages: ChatMessage[],
@@ -52,36 +78,65 @@ export async function streamChat(
   signal?: AbortSignal,
 ): Promise<void> {
   const workspaceId = await getWorkspaceId();
-  const response = await fetch(`/api/workspaces/${workspaceId}/chat/`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Accept: "text/event-stream",
-      ...authHeader(),
-    },
-    body: JSON.stringify({ messages }),
-    signal,
-  });
-  if (!response.ok || !response.body) {
-    throw new Error(`Chat request failed (${response.status})`);
-  }
 
-  // Parse the SSE stream: events are separated by a blank line; we read the
-  // `data:` payload of each and JSON-parse it. Comment lines (":") are ignored.
-  const reader = response.body.getReader();
-  const decoder = new TextDecoder();
-  let buffer = "";
-  for (;;) {
-    const { value, done } = await reader.read();
-    if (done) break;
-    buffer += decoder.decode(value, { stream: true });
-    let boundary = buffer.indexOf("\n\n");
-    while (boundary !== -1) {
-      const event = parseSseData(buffer.slice(0, boundary));
-      if (event) onEvent(event);
-      buffer = buffer.slice(boundary + 2);
-      boundary = buffer.indexOf("\n\n");
+  // One controller drives both cancellation paths — the caller's signal and the
+  // idle timer — because `fetch` takes a single signal and aborting it is also
+  // what unblocks a `reader.read()` that is waiting on a dead stream.
+  const controller = new AbortController();
+  const cancel = () => controller.abort();
+  signal?.addEventListener("abort", cancel);
+  let timedOut = false;
+  let idleTimer: ReturnType<typeof setTimeout> | undefined;
+  const resetIdleTimer = () => {
+    clearTimeout(idleTimer);
+    idleTimer = setTimeout(() => {
+      timedOut = true;
+      controller.abort();
+    }, CHAT_IDLE_TIMEOUT_MS);
+  };
+
+  try {
+    resetIdleTimer();
+    const response = await fetch(`/api/workspaces/${workspaceId}/chat/`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "text/event-stream",
+        ...authHeader(),
+      },
+      body: JSON.stringify({ messages }),
+      signal: controller.signal,
+    });
+    if (!response.ok || !response.body) {
+      throw new Error(`Chat request failed (${response.status})`);
     }
+
+    // Parse the SSE stream: events are separated by a blank line; we read the
+    // `data:` payload of each and JSON-parse it. Comment lines (":") are ignored.
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
+    for (;;) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      resetIdleTimer();
+      buffer += decoder.decode(value, { stream: true });
+      let boundary = buffer.indexOf("\n\n");
+      while (boundary !== -1) {
+        const event = parseSseData(buffer.slice(0, boundary));
+        if (event) onEvent(event);
+        buffer = buffer.slice(boundary + 2);
+        boundary = buffer.indexOf("\n\n");
+      }
+    }
+  } catch (error) {
+    // The abort surfaces as a generic AbortError, so our own flag is what tells
+    // "the model went silent" apart from "the caller cancelled".
+    if (timedOut) throw new ChatTimeoutError();
+    throw error;
+  } finally {
+    clearTimeout(idleTimer);
+    signal?.removeEventListener("abort", cancel);
   }
 }
 
